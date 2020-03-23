@@ -1,4 +1,4 @@
-from seirsplus.models import *
+from models import *
 import networkx
 
 numNodes = 10000
