@@ -1,0 +1,10 @@
+todos
+
+- add gamma_D param
+
+- jupyter notebook demo
+- documentation for github readme
+
+- calc and plot Beff and R0 throughout sim
+- implement dfe SEIR
+- implement method to run small graph, record effective beta_effs, and then run dfe SEIR with that series of Beffs as beta
