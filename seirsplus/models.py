@@ -717,3 +717,37 @@ def custom_exponential_graph(base_graph=None, scale=100, min_num_edges=0, m=9, n
     
     return graph
 
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+def plot_degree_distn(graph, max_degree=None, show=True, use_seaborn=True):
+    import matplotlib.pyplot as pyplot
+    if(use_seaborn):
+        import seaborn
+        seaborn.set_style('ticks')
+        seaborn.despine()
+    # Get a list of the node degrees:
+    if type(graph)==numpy.ndarray:
+        nodeDegrees = graph.sum(axis=0).reshape(self.numNodes,1)   # sums of adj matrix cols
+    elif type(graph)==networkx.classes.graph.Graph:
+        nodeDegrees = [d[1] for d in graph.degree()]
+    else:
+        raise BaseException("Input an adjacency matrix or networkx object only.")
+    # Calculate the mean degree:
+    meanDegree = numpy.mean(nodeDegrees)
+    # Generate a histogram of the node degrees:
+    pyplot.hist(nodeDegrees, bins=range(max(nodeDegrees)), alpha=0.5, color='tab:blue', label=('mean degree = %.1f' % meanDegree))
+    pyplot.xlim(0, max(nodeDegrees) if not max_degree else max_degree)
+    pyplot.xlabel('degree')
+    pyplot.ylabel('num nodes')
+    pyplot.legend(loc='upper right')
+    if(show):
+        pyplot.show()
+
+
+
+
+
+
+
+
