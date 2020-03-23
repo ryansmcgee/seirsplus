@@ -5,9 +5,9 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     packages=setuptools.find_packages(),
-    name="SEIRS-network-model",
+    name="seirsplus",
     version='0.0.1',
-    description='Models for SEIRS epidemic dynamics on networks and with interventions, such as testing, contact tracing, and social distancing.',
+    description='Models of SEIRS epidemic dynamics with extensions, including network-structured populations, testing, contact tracing, and social distancing.',
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/ryansmcgee/SEIRS-network-model",

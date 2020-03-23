@@ -7,7 +7,7 @@ import numpy as numpy
 import scipy as scipy
 
 
-class SEIRSGraphModel():
+class SEIRSNetworkModel():
     """
     A class to simulate the SEIRS Model
     ===================================================
