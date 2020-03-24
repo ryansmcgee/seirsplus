@@ -7,7 +7,7 @@ Notably, this package includes stochastic implementations of these models on dyn
 **README Contents:**
 * [ Model Description ](#model)
    * [ SEIRS Dynamics ](#model-seirs)
-   * [ SEIRS Dynamics with Testing ]("model-seirstesting")
+   * [ SEIRS Dynamics with Testing ](#model-seirstesting)
    * [ Deterministic Model ](#model-determ)
    * [ Network Model ](#model-network)
       * [ Network Model with Testing, Contact Tracing, and Quarantining ](#model-network-ttq)
@@ -19,7 +19,7 @@ Notably, this package includes stochastic implementations of these models on dyn
       * [ Network Model ](#usage-init-network)
    * [ Running the Model ](#usage-run)
    * [ Checkpoints ](#usage-checkpoints)
-   * [ Specifying Interaction Networks ](#usage-neworks)
+   * [ Specifying Interaction Networks ](#usage-networks)
    * [ Vizualization ](#usage-viz)
   
 
@@ -181,9 +181,10 @@ import networkx
 ```python
 from models import *
 ```
-<a name="usage-init-determ"></a>
+<a name="usage-init"></a>
 ### Initializing the Model
 
+<a name="usage-init-determ"></a>
 #### Deterministic Model
 
 All model parameter values, including the normal and (optional) quarantine interaction networks, are set in the call to the ```SEIRSGraphModel``` constructor. The normal interaction network ```G``` and the basic SEIR parameters ```beta```, ```sigma```, and ```gamma``` are the only required arguments. All other arguments represent parameters for optional extended model dynamics; these optional parameters take default values that turn off their corresponding dynamics when not provided in the constructor. For clarity and ease of customization in this notebook, all available model parameters are listed below. 
