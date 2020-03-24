@@ -6,13 +6,27 @@ Notably, this package includes stochastic implementations of these models on dyn
 
 **README Contents:**
 * [ Model Description ](#model)
-    * [ Deterministic Model ](#model-standard)
-    * [ Network Model ](#model-network)
+   * [ SEIRS Dynamics ](#model-seirs)
+   * [ SEIRS Dynamics with Testing ]("model-seirstesting")
+   * [ Deterministic Model ](#model-determ)
+   * [ Network Model ](#model-network)
+      * [ Network Model with Testing, Contact Tracing, and Quarantining ](#model-network-ttq)
 * [ Code Usage ](#usage)
+   * [ Quick Start ](#usage-start)
+   * [ Installing and Importing the Package ](#usage-install)
+   * [ Initializing the Model ](#usage-init)
+      * [ Deterministic Model ](#usage-init-determ)
+      * [ Network Model ](#usage-init-network)
+   * [ Running the Model ](#usage-run)
+   * [ Checkpoints ](#usage-checkpoints)
+   * [ Specifying Interaction Networks ](#usage-neworks)
+   * [ Vizualization ](#usage-viz)
+  
 
 <a name="model"></a>
 ## Model Description
 
+<a name="model-seirs"></a>
 ### SEIRS Dynamics
 
 The foundation of the models in this package is the classic SEIR model of infectious disease. The SEIR model is a standard compartmental model in which the population is divided into **susceptible (S)**, **exposed (E)**, **infectious (I)**, and **recovered (R)** individuals. A susceptible member of the population becomes exposed (latent infection) when coming into contact with an infectious individual, and progresses to the infectious and then recovered states. In the SEIRS model, recovered individuals may become resusceptible some time after recovering (although re-susceptibility can be excluded if not applicable or desired). 
@@ -27,7 +41,8 @@ The rates of transition between the states are given by the parameters:
 * ξ: rate of re-susceptibility (inverse of temporary immunity period; 0 if permanent immunity)
 * μ<sub>I</sub>: rate of mortality from the disease (deaths per infectious individual per time)
 
-#### SEIRS Dyanmics with Testing
+<a name="model-seirstesting"></a>
+### SEIRS Dyanmics with Testing
 
 The effect of testing for infection on the dynamics can be modeled by introducing states corresponding to **detected exposed (*D<sub>E</sub>*)** and **detected infectious (*D<sub>I</sub>*)**. Exposed and infectious individuals are tested at rates *θ<sub>E</sub>* and *θ<sub>I</sub>*, respectively, and test positively for infection with rates *ψ<sub>E</sub>* and *ψ<sub>I</sub>*, respectively  (the false positive rate is assumed to be zero, so susceptible individuals never test positive). Testing positive moves an individual into the appropriate detected case state, where rates of transmission, progression, recovery, and/or mortality (as well as network connectivity in the network model) may be different than those of undetected cases.
 
@@ -55,12 +70,12 @@ The rates of transition between the states are given by the parameters:
 *See [model equations documentation](https://github.com/ryansmcgee/seirsplus/blob/master/docs/SEIRSplus_Model.pdf) for more information about the  model equations.*
 
 
-<a name="model-standard"></a>
+<a name="model-determ"></a>
 ### Deterministic Model
 
 The evolution of the SEIRS dynamics described above can be described by the following systems of differential equations. Importantly, this version of the model is deterministic and assumes a uniformly-mixed population. 
 
-### SEIRS Dynamics
+#### SEIRS Dynamics
 
 <p align="center">
   <img src="https://github.com/ryansmcgee/seirsplus/blob/master/images/SEIRS_deterministic_equations.png" width="210"></div>
@@ -68,7 +83,7 @@ The evolution of the SEIRS dynamics described above can be described by the foll
 
 where *S*, *E*, *I*, *R*, and *F* are the numbers of susceptible, exposed, infectious, receovered, and deceased individuals, respectively, and *N* is the total number of individuals in the population (parameters are described above).
 
-### SEIRS Dynamics with Testing
+#### SEIRS Dynamics with Testing
 
 <p align="center">
   <img src="https://github.com/ryansmcgee/seirsplus/blob/master/images/SEIRStesting_deterministic_equations.png" width="400"></div>
@@ -103,6 +118,7 @@ where *δ<sub>Xi=A</sub> = 1* if the state of *X_i* is *A*, or *0* if not, and w
 This implementation is based on the work of Dottori et al. (2015).
 * Dottori, M. and Fabricius, G., 2015. SIR model on a dynamical network and the endemic state of an infectious disease. Physica A: Statistical Mechanics and its Applications, 434, pp.25-35.
 
+<a name="model-network-ttq"></a>
 #### Network Model with Testing, Contact Tracing, and Quarantining
 
 ##### Testing & Contact Tracing
@@ -134,12 +150,14 @@ where *δ<sub>Xi=A</sub>=1* if the state of *X<sub>i</sub>* is *A*, or *0* if no
 
 This package was designed with broad usability in mind. Complex scenarios can be simulated with very few lines of code or, in many cases, no new coding or knowledge of python by simply modifying the parameter values in the example notebooks provided. See the Quick Start section and the rest of this documentation for more details.
 
+<a name="usage-start"></a>
 ### Quick Start
 
 The ```examples``` directory contains two Jupyter notebooks: one for the deterministic model and one for the network model. These notebooks walk through full simulations using each of these models with light description of the steps involved.
 
 These notebooks can also serve as ready-to-run sandboxes for trying your own simulation scenarios by simply changing the parameter values in the notebook.
 
+<a name="usage-install"></a>
 ### Installing and Importing the Package
 
 All of the code needed to run the model is imported from the ```models``` module of this package.
@@ -163,13 +181,14 @@ import networkx
 ```python
 from models import *
 ```
-
+<a name="usage-init-determ"></a>
 ### Initializing the Model
 
 #### Deterministic Model
 
 All model parameter values, including the normal and (optional) quarantine interaction networks, are set in the call to the ```SEIRSGraphModel``` constructor. The normal interaction network ```G``` and the basic SEIR parameters ```beta```, ```sigma```, and ```gamma``` are the only required arguments. All other arguments represent parameters for optional extended model dynamics; these optional parameters take default values that turn off their corresponding dynamics when not provided in the constructor. For clarity and ease of customization in this notebook, all available model parameters are listed below. 
 
+<a name="usage-init-network"></a>
 #### Network Model
 
 All model parameter values, including the interaction network and (optional) quarantine network, are set in the call to the ```SEIRSGraphModel``` constructor. 
@@ -246,6 +265,7 @@ model = SEIRSNetworkModel(G=myNetwork, beta=0.155, sigma=1/5.2, gamma=1/12.39, p
                           initI=100)
 ```
 
+<a name="usage-run"></a>
 ### Running the Model
 
 Once a model is initialized, a simulation can be run with a call to the following function:
@@ -263,6 +283,7 @@ Argument | Description | Data Type | Default Value
 ```print_interval``` | time interval to print sim status to console | numeric | 10
 ```verbose``` | if ```True```, print count in each state at print intervals, else just the time | bool | ```False```
 
+<a name="usage-networks"></a>
 ### Specifying Interaction Networks
 
 This model includes a model of SEIRS dynamics for populations with a structured interaction network (as opposed to standard deterministic SIR/SEIR/SEIRS models, which assume uniform mixing of the population). When using the network model, a graph specifying the interaction network for the population must be specified, where each node represents an individual in the population and edges connect individuals who have regular interactions.
@@ -307,7 +328,7 @@ Argument | Description | Data Type | Default Value
 ```n``` | *n* parameter for teh Barabasi-Albert algorithm (number of nodes to add) | int | ```None``` (value required when no ```base_graph``` is given)
 ```m``` | *m* parameter for the Barabasi-Albert algorithm (number of edges added with each added node) | int | 9
 
-
+<a name="usage-checkpoints"></a>
 ### Checkpoints
 
 Model parameters can be easily changed during a simulation run using checkpoints. A dictionary holds a list of checkpoint times (```checkpoints['t']```) and lists of new values to assign to various model parameters at each checkpoint time. 
@@ -332,7 +353,7 @@ Use cases of this feature include:
 * Changing parameters during a simulation, such as changing transition rates or testing parameters every day, week, on a specific sequence of dates, etc.
 * Starting and stopping interventions, such as social distancing (changing interaction network), testing and contact tracing (setting relevant parameters to non-zero or zero values), etc.
 
-
+<a name="usage-viz"></a>
 ### Visualization
 
 ### Visualizing the results
