@@ -21,8 +21,9 @@ Notably, this package includes stochastic implementations of these models on dyn
    * [ Checkpoints ](#usage-checkpoints)
    * [ Specifying Interaction Networks ](#usage-networks)
    * [ Vizualization ](#usage-viz)
+   
+*Development of this model was a collaborative effort with Omar Cornejo, Ben Kerr, Mark Tanaka, and Carl Bergstrom*
   
-
 <a name="model"></a>
 ## Model Description
 
