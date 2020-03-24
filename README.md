@@ -1,6 +1,8 @@
 # SEIRS+ Model
 
-This package implements generalized SEIRS infectious disease dynamics models with extensions that model the effect of factors including population structure, social distancing, testing, contact tracing, and quarantining detected cases. Notably, this package includes both standard deterministic as well as stochastic network implementations of these models.
+This package implements generalized SEIRS infectious disease dynamics models with extensions that model the effect of factors including population structure, social distancing, testing, contact tracing, and quarantining detected cases. 
+
+Notably, this package includes stochastic implementations of these models on dynamic networks.
 
 **README Contents:**
 * [ Model Description ](#model)
@@ -77,7 +79,14 @@ where *S*, *E*, *I*, *D<sub>E</sub>*, *D<sub>I</sub>*, *R*, and *F* are the numb
 <a name="model-network"></a>
 ### Network Model
 
-sometext
+The standard SEIRS model captures important features of infectious disease dynamics, but it is deterministic and assumes uniform mixing of the population (every individual in the population is equally likely to interact with every other individual). However, it is often important to consider stochastic effects and the structure of contact networks when studying disease transmission and the effect of interventions such as social distancing and contact tracing.
+
+This package includes implementation of the SEIRS dynamics on stochastic dynamical networks. This avails analysis of the realtionship between network structure and effective transmission rates, including the effect of network-based interventions such as social distancing, quarantining, and contact tracing.
+
+<img align="right" src="https://github.com/ryansmcgee/seirsplus/blob/master/images/network_contacts.png" height="250">
+
+Consider a graph representing individuals (nodes) and their interactions (edges). Each individual (node) has a state (*S, E, I, D<sub>E</sub>, D<sub>I</sub>, R, or F*). When a susceptible individual interacts with an infectious individual they become exposed with probability based on the transmission rate (β or β<sub>D</sub> as applicable). Each individual is adjacent to a set of nodes that defines their set of "close contacts" (highlighted in black).  At a given time, each individual makes contact with a random individual from their set of close contacts with probability 1-p or with a random individual from anywhere in the network with probability p. The latter global contacts represent individuals interacting with the population at large (i.e., individuals outside of ones social circle, such as on public transit, at an event, etc.) with some probability. The parameter p defines the locality of the network: for p=0 an individual only interacts with their close contacts, while p=1 represents a uniformly mixed population. Social distancing interventions may increase the locality of the network (i.e., decrease p) and/or decrease local connectivity of the network (i.e., decrease the degree of individuals).
+
 
 <a name="usage"></a>
 ## Code Usage
