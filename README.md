@@ -29,7 +29,7 @@ The rates of transition between the states are given by the parameters:
 
 #### SEIRS Dyanmics with Testing
 
-The effect of testing for infection on the dynamics can be modeled by introducing states corresponding to **detected exposed (D<sub>E</sub>)** and **detected infectious (D<sub>I</sub>)**. Exposed and infectious individuals are tested at rates θ<sub>E</sub> and θ<sub>I</sub>, respectively, and test positively for infection with rates ψ<sub>E</sub> and ψ<sub>I</sub>, respectively. Testing positive moves an individual into the appropriate detected case state, where rates of transmission, progression, recovery, and/or mortality (as well as network connectivity in the network model) may be different than those of undetected cases.
+The effect of testing for infection on the dynamics can be modeled by introducing states corresponding to **detected exposed (*D<sub>E</sub>*)** and **detected infectious (*D<sub>I</sub>*)**. Exposed and infectious individuals are tested at rates *θ<sub>E</sub>* and *θ<sub>I</sub>*, respectively, and test positively for infection with rates *ψ<sub>E</sub>* and *ψ<sub>I</sub>*, respectively  (the false positive rate is assumed to be zero, so susceptible individuals never test positive). Testing positive moves an individual into the appropriate detected case state, where rates of transmission, progression, recovery, and/or mortality (as well as network connectivity in the network model) may be different than those of undetected cases.
 
 <p align="center">
   <img src="https://github.com/ryansmcgee/seirsplus/blob/master/images/SEIRStesting_diagram.png" width="400"></div>
@@ -85,7 +85,7 @@ This package includes implementation of the SEIRS dynamics on stochastic dynamic
 
 <img align="right" src="https://github.com/ryansmcgee/seirsplus/blob/master/images/network_contacts.png" height="250">
 
-Consider a graph representing individuals (nodes) and their interactions (edges). 
+Consider a graph **_G_** representing individuals (nodes) and their interactions (edges). 
 Each individual (node) has a state (*S, E, I, D<sub>E</sub>, D<sub>I</sub>, R, or F*).
 The set of nodes adjacent (connected by an edge) to an individual defines their set of "close contacts" (highlighted in black).  At a given time, each individual makes contact with a random individual from their set of close contacts with probability *(1-p)β* or with a random individual from anywhere in the network (highlighted in blue) with probability *pβ*. 
 The latter global contacts represent individuals interacting with the population at large (i.e., individuals outside of ones social circle, such as on public transit, at an event, etc.) with some probability.
@@ -98,14 +98,35 @@ Each node *i* has a state *X<sub>i</sub>* that updates according to the followin
   <img src="https://github.com/ryansmcgee/seirsplus/blob/master/images/SEIRSnetwork_transitions.png" width="500"></div>
 </p>
 
-where *δ<sub>Xi=A</sub> = 1* if the state of *X_i* is *A*, or *0* if not. For large populations and *p=1*, this stochastic model approaches the same dynamics as the deterministic SEIRS model.
+where *δ<sub>Xi=A</sub> = 1* if the state of *X_i* is *A*, or *0* if not, and where *C<sub>G</sub>(i)* denotes the set of close contacts of node *i*. For large populations and *p=1*, this stochastic model approaches the same dynamics as the deterministic SEIRS model.
 
 This implementation is based on the work of Dottori et al. (2018)
 * Dottori, M. and Fabricius, G., 2015. SIR model on a dynamical network and the endemic state of an infectious disease. Physica A: Statistical Mechanics and its Applications, 434, pp.25-35.
 
 #### Network Model with Testing, Contact Tracing, and Quarantining
 
+<img align="right" src="https://github.com/ryansmcgee/seirsplus/blob/master/images/network_contacts_quarantine.png" height="250">
 
+##### Testing & Contact Tracing
+
+As with the deterministic model, exposed and infectious individuals are tested at rates *θ<sub>E</sub>* and *θ<sub>I</sub>*, respectively, and test positively for infection with rates *ψ<sub>E</sub>* and *ψ<sub>I</sub>*, respectively (the false positive rate is assumed to be zero, so susceptible individuals never test positive). Testing positive moves an individual into the appropriate detected case state (*D<sub>E</sub>* or *D<sub>I</sub>*), where rates of transmission, progression, recovery, and/or mortality (as well as network connectivity in the network model) may be different than those of undetected cases.
+
+Consideration of interaction networks allows us to model contact tracing, where the close contacts of an positively-tested individual are more likely to be tested in response. In this model, an individual is tested due to contact tracing at a rate equal to *φ* times the number of its close contacts who have tested positively.
+
+##### Quarantining
+
+Now we also consider another graph **_Q_** which represents the interactions that each individual has if they test positively for the disease (i.e., individuals in the *D_E* or *D_I* states) and enter into a form of quarantine.  
+The quarantine has the effect of dropping some fraction of the edges connecting the quarantined individual to others (according to some rule to be specified elsewhere). 
+The edges of *Q* for each individual are then a subset of the edges of *G* for that individual.
+The set of nodes that are adjacent to a quarantined individual define their set of "quarantine contacts" (highlighted in purple). 
+At a given time, a quarantined individual may come into contact with another individual in this quarantine contact set with probability *(1-p)β<sub>D</sub>*. 
+A quarantined individual may also be come in contact with a random individual from anywhere in the network with rate *qpβ<sub>D</sub>*..
+
+Each node *i* has a state *X<sub>i</sub>* that updates according to the following probability transition rates: 
+<p align="center">
+  <img src="https://github.com/ryansmcgee/seirsplus/blob/master/images/SEIRSnetworktesting_transitions.png" width="500"></div>
+</p>
+where *δ<sub>Xi=A</sub> = 1* if the state of *X_i* is *A*, or *0* if not, and where *C<sub>G</sub>(i)* and *C<sub>Q</sub>(i)* denotes the set of close contacts and quarantine contacts of node *i*, respectively. For large populations and *p=1*, this stochastic model approaches the same dynamics as the deterministic SEIRS model (sans contact tracing, which is not included in the uniformly-mixed model).
 
 <a name="usage"></a>
 ## Code Usage
