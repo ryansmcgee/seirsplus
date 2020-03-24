@@ -95,7 +95,7 @@ The parameter *p* defines the locality of the network: for *p=0* an individual o
 Each node *i* has a state *X<sub>i</sub>* that updates according to the following probability transition rates: 
 
 <p align="center">
-  <img src="https://github.com/ryansmcgee/seirsplus/blob/master/images/SEIRS_network_transitions.png" width="500"></div>
+  <img src="https://github.com/ryansmcgee/seirsplus/blob/master/images/SEIRSnetwork_transitions.png" width="500"></div>
 </p>
 
 where *δ<sub>Xi=A</sub> = 1* if the state of *X_i* is *A*, or *0* if not. For large populations and *p=1*, this stochastic model approaches the same dynamics as the deterministic SEIRS model.
