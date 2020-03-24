@@ -85,7 +85,26 @@ This package includes implementation of the SEIRS dynamics on stochastic dynamic
 
 <img align="right" src="https://github.com/ryansmcgee/seirsplus/blob/master/images/network_contacts.png" height="250">
 
-Consider a graph representing individuals (nodes) and their interactions (edges). Each individual (node) has a state (*S, E, I, D<sub>E</sub>, D<sub>I</sub>, R, or F*). When a susceptible individual interacts with an infectious individual they become exposed with probability based on the transmission rate (β or β<sub>D</sub> as applicable). Each individual is adjacent to a set of nodes that defines their set of "close contacts" (highlighted in black).  At a given time, each individual makes contact with a random individual from their set of close contacts with probability 1-p or with a random individual from anywhere in the network with probability p. The latter global contacts represent individuals interacting with the population at large (i.e., individuals outside of ones social circle, such as on public transit, at an event, etc.) with some probability. The parameter p defines the locality of the network: for p=0 an individual only interacts with their close contacts, while p=1 represents a uniformly mixed population. Social distancing interventions may increase the locality of the network (i.e., decrease p) and/or decrease local connectivity of the network (i.e., decrease the degree of individuals).
+Consider a graph representing individuals (nodes) and their interactions (edges). 
+Each individual (node) has a state (*S, E, I, D<sub>E</sub>, D<sub>I</sub>, R, or F*).
+The set of nodes adjacent (connected by an edge) to an individual defines their set of "close contacts" (highlighted in black).  At a given time, each individual makes contact with a random individual from their set of close contacts with probability *(1-p)β* or with a random individual from anywhere in the network (highlighted in blue) with probability *pβ*. 
+The latter global contacts represent individuals interacting with the population at large (i.e., individuals outside of ones social circle, such as on public transit, at an event, etc.) with some probability.
+When a susceptible individual interacts with an infectious individual they become exposed. 
+The parameter *p* defines the locality of the network: for *p=0* an individual only interacts with their close contacts, while *p=1* represents a uniformly mixed population. Social distancing interventions may increase the locality of the network (i.e., decrease *p*) and/or decrease local connectivity of the network (i.e., decrease the degree of individuals).
+
+Each node *i* has a state *X<sub>i</sub>* that updates according to the following probability transition rates: 
+
+<p align="center">
+  <img src="https://github.com/ryansmcgee/seirsplus/blob/master/images/SEIRS_network_transitions.png" width="500"></div>
+</p>
+
+where *δ<sub>Xi=A</sub> = 1* if the state of *X_i* is *A*, or *0* if not. For large populations and *p=1*, this stochastic model approaches the same dynamics as the deterministic SEIRS model.
+
+This implementation is based on the work of Dottori et al. (2018)
+* Dottori, M. and Fabricius, G., 2015. SIR model on a dynamical network and the endemic state of an infectious disease. Physica A: Statistical Mechanics and its Applications, 434, pp.25-35.
+
+#### Network Model with Testing, Contact Tracing, and Quarantining
+
 
 
 <a name="usage"></a>
