@@ -352,7 +352,7 @@ model.run(T=100)    # simulate the model for 100 time units
 # ... 
 # do other things, such as processing simulation data or changing parameters 
 # ...
-model.run(T=200)    # simulate the model for an additional 100 time units, picking up where the first sim left off
+model.run(T=200)    # simulate the model for an additional 200 time units, picking up where the first sim left off
 ```
 
 <a name="usage-viz"></a>
