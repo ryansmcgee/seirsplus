@@ -61,14 +61,18 @@ The evolution of the SEIRS dynamics described above can be described by the foll
 ### SEIRS Dynamics
 
 <p align="center">
-  <img src="https://github.com/ryansmcgee/seirsplus/blob/master/images/SEIRStesting_deterministic_equations.png" width="400"></div>
+  <img src="https://github.com/ryansmcgee/seirsplus/blob/master/images/SEIRS_deterministic_equations.png" width="210"></div>
 </p>
+
+where *S*, *E*, *I*, *R*, and *F* are the numbers of susceptible, exposed, infectious, receovered, and deceased individuals, respectively (parameters are described above).
 
 ### SEIRS Dynamics with Testing
 
 <p align="center">
   <img src="https://github.com/ryansmcgee/seirsplus/blob/master/images/SEIRStesting_deterministic_equations.png" width="400"></div>
 </p>
+
+where *S*, *E*, *I*, *D<sub>E</sub>*, *D<sub>I</sub>, *R*, and *F* are the numbers of susceptible, exposed, infectious, detected exposed, detected infectious, receovered, and deceased individuals, respectively (parameters are described above).
 
 <a name="model-network"></a>
 ### Network Model
