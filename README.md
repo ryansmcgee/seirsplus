@@ -30,7 +30,7 @@ The rates of transition between the states are given by the parameters:
 The effect of testing for infection on the dynamics can be modeled by introducing states corresponding to **detected exposed (D<sub>E</sub>)** and **detected infectious (D<sub>I</sub>)**. Exposed and infectious individuals are tested at rates θ<sub>E</sub> and θ<sub>I</sub>, respectively, and test positively for infection with rates ψ<sub>E</sub> and ψ<sub>I</sub>, respectively. Testing positive moves an individual into the appropriate detected case state, where rates of transmission, progression, recovery, and/or mortality (as well as network connectivity in the network model) may be different than those of undetected cases.
 
 <p align="center">
-  <img src="https://github.com/ryansmcgee/seirsplus/blob/master/images/SEIRSplus_diagram.png" width="400"></div>
+  <img src="https://github.com/ryansmcgee/seirsplus/blob/master/images/SEIRStesting_diagram.png" width="400"></div>
 </p>
 
 The rates of transition between the states are given by the parameters:
@@ -48,11 +48,27 @@ The rates of transition between the states are given by the parameters:
 * γ<sub>D</sub>: rate of recovery for detected cases (inverse of infectious period)
 * μ<sub>D</sub>: rate of mortality from the disease for detected cases (deaths per infectious individual per time)
 
+*Vital dynamics are also supported in these models (optional, off by default), but aren't discussed in the README.* 
 
+*See [model equations documentation](https://github.com/ryansmcgee/seirsplus/blob/master/docs/SEIRSplus_Model.pdf) for more information about the  model equations.*
 
 
 <a name="model-standard"></a>
 ### Deterministic Model
+
+The evolution of the SEIRS dynamics described above can be described by the following systems of differential equations. Importantly, this version of the model is deterministic and assumes a uniformly-mixed population. 
+
+### SEIRS Dynamics
+
+<p align="center">
+  <img src="https://github.com/ryansmcgee/seirsplus/blob/master/images/SEIRStesting_deterministic_equations.png" width="400"></div>
+</p>
+
+### SEIRS Dynamics with Testing
+
+<p align="center">
+  <img src="https://github.com/ryansmcgee/seirsplus/blob/master/images/SEIRStesting_deterministic_equations.png" width="400"></div>
+</p>
 
 <a name="model-network"></a>
 ### Network Model
