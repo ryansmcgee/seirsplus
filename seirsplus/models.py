@@ -43,10 +43,10 @@ class SEIRSNetworkModel():
                     (all remaining nodes initialized susceptible)   
     """
 
-    def __init__(self, G, beta, sigma, gamma, xi=0, mu_I=0, mu_0=0, nu=0, p=1,
+    def __init__(self, G, beta, sigma, gamma, xi=0, mu_I=0, mu_0=0, nu=0, p=0,
                     Q=None, beta_D=None, sigma_D=None, gamma_D=None, mu_D=None, 
                     theta_E=0, theta_I=0, phi_E=0, phi_I=0, psi_E=0, psi_I=0, q=0,
-                    initE=0, initI=0, initD_E=0, initD_I=0, initR=0, initF=0):
+                    initE=0, initI=10, initD_E=0, initD_I=0, initR=0, initF=0):
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Setup Adjacency matrix:
