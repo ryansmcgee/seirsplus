@@ -105,8 +105,6 @@ This implementation is based on the work of Dottori et al. (2018)
 
 #### Network Model with Testing, Contact Tracing, and Quarantining
 
-<img align="right" src="https://github.com/ryansmcgee/seirsplus/blob/master/images/network_contacts_quarantine.png" height="250">
-
 ##### Testing & Contact Tracing
 
 As with the deterministic model, exposed and infectious individuals are tested at rates *θ<sub>E</sub>* and *θ<sub>I</sub>*, respectively, and test positively for infection with rates *ψ<sub>E</sub>* and *ψ<sub>I</sub>*, respectively (the false positive rate is assumed to be zero, so susceptible individuals never test positive). Testing positive moves an individual into the appropriate detected case state (*D<sub>E</sub>* or *D<sub>I</sub>*), where rates of transmission, progression, recovery, and/or mortality (as well as network connectivity in the network model) may be different than those of undetected cases.
@@ -115,9 +113,11 @@ Consideration of interaction networks allows us to model contact tracing, where 
 
 ##### Quarantining
 
-Now we also consider another graph **_Q_** which represents the interactions that each individual has if they test positively for the disease (i.e., individuals in the *D_E* or *D_I* states) and enter into a form of quarantine.  
-The quarantine has the effect of dropping some fraction of the edges connecting the quarantined individual to others (according to some rule to be specified elsewhere). 
-The edges of *Q* for each individual are then a subset of the edges of *G* for that individual.
+<img align="right" src="https://github.com/ryansmcgee/seirsplus/blob/master/images/network_contacts_quarantine.png" height="250">
+
+Now we also consider another graph **_Q_** which represents the interactions that each individual has if they test positively for the disease (i.e., individuals in the *D<sub>E</sub>* or *D<sub>I</sub>* states) and enter into a form of quarantine.  
+The quarantine has the effect of dropping some fraction of the edges connecting the quarantined individual to others (according to a rule of the user's choice when generating the graph *Q*). 
+The edges of *Q* (highlighted in purple) for each individual are then a subset of the normal edges of *G* for that individual.
 The set of nodes that are adjacent to a quarantined individual define their set of "quarantine contacts" (highlighted in purple). 
 At a given time, a quarantined individual may come into contact with another individual in this quarantine contact set with probability *(1-p)β<sub>D</sub>*. 
 A quarantined individual may also be come in contact with a random individual from anywhere in the network with rate *qpβ<sub>D</sub>*..
@@ -258,10 +258,10 @@ The ```run()``` function has the following arguments
 
 Argument | Description | Data Type | Default Value
 -----|-----|-----|-----
-T | runtime of simulation | numeric | REQUIRED
-checkpoints | dictionary of checkpoint lists (see section below) | dictionary | None
-print_interval | time interval to print sim status to console | numeric | 10
-verbose | if true, print count in each state at print intervals, else just the time | bool | False
+```T``` | runtime of simulation | numeric | REQUIRED
+```checkpoints``` | dictionary of checkpoint lists (see section below) | dictionary | ```None```
+```print_interval``` | time interval to print sim status to console | numeric | 10
+```verbose``` | if ```True```, print count in each state at print intervals, else just the time | bool | ```False```
 
 ### Specifying Interaction Networks
 
@@ -277,9 +277,35 @@ Epidemic scenarios of interest often involve interaction networks that change in
 
 #### Custom Exponential Graph
 
-Human intera
+Human interaction networks are often scale-free power law networks with exponential degree distributions.
+This package includes a ```custom_exponential_graph()``` convenience funciton that generates power-law-like graphs that have degree distributions with two exponential tails. The method of generating these graphs also makes it easy to remove edges from a reference graph and decrease the degree of the network, which is useful for generating networks representing social distancing and quarantine conditions.
 
-*Here, we use a ```custom_exponential_graph()``` generation function included in this package, which generates power-law graphs that have degree distributions with two exponential tails. For more information on this custom graph type and its generation, see the README.*
+Common algorithms for generating power-law graphs, such as the Barabasi-Albert preferential attachment algorithm, produce graphs that have a minimum degree; that is, no node has fewer than *m* edges for some value of *m*, which is unrealistic for interaction networks. This ```custom_exponential_graph()``` function simply produces graphs with degree distributions that have a peak near their mean and exponential tails in the direction of both high and low degrees. (No claims about the realism or rigor of these graphs are made.)
+
+<img align="right" src="https://github.com/ryansmcgee/seirsplus/blob/master/images/degreeDistn_compareToBAGraph1.png" height="250">
+
+This function generates graphs using the following algorithm:
+* Start with a Barabasi-Albert preferential attachment graph (or a graph that is optionally provided by the user).
+* For each node:
+    * Count the number of neighbors *n* of the node 
+    * Draw a random number *r* from an exponential distribution with some mean=```scale```. If *r>n*, set *r=n*. 
+    * Randomly select *r* of this node’s neighbors to keep, delete the edges to all other neighbors. 
+When starting from a Barabasi-Albert (BA) graph, this generates a new graphs that have a peak at their mean and approximately exponential tails in both directions, as shown to the right.
+
+<img align="right" src="https://github.com/ryansmcgee/seirsplus/blob/master/images/degreeDistn_compareToBAGraph4.png" height="250">
+
+Since this algorithm starts with a graph with defined connections and makes a new graph by breaking some number of connections breaking connections, it also makes it easy to take an existing network and make a subgraph of it that also has exponential-ish tails and a left-shifted mean. This can be used for generating social distancing and quarantine subgraphs. The amount of edge breaking/degree reduction is modulated by the ```scale``` parameter. To the right are some examples of graphs with progressively lower mean degree generated using the same reference Barabasi-Albert graph, which therefore are all subsets of a common reference set of edges.
+
+The ```custom_exponential_graph()``` function has the following arguments
+
+base_graph=None, scale=100, min_num_edges=0, m=9, n=None
+Argument | Description | Data Type | Default Value
+-----|-----|-----|-----
+```base_graph``` | Graph to use as the starting point for the algorithm. If ```None```, generate a Barabasi-Albert graph to use as the starting point using arguments ```n``` and ```m``` as parameters | ```networkx``` ```Graph``` object | ```None```
+```scale``` | Mean of the exponential distribution used to draw ```base_graph``` to keep. Large values result in graphs that approximate the original ```base_graph```, small values result in sparser subgraphs of ```base_graph```  | numeric | 100
+```min_num_edges``` | Minimum number of edges that all nodes must have in the generated graph | int | 0
+```n``` | *n* parameter for teh Barabasi-Albert algorithm (number of nodes to add) | int | ```None``` (value required when no ```base_graph``` is given)
+```m``` | *m* parameter for the Barabasi-Albert algorithm (number of edges added with each added node) | int | 9
 
 
 ### Checkpoints
@@ -309,5 +335,46 @@ Use cases of this feature include:
 
 ### Visualization
 
+### Visualizing the results
+The ```SEIRSModel``` and ```SEIRSNetworkModel``` classes have a ```plot()``` convenience function for plotting simulation results on a matplotlib axis. This function generates a line plot of the frequency of each model state in the population by default, but there are many optional arguments that can be used to customize the plot.
 
-sometext
+These classes also have convenience functions for generating a full figure out of model simulation results (optionally, arguments can be provided to customize the plots generated by these functions, see below). 
+
+- ```figure_basic()``` calls the ```plot()``` function with default parameters to generate a line plot of the frequency of each state in the population.
+- ```figure_infections()``` calls the ```plot()``` function with default parameters to generate a stacked area plot of the frequency of only the infection states (*E*, *I*, *D<sub>E</sub>*, *D<sub>I</sub>*) in the population.
+
+Parameters that can be passed to any of the above functions include:
+Argument | Description 
+-----|-----
+```plot_S``` | ```'line'```, ```'stacked'```, or ```False``` 
+```plot_E``` | ```'line'```, ```'stacked'```, or ```False``` 
+```plot_I``` | ```'line'```, ```'stacked'```, or ```False``` 
+```plot_R``` | ```'line'```, ```'stacked'```, or ```False``` 
+```plot_F``` | ```'line'```, ```'stacked'```, or ```False``` 
+```plot_D_E``` | ```'line'```, ```'stacked'```, or ```False``` 
+```plot_D_I``` | ```'line'```, ```'stacked'```, or ```False``` 
+```combine_D``` | ```True``` or ```False```
+```color_S``` | matplotlib color of line or stacked area
+```color_E``` | matplotlib color of line or stacked area
+```color_I``` | matplotlib color of line or stacked area
+```color_R``` | matplotlib color of line or stacked area
+```color_F``` | matplotlib color of line or stacked area
+```color_D_E``` | matplotlib color of line or stacked area
+```color_D_I``` | matplotlib color of line or stacked area
+```color_reference``` | matplotlib color of line or stacked area
+```dashed_reference_results``` | ```seirsplus``` model object containing results to be plotted as a dashed-line reference curve
+```dashed_reference_label``` | ```string``` for labeling the reference curve in the legend
+```shaded_reference_results``` | ```seirsplus``` model object containing results to be plotted as a dashed-line reference curve
+```shaded_reference_label``` | ```string``` for labeling the reference curve in the legend
+```vlines``` | ```list``` of x positions at which to plot vertical lines
+```vline_colors``` | ```list``` of ```matplotlib``` colors corresponding to the vertical lines
+```vline_styles``` | ```list``` of ```matplotlib``` ```linestyle``` ```string```s corresponding to the vertical lines
+```vline_labels``` | ```list``` of ```string``` labels corresponding to the vertical lines
+```ylim``` | max y-axis value 
+```xlim``` | max x-axis value
+```legend``` | display legend, ```True``` or ```False```
+```title``` | ```string``` plot title
+```side_title``` | ```string``` plot title along y-axis
+```plot_percentages``` | if ```True``` plot percentage of population in each state, else plot absolute counts
+```figsize``` | ```tuple``` specifying figure x and y dimensions
+```use_seaborn``` | if ```True``` import ```seaborn``` and use ```seaborn``` styles
