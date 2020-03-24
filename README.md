@@ -18,7 +18,7 @@ Notably, this package includes stochastic implementations of these models on dyn
       * [ Deterministic Model ](#usage-init-determ)
       * [ Network Model ](#usage-init-network)
    * [ Running the Model ](#usage-run)
-   * [ Checkpoints ](#usage-checkpoints)
+   * [ Changing parameters during a simulation ](#usage-checkpoints)
    * [ Specifying Interaction Networks ](#usage-networks)
    * [ Vizualization ](#usage-viz)
   
@@ -321,7 +321,7 @@ Argument | Description | Data Type | Default Value
 ```m``` | *m* parameter for the Barabasi-Albert algorithm (number of edges added with each added node) | int | 9
 
 <a name="usage-checkpoints"></a>
-### Changing parameters during a run
+### Changing parameters during a simulation
 
 Model parameters can be easily changed during a simulation run using checkpoints. A dictionary holds a list of checkpoint times (```checkpoints['t']```) and lists of new values to assign to various model parameters at each checkpoint time. 
 
@@ -349,7 +349,9 @@ Use cases of this feature include:
 For example:*
 ```python
 model.run(T=100)    # simulate the model for 100 time units
-# ... do other things, such as processing simulation data or changing parameters ...
+# ... 
+# do other things, such as processing simulation data or changing parameters 
+# ...
 model.run(T=200)    # simulate the model for an additional 100 time units, picking up where the first sim left off
 ```
 
