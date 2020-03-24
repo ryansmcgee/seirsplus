@@ -100,7 +100,7 @@ Each node *i* has a state *X<sub>i</sub>* that updates according to the followin
 
 where *δ<sub>Xi=A</sub> = 1* if the state of *X_i* is *A*, or *0* if not, and where *C<sub>G</sub>(i)* denotes the set of close contacts of node *i*. For large populations and *p=1*, this stochastic model approaches the same dynamics as the deterministic SEIRS model.
 
-This implementation is based on the work of Dottori et al. (2018)
+This implementation is based on the work of Dottori et al. (2015).
 * Dottori, M. and Fabricius, G., 2015. SIR model on a dynamical network and the endemic state of an infectious disease. Physica A: Statistical Mechanics and its Applications, 434, pp.25-35.
 
 #### Network Model with Testing, Contact Tracing, and Quarantining
