@@ -346,13 +346,13 @@ These classes also have convenience functions for generating a full figure out o
 Parameters that can be passed to any of the above functions include:
 Argument | Description 
 -----|-----
-```plot_S``` | ```'line'```, ```'stacked'```, or ```False``` 
-```plot_E``` | ```'line'```, ```'stacked'```, or ```False``` 
-```plot_I``` | ```'line'```, ```'stacked'```, or ```False``` 
-```plot_R``` | ```'line'```, ```'stacked'```, or ```False``` 
-```plot_F``` | ```'line'```, ```'stacked'```, or ```False``` 
-```plot_D_E``` | ```'line'```, ```'stacked'```, or ```False``` 
-```plot_D_I``` | ```'line'```, ```'stacked'```, or ```False``` 
+```plot_S``` | ```'line'```, ```shaded```, ```'stacked'```, or ```False``` 
+```plot_E``` | ```'line'```, ```shaded```, ```'stacked'```, or ```False``` 
+```plot_I``` | ```'line'```, ```shaded```, ```'stacked'```, or ```False``` 
+```plot_R``` | ```'line'```, ```shaded```, ```'stacked'```, or ```False``` 
+```plot_F``` | ```'line'```, ```shaded```, ```'stacked'```, or ```False``` 
+```plot_D_E``` | ```'line'```, ```shaded```, ```'stacked'```, or ```False``` 
+```plot_D_I``` | ```'line'```, ```shaded```, ```'stacked'```, or ```False``` 
 ```combine_D``` | ```True``` or ```False```
 ```color_S``` | matplotlib color of line or stacked area
 ```color_E``` | matplotlib color of line or stacked area
