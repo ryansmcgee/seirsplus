@@ -60,7 +60,7 @@ class SEIRSModel():
         self.beta_D   = beta_D  if beta_D is not None else self.beta
         self.sigma_D  = sigma_D if sigma_D is not None else self.sigma
         self.gamma_D  = gamma_D if gamma_D is not None else self.gamma
-        self.mu_D     = mu_D    if mu_D is not None else self.mu_D
+        self.mu_D     = mu_D    if mu_D is not None else self.mu_I
         self.theta_E  = theta_E if theta_E is not None else self.theta_E
         self.theta_I  = theta_I if theta_I is not None else self.theta_I
         self.psi_E    = psi_E   if psi_E is not None else self.psi_E
