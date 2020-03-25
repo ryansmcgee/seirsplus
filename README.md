@@ -155,7 +155,7 @@ G_quarantine = custom_exponential_graph(baseGraph, scale=5)
 
 model = SEIRSNetworkModel(G=G_normal, beta=0.155, sigma=1/5.2, gamma=1/12.39, mu_I=0.0004, p=0.5,
                           Q=G_quarantine, beta_D=0.155, sigma_D=1/5.2, gamma_D=1/12.39, mu_D=0.0004,
-                          theta_E=0.02, theta_I=0.02, phi_E=0.02, phi_I=0.02, psi_E=1.0, psi_I=1.0, q=0.5,
+                          theta_E=0.02, theta_I=0.02, phi_E=0.2, phi_I=0.2, psi_E=1.0, psi_I=1.0, q=0.5,
                           initI=10)
 
 checkpoints = {'t': [20, 100], 'G': [G_distancing, G_normal], 'p': [0.1, 0.5], 'theta_E': [0.02, 0.02], 'theta_I': [0.02, 0.02], 'phi_E':   [0.2, 0.2], 'phi_I':   [0.2, 0.2]}
@@ -203,6 +203,52 @@ from models import *
 #### Deterministic Model
 
 All model parameter values, including the normal and (optional) quarantine interaction networks, are set in the call to the ```SEIRSModel``` constructor. The basic SEIR parameters ```beta```, ```sigma```, and ```gamma``` are the only required arguments. All other arguments represent parameters for optional extended model dynamics; these optional parameters take default values that turn off their corresponding dynamics when not provided in the constructor. 
+
+Constructor Argument | Parameter Description | Data Type | Default Value
+-----|-----|-----|-----
+```beta   ``` | rate of transmission | float | REQUIRED
+```sigma  ``` | rate of progression | float | REQUIRED
+```gamma  ``` | rate of recovery | float | REQUIRED
+```xi     ``` | rate of re-susceptibility | float | 0
+```mu_I   ``` | rate of infection-related mortality | float | 0
+```mu_0   ``` | rate of baseline mortality | float | 0 
+```nu     ``` | rate of baseline birth | float | 0 
+```beta_D ``` | rate of transmission for detected cases | float | None (set equal to ```beta```) 
+```sigma_D``` | rate of progression for detected cases | float | None (set equal to ```sigma```)  
+```gamma_D``` | rate of recovery for detected cases | float | None (set equal to ```gamma```)  
+```mu_D   ``` | rate of infection-related mortality for detected cases | float | None (set equal to ```mu_I```) 
+```theta_E``` | rate of testing for exposed individuals | float | 0 
+```theta_I``` | rate of testing for infectious individuals | float | 0 
+```psi_E  ``` | probability of positive tests for exposed individuals | float | 0 
+```psi_I  ``` | probability of positive tests for infectious individuals | float | 0
+```initN  ``` | initial total number of individuals | int | 10
+```initI  ``` | initial number of infectious individuals | int | 10
+```initE  ``` | initial number of exposed individuals | int | 0 
+```initD_E``` | initial number of detected infectious individuals | int | 0 
+```initD_I``` | initial number of detected exposed individuals | int | 0 
+```initR  ``` | initial number of recovered individuals | int | 0
+```initF  ``` | initial number of deceased individuals | int | 0
+
+##### Basic SEIR
+
+```python
+model = SEIRSModel(beta=0.155, sigma=1/5.2, gamma=1/12.39, initN=100000, initI=100)
+```
+
+
+##### Basic SEIRS
+
+```python
+model = SEIRSModel(beta=0.155, sigma=1/5.2, gamma=1/12.39, xi=0.001, initN=100000, initI=100)
+```
+
+##### SEIR with testing and different progression rates for detected cases (```theta``` and ```psi``` testing params > 0, rate parameters provided for detected states)
+
+```python
+model = SEIRSModel(beta=0.155, sigma=1/5.2, gamma=1/12.39, initN=100000, initI=100,
+                   beta_D=0.100, sigma_D=1/4.0, gamma_D=1/9.0, theta_E=0.02, theta_I=0.02, psi_E=1.0, psi_I=1.0)
+```
+
 
 <a name="usage-init-network"></a>
 #### Network Model
