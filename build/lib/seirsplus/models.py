@@ -57,15 +57,15 @@ class SEIRSModel():
         self.p      = p     
 
         # Testing-related parameters:
-        self.beta_D   = beta_D 
-        self.sigma_D  = sigma_D 
-        self.gamma_D  = gamma_D 
-        self.mu_D     = mu_D 
-        self.theta_E  = theta_E 
-        self.theta_I  = theta_I 
-        self.psi_E    = psi_E  
-        self.psi_I    = psi_I    
-        self.q        = q  
+        self.beta_D   = beta_D  if beta_D is not None else self.beta
+        self.sigma_D  = sigma_D if sigma_D is not None else self.sigma
+        self.gamma_D  = gamma_D if gamma_D is not None else self.gamma
+        self.mu_D     = mu_D    if mu_D is not None else self.mu_D
+        self.theta_E  = theta_E if theta_E is not None else self.theta_E
+        self.theta_I  = theta_I if theta_I is not None else self.theta_I
+        self.psi_E    = psi_E   if psi_E is not None else self.psi_E
+        self.psi_I    = psi_I   if psi_I is not None else self.psi_I
+        self.q        = q       if q is not None else self.q
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Initialize Timekeeping:
