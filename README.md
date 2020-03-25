@@ -202,7 +202,7 @@ from models import *
 <a name="usage-init-determ"></a>
 #### Deterministic Model
 
-All model parameter values, including the normal and (optional) quarantine interaction networks, are set in the call to the ```SEIRSModel``` constructor. The basic SEIR parameters ```beta```, ```sigma```, and ```gamma``` are the only required arguments. All other arguments represent parameters for optional extended model dynamics; these optional parameters take default values that turn off their corresponding dynamics when not provided in the constructor. 
+All model parameter values, including the normal and (optional) quarantine interaction networks, are set in the call to the ```SEIRSModel``` constructor. The basic SEIR parameters ```beta```, ```sigma```, ```gamma```, and ```initN``` are the only required arguments. All other arguments represent parameters for optional extended model dynamics; these optional parameters take default values that turn off their corresponding dynamics when not provided in the constructor. 
 
 Constructor Argument | Parameter Description | Data Type | Default Value
 -----|-----|-----|-----
@@ -314,7 +314,7 @@ model = SEIRSNetworkModel(G=myGraph, beta=0.155, sigma=1/5.2, gamma=1/12.39, p=0
 ```python
 model = SEIRSNetworkModel(G=myNetwork, beta=0.155, sigma=1/5.2, gamma=1/12.39, p=0.5,
                           Q=quarantineNetwork, q=0.5,
-                          theta_E=0.02, theta_I=0.02, psi_E=0.02, psi_I=0.02, 
+                          theta_E=0.02, theta_I=0.02, psi_E=1.0, psi_I=1.0, 
                           initI=100)
 ```
 
@@ -323,7 +323,7 @@ model = SEIRSNetworkModel(G=myNetwork, beta=0.155, sigma=1/5.2, gamma=1/12.39, p
 ```python
 model = SEIRSNetworkModel(G=myNetwork, beta=0.155, sigma=1/5.2, gamma=1/12.39, p=0.5,
                           Q=quarantineNetwork, q=0.5,
-                          theta_E=0.02, theta_I=0.02, psi_E=0.02, psi_I=0.02, phi_E=0.2, phi_I=0.2, 
+                          theta_E=0.02, theta_I=0.02, phi_E=0.2, phi_I=0.2, psi_E=1.0, psi_I=1.0,  
                           initI=100)
 ```
 
@@ -344,7 +344,7 @@ Argument | Description | Data Type | Default Value
 -----|-----|-----|-----
 ```T``` | runtime of simulation | numeric | REQUIRED
 ```checkpoints``` | dictionary of checkpoint lists (see section below) | dictionary | ```None```
-```print_interval``` | time interval to print sim status to console | numeric | 10
+```print_interval``` | (network model only) time interval to print sim status to console | numeric | 10
 ```verbose``` | if ```True```, print count in each state at print intervals, else just the time | bool | ```False```
 
 <a name="usage-run"></a>
@@ -382,7 +382,7 @@ This SEIRS+ model also implements dynamics corresponding to testing individuals 
 
 Epidemic scenarios of interest often involve interaction networks that change in time. Multiple interaction networks can be defined and used at different times in the model simulation using the checkpoints feature (described in the section below).
 
-**_Note:_** *Simulation time increases with network size. Small networks simulate quickly, but have more stochastic volatility. Networks with ~10,000 are large enough to produce per-capita population dynamics that are generally consistent with those of larger networks, but small enough to simulate quickly. We recommend using networks with ~10,000 nodes for prototyping parameters and scenarios, which can then be run on larger networks if more precision is required. Effective transmission rates can also be estimated from runs on small networks and plugged into the standard deterministic SEIRS model to quickly approximate network-like transmission dynamics for very large populations (for more on this, see description of the ```calculate_effective_beta()``` function below).*
+**_Note:_** *Simulation time increases with network size. Small networks simulate quickly, but have more stochastic volatility. Networks with ~10,000 are large enough to produce per-capita population dynamics that are generally consistent with those of larger networks, but small enough to simulate quickly. We recommend using networks with ~10,000 nodes for prototyping parameters and scenarios, which can then be run on larger networks if more precision is required.*
 
 #### Custom Exponential Graph
 
