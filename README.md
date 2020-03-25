@@ -18,11 +18,11 @@ Notably, this package includes stochastic implementations of these models on dyn
       * [ Deterministic Model ](#usage-init-determ)
       * [ Network Model ](#usage-init-network)
    * [ Running the Model ](#usage-run)
-   * [ Checkpoints ](#usage-checkpoints)
+   * [ Accessing Simulation Data ](#usage-data)
+   * [ Changing parameters during a simulation ](#usage-checkpoints)
    * [ Specifying Interaction Networks ](#usage-networks)
    * [ Vizualization ](#usage-viz)
   
-
 <a name="model"></a>
 ## Model Description
 
@@ -100,12 +100,7 @@ This package includes implementation of the SEIRS dynamics on stochastic dynamic
 
 <img align="right" src="https://github.com/ryansmcgee/seirsplus/blob/master/images/network_contacts.png" height="250">
 
-Consider a graph **_G_** representing individuals (nodes) and their interactions (edges). 
-Each individual (node) has a state (*S, E, I, D<sub>E</sub>, D<sub>I</sub>, R, or F*).
-The set of nodes adjacent (connected by an edge) to an individual defines their set of "close contacts" (highlighted in black).  At a given time, each individual makes contact with a random individual from their set of close contacts with probability *(1-p)β* or with a random individual from anywhere in the network (highlighted in blue) with probability *pβ*. 
-The latter global contacts represent individuals interacting with the population at large (i.e., individuals outside of ones social circle, such as on public transit, at an event, etc.) with some probability.
-When a susceptible individual interacts with an infectious individual they become exposed. 
-The parameter *p* defines the locality of the network: for *p=0* an individual only interacts with their close contacts, while *p=1* represents a uniformly mixed population. Social distancing interventions may increase the locality of the network (i.e., decrease *p*) and/or decrease local connectivity of the network (i.e., decrease the degree of individuals).
+Consider a graph **_G_** representing individuals (nodes) and their interactions (edges). Each individual (node) has a state (*S, E, I, D<sub>E</sub>, D<sub>I</sub>, R, or F*). The set of nodes adjacent (connected by an edge) to an individual defines their set of "close contacts" (highlighted in black).  At a given time, each individual makes contact with a random individual from their set of close contacts with probability *(1-p)β* or with a random individual from anywhere in the network (highlighted in blue) with probability *pβ*. The latter global contacts represent individuals interacting with the population at large (i.e., individuals outside of ones social circle, such as on public transit, at an event, etc.) with some probability. When a susceptible individual interacts with an infectious individual they become exposed. The parameter *p* defines the locality of the network: for *p=0* an individual only interacts with their close contacts, while *p=1* represents a uniformly mixed population. Social distancing interventions may increase the locality of the network (i.e., decrease *p*) and/or decrease local connectivity of the network (i.e., decrease the degree of individuals).
 
 Each node *i* has a state *X<sub>i</sub>* that updates according to the following probability transition rates: 
 
@@ -115,7 +110,7 @@ Each node *i* has a state *X<sub>i</sub>* that updates according to the followin
 
 where *δ<sub>Xi=A</sub> = 1* if the state of *X_i* is *A*, or *0* if not, and where *C<sub>G</sub>(i)* denotes the set of close contacts of node *i*. For large populations and *p=1*, this stochastic model approaches the same dynamics as the deterministic SEIRS model.
 
-This implementation is based on the work of Dottori et al. (2015).
+This implementation builds on the work of Dottori et al. (2015).
 * Dottori, M. and Fabricius, G., 2015. SIR model on a dynamical network and the endemic state of an infectious disease. Physica A: Statistical Mechanics and its Applications, 434, pp.25-35.
 
 <a name="model-network-ttq"></a>
@@ -131,12 +126,7 @@ Consideration of interaction networks allows us to model contact tracing, where 
 
 <img align="right" src="https://github.com/ryansmcgee/seirsplus/blob/master/images/network_contacts_quarantine.png" height="250">
 
-Now we also consider another graph **_Q_** which represents the interactions that each individual has if they test positively for the disease (i.e., individuals in the *D<sub>E</sub>* or *D<sub>I</sub>* states) and enter into a form of quarantine.  
-The quarantine has the effect of dropping some fraction of the edges connecting the quarantined individual to others (according to a rule of the user's choice when generating the graph *Q*). 
-The edges of *Q* (highlighted in purple) for each individual are then a subset of the normal edges of *G* for that individual.
-The set of nodes that are adjacent to a quarantined individual define their set of "quarantine contacts" (highlighted in purple). 
-At a given time, a quarantined individual may come into contact with another individual in this quarantine contact set with probability *(1-p)β<sub>D</sub>*. 
-A quarantined individual may also be come in contact with a random individual from anywhere in the network with rate *qpβ<sub>D</sub>*..
+Now we also consider another graph **_Q_** which represents the interactions that each individual has if they test positively for the disease (i.e., individuals in the *D<sub>E</sub>* or *D<sub>I</sub>* states) and enter into a form of quarantine. The quarantine has the effect of dropping some fraction of the edges connecting the quarantined individual to others (according to a rule of the user's choice when generating the graph *Q*). The edges of *Q* (highlighted in purple) for each individual are then a subset of the normal edges of *G* for that individual. The set of nodes that are adjacent to a quarantined individual define their set of "quarantine contacts" (highlighted in purple). At a given time, a quarantined individual may come into contact with another individual in this quarantine contact set with probability *(1-p)β<sub>D</sub>*. A quarantined individual may also be come in contact with a random individual from anywhere in the network with rate *qpβ<sub>D</sub>*.
 
 Each node *i* has a state *X<sub>i</sub>* that updates according to the following probability transition rates: 
 <p align="center">
@@ -150,12 +140,37 @@ where *δ<sub>Xi=A</sub>=1* if the state of *X<sub>i</sub>* is *A*, or *0* if no
 
 This package was designed with broad usability in mind. Complex scenarios can be simulated with very few lines of code or, in many cases, no new coding or knowledge of python by simply modifying the parameter values in the example notebooks provided. See the Quick Start section and the rest of this documentation for more details.
 
+Don't be fooled by the length of the README, running these models is quick and easy. The package does all the hard work for you. As an example, here's a complete script that simulates the SEIRS dyanmics on a network with social distancing, testing, contact tracing, and quarantining in only 10 lines of code (see the [example notebooks](https://github.com/ryansmcgee/seirsplus/tree/master/examples) for more explanation of this example):
+```python
+from seirsplus.models import *
+import networkx
+
+numNodes = 10000
+baseGraph    = networkx.barabasi_albert_graph(n=numNodes, m=9)
+G_normal     = custom_exponential_graph(baseGraph, scale=100)
+# Social distancing interactions:
+G_distancing = custom_exponential_graph(baseGraph, scale=10)
+# Quarantine interactions:
+G_quarantine = custom_exponential_graph(baseGraph, scale=5)
+
+model = SEIRSNetworkModel(G=G_normal, beta=0.155, sigma=1/5.2, gamma=1/12.39, mu_I=0.0004, p=0.5,
+                          Q=G_quarantine, beta_D=0.155, sigma_D=1/5.2, gamma_D=1/12.39, mu_D=0.0004,
+                          theta_E=0.02, theta_I=0.02, phi_E=0.2, phi_I=0.2, psi_E=1.0, psi_I=1.0, q=0.5,
+                          initI=10)
+
+checkpoints = {'t': [20, 100], 'G': [G_distancing, G_normal], 'p': [0.1, 0.5], 'theta_E': [0.02, 0.02], 'theta_I': [0.02, 0.02], 'phi_E':   [0.2, 0.2], 'phi_I':   [0.2, 0.2]}
+
+model.run(T=300, checkpoints=checkpoints)
+
+model.figure_infections()
+```
+
 <a name="usage-start"></a>
 ### Quick Start
 
-The ```examples``` directory contains two Jupyter notebooks: one for the deterministic model and one for the network model. These notebooks walk through full simulations using each of these models with light description of the steps involved.
+The [```examples```](https://github.com/ryansmcgee/seirsplus/tree/master/examples) directory contains two Jupyter notebooks: one for the deterministic model and one for the [network model](https://github.com/ryansmcgee/seirsplus/blob/master/examples/network_model_demo.ipynb). These notebooks walk through full simulations using each of these models with description of the steps involved.
 
-These notebooks can also serve as ready-to-run sandboxes for trying your own simulation scenarios by simply changing the parameter values in the notebook.
+**These notebooks can also serve as ready-to-run sandboxes for trying your own simulation scenarios by simply changing the parameter values in the notebook.**
 
 <a name="usage-install"></a>
 ### Installing and Importing the Package
@@ -187,14 +202,60 @@ from models import *
 <a name="usage-init-determ"></a>
 #### Deterministic Model
 
-All model parameter values, including the normal and (optional) quarantine interaction networks, are set in the call to the ```SEIRSGraphModel``` constructor. The normal interaction network ```G``` and the basic SEIR parameters ```beta```, ```sigma```, and ```gamma``` are the only required arguments. All other arguments represent parameters for optional extended model dynamics; these optional parameters take default values that turn off their corresponding dynamics when not provided in the constructor. For clarity and ease of customization in this notebook, all available model parameters are listed below. 
+All model parameter values, including the normal and (optional) quarantine interaction networks, are set in the call to the ```SEIRSModel``` constructor. The basic SEIR parameters ```beta```, ```sigma```, ```gamma```, and ```initN``` are the only required arguments. All other arguments represent parameters for optional extended model dynamics; these optional parameters take default values that turn off their corresponding dynamics when not provided in the constructor. 
+
+Constructor Argument | Parameter Description | Data Type | Default Value
+-----|-----|-----|-----
+```beta   ``` | rate of transmission | float | REQUIRED
+```sigma  ``` | rate of progression | float | REQUIRED
+```gamma  ``` | rate of recovery | float | REQUIRED
+```xi     ``` | rate of re-susceptibility | float | 0
+```mu_I   ``` | rate of infection-related mortality | float | 0
+```mu_0   ``` | rate of baseline mortality | float | 0 
+```nu     ``` | rate of baseline birth | float | 0 
+```beta_D ``` | rate of transmission for detected cases | float | None (set equal to ```beta```) 
+```sigma_D``` | rate of progression for detected cases | float | None (set equal to ```sigma```)  
+```gamma_D``` | rate of recovery for detected cases | float | None (set equal to ```gamma```)  
+```mu_D   ``` | rate of infection-related mortality for detected cases | float | None (set equal to ```mu_I```) 
+```theta_E``` | rate of testing for exposed individuals | float | 0 
+```theta_I``` | rate of testing for infectious individuals | float | 0 
+```psi_E  ``` | probability of positive tests for exposed individuals | float | 0 
+```psi_I  ``` | probability of positive tests for infectious individuals | float | 0
+```initN  ``` | initial total number of individuals | int | 10
+```initI  ``` | initial number of infectious individuals | int | 10
+```initE  ``` | initial number of exposed individuals | int | 0 
+```initD_E``` | initial number of detected infectious individuals | int | 0 
+```initD_I``` | initial number of detected exposed individuals | int | 0 
+```initR  ``` | initial number of recovered individuals | int | 0
+```initF  ``` | initial number of deceased individuals | int | 0
+
+##### Basic SEIR
+
+```python
+model = SEIRSModel(beta=0.155, sigma=1/5.2, gamma=1/12.39, initN=100000, initI=100)
+```
+
+
+##### Basic SEIRS
+
+```python
+model = SEIRSModel(beta=0.155, sigma=1/5.2, gamma=1/12.39, xi=0.001, initN=100000, initI=100)
+```
+
+##### SEIR with testing and different progression rates for detected cases (```theta``` and ```psi``` testing params > 0, rate parameters provided for detected states)
+
+```python
+model = SEIRSModel(beta=0.155, sigma=1/5.2, gamma=1/12.39, initN=100000, initI=100,
+                   beta_D=0.100, sigma_D=1/4.0, gamma_D=1/9.0, theta_E=0.02, theta_I=0.02, psi_E=1.0, psi_I=1.0)
+```
+
 
 <a name="usage-init-network"></a>
 #### Network Model
 
-All model parameter values, including the interaction network and (optional) quarantine network, are set in the call to the ```SEIRSGraphModel``` constructor. 
-The interaction network ```G``` and the basic SEIR parameters ```beta```, ```sigma```, and ```gamma``` are the only required arguments. 
-All other arguments represent parameters for optional extended model dynamics; these optional parameters take default values that turn off their corresponding dynamics when not provided in the constructor. For clarity and ease of customization in this notebook, all available model parameters are listed below. 
+All model parameter values, including the interaction network and (optional) quarantine network, are set in the call to the ```SEIRSNetworkModel``` constructor. The interaction network ```G``` and the basic SEIR parameters ```beta```, ```sigma```, and ```gamma``` are the only required arguments. All other arguments represent parameters for optional extended model dynamics; these optional parameters take default values that turn off their corresponding dynamics when not provided in the constructor. 
+
+**_Heterogeneous populations:_** Nodes can be assigned different values for a given parameter by passing a list of values (with length = number of nodes) for that parameter in the constructor.
 
 All constructor parameters are listed and described below, followed by examples of use cases for various elaborations of the model are shown below (non-exhaustive list of use cases).
 
@@ -208,7 +269,7 @@ Constructor Argument | Parameter Description | Data Type | Default Value
 ```mu_I   ``` | rate of infection-related mortality | float | 0
 ```mu_0   ``` | rate of baseline mortality | float | 0 
 ```nu     ``` | rate of baseline birth | float | 0 
-```p      ``` | rate of global interactions (network locality) | float | 0
+```p      ``` | probability of global interactions (network locality) | float | 0
 ```Q      ``` | graph specifying the quarantine interaction network | ```networkx Graph``` or ```numpy 2d array``` | None 
 ```beta_D ``` | rate of transmission for detected cases | float | None (set equal to ```beta```) 
 ```sigma_D``` | rate of progression for detected cases | float | None (set equal to ```sigma```)  
@@ -218,9 +279,9 @@ Constructor Argument | Parameter Description | Data Type | Default Value
 ```theta_I``` | rate of testing for infectious individuals | float | 0 
 ```phi_E  ``` | rate of contact tracing testing for exposed individuals | float | 0 
 ```phi_I  ``` | rate of contact tracing testing for infectious individuals | float | 0 
-```psi_E  ``` | rate of positive tests for exposed individuals | float | 0 
-```psi_I  ``` | rate of positive tests for infectious individuals | float | 0
-```q      ``` | rate of global interactions for quarantined individuals | float | 0
+```psi_E  ``` | probability of positive tests for exposed individuals | float | 0 
+```psi_I  ``` | probability of positive tests for infectious individuals | float | 0
+```q      ``` | probability of global interactions for quarantined individuals | float | 0
 ```initI  ``` | initial number of infectious individuals | int | 10
 ```initE  ``` | initial number of exposed individuals | int | 0 
 ```initD_E``` | initial number of detected infectious individuals | int | 0 
@@ -228,46 +289,48 @@ Constructor Argument | Parameter Description | Data Type | Default Value
 ```initR  ``` | initial number of recovered individuals | int | 0
 ```initF  ``` | initial number of deceased individuals | int | 0
 
-##### Basic SEIR
+##### Basic SEIR on a network
 
 ```python
 model = SEIRSNetworkModel(G=myGraph, beta=0.155, sigma=1/5.2, gamma=1/12.39, initI=100)
 ```
 
 
-##### Basic SEIRS
+##### Basic SEIRS on a network
 
 ```python
 model = SEIRSNetworkModel(G=myGraph, beta=0.155, sigma=1/5.2, gamma=1/12.39, xi=0.001, initI=100)
 ```
 
 
-##### SEIR with network locality (p<1)
+##### SEIR on a network with global interactions (p>0)
 
 ```python
 model = SEIRSNetworkModel(G=myGraph, beta=0.155, sigma=1/5.2, gamma=1/12.39, p=0.5, initI=100)
 ```
 
-##### SEIR with testing and quarantining (```theta``` and ```psi``` testing params > 0, quarantine network ```Q``` provided)
+##### SEIR on a network with testing and quarantining (```theta``` and ```psi``` testing params > 0, quarantine network ```Q``` provided)
 
 ```python
 model = SEIRSNetworkModel(G=myNetwork, beta=0.155, sigma=1/5.2, gamma=1/12.39, p=0.5,
                           Q=quarantineNetwork, q=0.5,
-                          theta_E=0.02, theta_I=0.02, psi_E=0.02, psi_I=0.02, 
+                          theta_E=0.02, theta_I=0.02, psi_E=1.0, psi_I=1.0, 
                           initI=100)
 ```
 
-##### SEIR with testing, quarantining, and contact tracing (```theta``` and ```psi``` testing params > 0, quarantine network ```Q``` provided, ```phi``` contact tracing params > 0)
+##### SEIR on a network with testing, quarantining, and contact tracing (```theta``` and ```psi``` testing params > 0, quarantine network ```Q``` provided, ```phi``` contact tracing params > 0)
 
 ```python
 model = SEIRSNetworkModel(G=myNetwork, beta=0.155, sigma=1/5.2, gamma=1/12.39, p=0.5,
                           Q=quarantineNetwork, q=0.5,
-                          theta_E=0.02, theta_I=0.02, psi_E=0.02, psi_I=0.02, phi_E=0.2, phi_I=0.2, 
+                          theta_E=0.02, theta_I=0.02, phi_E=0.2, phi_I=0.2, psi_E=1.0, psi_I=1.0,  
                           initI=100)
 ```
 
 <a name="usage-run"></a>
 ### Running the Model
+
+Stochastic network SEIRS dynamics are simulated using the Gillepsie algorithm.
 
 Once a model is initialized, a simulation can be run with a call to the following function:
 
@@ -281,8 +344,32 @@ Argument | Description | Data Type | Default Value
 -----|-----|-----|-----
 ```T``` | runtime of simulation | numeric | REQUIRED
 ```checkpoints``` | dictionary of checkpoint lists (see section below) | dictionary | ```None```
-```print_interval``` | time interval to print sim status to console | numeric | 10
+```print_interval``` | (network model only) time interval to print sim status to console | numeric | 10
 ```verbose``` | if ```True```, print count in each state at print intervals, else just the time | bool | ```False```
+
+<a name="usage-run"></a>
+### Accessing Simulation Data
+
+Model parameter values and the variable time series generated by the simulation are stored in the attributes of the ```SEIRSModel``` or ```SEIRSNetworkModel``` being used and can be accessed directly as follows:
+
+```python
+S = model.numS      # time series of S counts
+E = model.numE      # time series of E counts
+I = model.numI      # time series of I counts
+D_E = model.numD_E    # time series of D_E counts
+D_I = model.numD_I    # time series of D_I counts
+R = model.numR      # time series of R counts
+F = model.numF      # time series of F counts
+
+t = model.tseries   # time values corresponding to the above time series
+
+G_normal     = model.G    # interaction network graph
+G_quarantine = model.Q    # quarantine interaction network graph
+
+beta = model.beta   # value of beta parameter (or list of beta values for each node if using network model)
+# similar for other parameters
+```
+*Note: convenience methods for plotting these time series are included in the package. See below.*
 
 <a name="usage-networks"></a>
 ### Specifying Interaction Networks
@@ -295,11 +382,11 @@ This SEIRS+ model also implements dynamics corresponding to testing individuals 
 
 Epidemic scenarios of interest often involve interaction networks that change in time. Multiple interaction networks can be defined and used at different times in the model simulation using the checkpoints feature (described in the section below).
 
-**_Note:_** *Simulation time increases with network size. Small networks simulate quickly, but have more stochastic volatility. Networks with ~10,000 nodes simulate quickly and produce population dynamics that are generally consistent with those of larger networks. Networks with ~10,000 nodes are recommended for prototyping parameters and scenarios, which can then be run on larger networks if more precision is required. Effective transmission rates can also be estimated from runs on small networks and plugged into the standard deterministic SEIRS model to quickly approximate network-like transmission dynamics for very large populations (for more on this, see README).*
+**_Note:_** *Simulation time increases with network size. Small networks simulate quickly, but have more stochastic volatility. Networks with ~10,000 are large enough to produce per-capita population dynamics that are generally consistent with those of larger networks, but small enough to simulate quickly. We recommend using networks with ~10,000 nodes for prototyping parameters and scenarios, which can then be run on larger networks if more precision is required.*
 
 #### Custom Exponential Graph
 
-Human interaction networks are often scale-free power law networks with exponential degree distributions.
+Human interaction networks often resemble scale-free power law networks with exponential degree distributions.
 This package includes a ```custom_exponential_graph()``` convenience funciton that generates power-law-like graphs that have degree distributions with two exponential tails. The method of generating these graphs also makes it easy to remove edges from a reference graph and decrease the degree of the network, which is useful for generating networks representing social distancing and quarantine conditions.
 
 Common algorithms for generating power-law graphs, such as the Barabasi-Albert preferential attachment algorithm, produce graphs that have a minimum degree; that is, no node has fewer than *m* edges for some value of *m*, which is unrealistic for interaction networks. This ```custom_exponential_graph()``` function simply produces graphs with degree distributions that have a peak near their mean and exponential tails in the direction of both high and low degrees. (No claims about the realism or rigor of these graphs are made.)
@@ -307,7 +394,7 @@ Common algorithms for generating power-law graphs, such as the Barabasi-Albert p
 <img align="right" src="https://github.com/ryansmcgee/seirsplus/blob/master/images/degreeDistn_compareToBAGraph1.png" height="250">
 
 This function generates graphs using the following algorithm:
-* Start with a Barabasi-Albert preferential attachment graph (or a graph that is optionally provided by the user).
+* Start with a Barabasi-Albert preferential attachment power-law graph (or any graph that is optionally provided by the user).
 * For each node:
     * Count the number of neighbors *n* of the node 
     * Draw a random number *r* from an exponential distribution with some mean=```scale```. If *r>n*, set *r=n*. 
@@ -316,7 +403,7 @@ When starting from a Barabasi-Albert (BA) graph, this generates a new graphs tha
 
 <img align="right" src="https://github.com/ryansmcgee/seirsplus/blob/master/images/degreeDistn_compareToBAGraph4.png" height="250">
 
-Since this algorithm starts with a graph with defined connections and makes a new graph by breaking some number of connections breaking connections, it also makes it easy to take an existing network and make a subgraph of it that also has exponential-ish tails and a left-shifted mean. This can be used for generating social distancing and quarantine subgraphs. The amount of edge breaking/degree reduction is modulated by the ```scale``` parameter. To the right are some examples of graphs with progressively lower mean degree generated using the same reference Barabasi-Albert graph, which therefore are all subsets of a common reference set of edges.
+Since this algorithm starts with a graph with defined connections and makes a new graph by breaking some number of connections, it also makes it easy to take an existing graph and make a subgraph of it that also has exponential-ish tails and a left-shifted mean. This can be used for generating social distancing and quarantine subgraphs. The amount of edge breaking/degree reduction is modulated by the ```scale``` parameter. To the right are some examples of graphs with progressively lower mean degree generated using the same reference Barabasi-Albert graph, which therefore are all subsets of a common reference set of edges.
 
 The ```custom_exponential_graph()``` function has the following arguments
 
@@ -330,7 +417,7 @@ Argument | Description | Data Type | Default Value
 ```m``` | *m* parameter for the Barabasi-Albert algorithm (number of edges added with each added node) | int | 9
 
 <a name="usage-checkpoints"></a>
-### Checkpoints
+### Changing parameters during a simulation
 
 Model parameters can be easily changed during a simulation run using checkpoints. A dictionary holds a list of checkpoint times (```checkpoints['t']```) and lists of new values to assign to various model parameters at each checkpoint time. 
 
@@ -353,6 +440,16 @@ Use cases of this feature include:
 
 * Changing parameters during a simulation, such as changing transition rates or testing parameters every day, week, on a specific sequence of dates, etc.
 * Starting and stopping interventions, such as social distancing (changing interaction network), testing and contact tracing (setting relevant parameters to non-zero or zero values), etc.
+
+**_Consecutive runs_**: *You can also run the same model object multiple times. Each time the ```run()``` function of a given model object is called, it starts a simulation from the state it left off in any previous simulations. 
+For example:*
+```python
+model.run(T=100)    # simulate the model for 100 time units
+# ... 
+# do other things, such as processing simulation data or changing parameters 
+# ...
+model.run(T=200)    # simulate the model for an additional 200 time units, picking up where the first sim left off
+```
 
 <a name="usage-viz"></a>
 ### Visualization
