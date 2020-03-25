@@ -176,7 +176,7 @@ class SEIRSModel():
             numCheckpoints = len(checkpoints['t'])
             paramNames = ['beta', 'sigma', 'gamma', 'xi', 'mu_I', 'mu_0', 'nu',
                           'beta_D', 'sigma_D', 'gamma_D', 'mu_D',
-                          'theta_E', 'theta_I', 'phi_E', 'phi_I', 'psi_E', 'psi_I', 'q']
+                          'theta_E', 'theta_I', 'psi_E', 'psi_I', 'q']
             for param in paramNames:
                 # For params that don't have given checkpoint values (or bad value given), 
                 # set their checkpoint values to the value they have now for all checkpoints.
