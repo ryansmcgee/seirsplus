@@ -180,7 +180,7 @@ class SEIRSModel():
             for param in paramNames:
                 # For params that don't have given checkpoint values (or bad value given), 
                 # set their checkpoint values to the value they have now for all checkpoints.
-                if(param not in checkpoints.keys() 
+                if(param not in list(checkpoints.keys())
                     or not isinstance(checkpoints[param], (list, numpy.ndarray)) 
                     or len(checkpoints[param])!=numCheckpoints):
                     checkpoints[param] = [getattr(self, param)]*numCheckpoints
@@ -851,7 +851,7 @@ class SEIRSNetworkModel():
             for param in paramNames:
                 # For params that don't have given checkpoint values (or bad value given), 
                 # set their checkpoint values to the value they have now for all checkpoints.
-                if(param not in checkpoints.keys() 
+                if(param not in list(checkpoints.keys())
                     or not isinstance(checkpoints[param], (list, numpy.ndarray)) 
                     or len(checkpoints[param])!=numCheckpoints):
                     checkpoints[param] = [getattr(self, param)]*numCheckpoints
@@ -1171,7 +1171,7 @@ def custom_exponential_graph(base_graph=None, scale=100, min_num_edges=0, m=9, n
     # To get a graph with power-law-esque properties but without the fixed minimum degree,
     # We modify the graph by probabilistically dropping some edges from each node. 
     for node in graph:
-        neighbors = graph[node].keys()
+        neighbors = list(graph[node].keys())
         quarantineEdgeNum = int( max(min(numpy.random.exponential(scale=scale, size=1), len(neighbors)), min_num_edges) )
         quarantineKeepNeighbors = numpy.random.choice(neighbors, size=quarantineEdgeNum, replace=False)
         for neighbor in neighbors:
