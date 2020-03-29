@@ -519,7 +519,7 @@ class SEIRSNetworkModel():
         # Setup Quarantine Adjacency matrix:
         if(Q is None):
             Q = G # If no Q graph is provided, use G in its place
-        self.update_Q(G)
+        self.update_Q(Q)
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Model Parameters:
@@ -817,7 +817,7 @@ class SEIRSNetworkModel():
         self.numD_I[self.tidx]   = numpy.clip(numpy.count_nonzero(self.X==self.D_I), a_min=0, a_max=self.numNodes)
         self.numR[self.tidx]     = numpy.clip(numpy.count_nonzero(self.X==self.R), a_min=0, a_max=self.numNodes)
         self.numF[self.tidx]     = numpy.clip(numpy.count_nonzero(self.X==self.F), a_min=0, a_max=self.numNodes)
-        self.N[self.tidx]        = numpy.clip((self.numS[0] + self.numE[0] + self.numI[0] + self.numD_E[0] + self.numD_I[0] + self.numR[0]), a_min=0, a_max=self.numNodes)
+        self.N[self.tidx]        = numpy.clip((self.numS[self.tidx] + self.numE[self.tidx] + self.numI[self.tidx] + self.numD_E[self.tidx] + self.numD_I[self.tidx] + self.numR[self.tidx]), a_min=0, a_max=self.numNodes)
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Terminate if tmax reached or num infectious and num exposed is 0:
