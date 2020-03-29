@@ -1191,7 +1191,7 @@ def plot_degree_distn(graph, max_degree=None, show=True, use_seaborn=True):
         seaborn.despine()
     # Get a list of the node degrees:
     if type(graph)==numpy.ndarray:
-        nodeDegrees = graph.sum(axis=0).reshape(self.numNodes,1)   # sums of adj matrix cols
+        nodeDegrees = graph.sum(axis=0).reshape((graph.shape[0],1))   # sums of adj matrix cols
     elif type(graph)==networkx.classes.graph.Graph:
         nodeDegrees = [d[1] for d in graph.degree()]
     else:
