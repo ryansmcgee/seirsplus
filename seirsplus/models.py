@@ -524,27 +524,27 @@ class SEIRSNetworkModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Model Parameters:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        self.beta   = beta  if isinstance(beta, (list, numpy.ndarray)) else numpy.full(fill_value=beta, shape=(self.numNodes,1))
-        self.sigma  = sigma if isinstance(sigma, (list, numpy.ndarray)) else numpy.full(fill_value=sigma, shape=(self.numNodes,1))
-        self.gamma  = gamma if isinstance(gamma, (list, numpy.ndarray)) else numpy.full(fill_value=gamma, shape=(self.numNodes,1))
-        self.xi     = xi    if isinstance(xi, (list, numpy.ndarray)) else numpy.full(fill_value=xi, shape=(self.numNodes,1))
-        self.mu_I   = mu_I  if isinstance(mu_I, (list, numpy.ndarray)) else numpy.full(fill_value=mu_I, shape=(self.numNodes,1))
-        self.mu_0   = mu_0  if isinstance(mu_0, (list, numpy.ndarray)) else numpy.full(fill_value=mu_0, shape=(self.numNodes,1))
-        self.nu     = nu    if isinstance(nu, (list, numpy.ndarray)) else numpy.full(fill_value=nu, shape=(self.numNodes,1))
-        self.p      = p     if isinstance(p, (list, numpy.ndarray)) else numpy.full(fill_value=p, shape=(self.numNodes,1))
+        self.beta   = numpy.array(beta).reshape((self.numNodes, 1))  if isinstance(beta, (list, numpy.ndarray)) else numpy.full(fill_value=beta, shape=(self.numNodes,1))
+        self.sigma  = numpy.array(sigma).reshape((self.numNodes, 1)) if isinstance(sigma, (list, numpy.ndarray)) else numpy.full(fill_value=sigma, shape=(self.numNodes,1))
+        self.gamma  = numpy.array(gamma).reshape((self.numNodes, 1)) if isinstance(gamma, (list, numpy.ndarray)) else numpy.full(fill_value=gamma, shape=(self.numNodes,1))
+        self.xi     = numpy.array(xi).reshape((self.numNodes, 1))    if isinstance(xi, (list, numpy.ndarray)) else numpy.full(fill_value=xi, shape=(self.numNodes,1))
+        self.mu_I   = numpy.array(mu_I).reshape((self.numNodes, 1))  if isinstance(mu_I, (list, numpy.ndarray)) else numpy.full(fill_value=mu_I, shape=(self.numNodes,1))
+        self.mu_0   = numpy.array(mu_0).reshape((self.numNodes, 1))  if isinstance(mu_0, (list, numpy.ndarray)) else numpy.full(fill_value=mu_0, shape=(self.numNodes,1))
+        self.nu     = numpy.array(nu).reshape((self.numNodes, 1))    if isinstance(nu, (list, numpy.ndarray)) else numpy.full(fill_value=nu, shape=(self.numNodes,1))
+        self.p      = numpy.array(p).reshape((self.numNodes, 1))     if isinstance(p, (list, numpy.ndarray)) else numpy.full(fill_value=p, shape=(self.numNodes,1))
 
         # Testing-related parameters:
-        self.beta_D   = (beta_D if isinstance(beta_D, (list, numpy.ndarray)) else numpy.full(fill_value=beta_D, shape=(self.numNodes,1))) if beta_D is not None else self.beta
-        self.sigma_D  = (sigma_D if isinstance(sigma_D, (list, numpy.ndarray)) else numpy.full(fill_value=sigma_D, shape=(self.numNodes,1))) if sigma_D is not None else self.sigma
-        self.gamma_D  = (gamma_D if isinstance(gamma_D, (list, numpy.ndarray)) else numpy.full(fill_value=gamma_D, shape=(self.numNodes,1))) if gamma_D is not None else self.gamma
-        self.mu_D     = (mu_D if isinstance(mu_D, (list, numpy.ndarray)) else numpy.full(fill_value=mu_D, shape=(self.numNodes,1))) if mu_D is not None else self.mu_I
-        self.theta_E    = theta_E if isinstance(theta_E, (list, numpy.ndarray)) else numpy.full(fill_value=theta_E, shape=(self.numNodes,1))
-        self.theta_I    = theta_I if isinstance(theta_I, (list, numpy.ndarray)) else numpy.full(fill_value=theta_I, shape=(self.numNodes,1))
-        self.phi_E      = phi_E    if isinstance(phi_E, (list, numpy.ndarray)) else numpy.full(fill_value=phi_E, shape=(self.numNodes,1))
-        self.phi_I      = phi_I  if isinstance(phi_I, (list, numpy.ndarray)) else numpy.full(fill_value=phi_I, shape=(self.numNodes,1))
-        self.psi_E      = psi_E  if isinstance(psi_E, (list, numpy.ndarray)) else numpy.full(fill_value=psi_E, shape=(self.numNodes,1))
-        self.psi_I      = psi_I    if isinstance(psi_I, (list, numpy.ndarray)) else numpy.full(fill_value=psi_I, shape=(self.numNodes,1))
-        self.q   = q  if isinstance(q, (list, numpy.ndarray)) else numpy.full(fill_value=q, shape=(self.numNodes,1))
+        self.beta_D   = (numpy.array(beta_D).reshape((self.numNodes, 1))  if isinstance(beta_D, (list, numpy.ndarray)) else numpy.full(fill_value=beta_D, shape=(self.numNodes,1))) if beta_D is not None else self.beta
+        self.sigma_D  = (numpy.array(sigma_D).reshape((self.numNodes, 1)) if isinstance(sigma_D, (list, numpy.ndarray)) else numpy.full(fill_value=sigma_D, shape=(self.numNodes,1))) if sigma_D is not None else self.sigma
+        self.gamma_D  = (numpy.array(gamma_D).reshape((self.numNodes, 1)) if isinstance(gamma_D, (list, numpy.ndarray)) else numpy.full(fill_value=gamma_D, shape=(self.numNodes,1))) if gamma_D is not None else self.gamma
+        self.mu_D     = (numpy.array(mu_D).reshape((self.numNodes, 1))    if isinstance(mu_D, (list, numpy.ndarray)) else numpy.full(fill_value=mu_D, shape=(self.numNodes,1))) if mu_D is not None else self.mu_I
+        self.theta_E  = numpy.array(theta_E).reshape((self.numNodes, 1))  if isinstance(theta_E, (list, numpy.ndarray)) else numpy.full(fill_value=theta_E, shape=(self.numNodes,1))
+        self.theta_I  = numpy.array(theta_I).reshape((self.numNodes, 1))  if isinstance(theta_I, (list, numpy.ndarray)) else numpy.full(fill_value=theta_I, shape=(self.numNodes,1))
+        self.phi_E    = numpy.array(phi_E).reshape((self.numNodes, 1))    if isinstance(phi_E, (list, numpy.ndarray)) else numpy.full(fill_value=phi_E, shape=(self.numNodes,1))
+        self.phi_I    = numpy.array(phi_I).reshape((self.numNodes, 1))    if isinstance(phi_I, (list, numpy.ndarray)) else numpy.full(fill_value=phi_I, shape=(self.numNodes,1))
+        self.psi_E    = numpy.array(psi_E).reshape((self.numNodes, 1))    if isinstance(psi_E, (list, numpy.ndarray)) else numpy.full(fill_value=psi_E, shape=(self.numNodes,1))
+        self.psi_I    = numpy.array(psi_I).reshape((self.numNodes, 1))    if isinstance(psi_I, (list, numpy.ndarray)) else numpy.full(fill_value=psi_I, shape=(self.numNodes,1))
+        self.q        = numpy.array(q).reshape((self.numNodes, 1))        if isinstance(q, (list, numpy.ndarray)) else numpy.full(fill_value=q, shape=(self.numNodes,1))
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Each node can undergo up to 4 transitions (sans vitality/re-susceptibility returns to S state),
