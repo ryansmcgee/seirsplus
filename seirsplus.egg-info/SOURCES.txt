@@ -2,6 +2,7 @@ README.md
 setup.py
 seirsplus/__init__.py
 seirsplus/models.py
+seirsplus/test.py
 seirsplus.egg-info/PKG-INFO
 seirsplus.egg-info/SOURCES.txt
 seirsplus.egg-info/dependency_links.txt

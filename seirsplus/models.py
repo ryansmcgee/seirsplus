@@ -609,14 +609,9 @@ class SEIRSNetworkModel():
                             }
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        # Helper variables:
+        # Initialize scenario flags:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        self.testing_scenario   = ( (numpy.any(self.psi_I) and (numpy.any(self.theta_I) or numpy.any(self.phi_I)))  
-                                    or (numpy.any(self.psi_E) and (numpy.any(self.theta_E) or numpy.any(self.phi_E))) )
-        self.tracing_scenario   = ( (numpy.any(self.psi_E) and numpy.any(self.phi_E)) 
-                                    or (numpy.any(self.psi_I) and numpy.any(self.phi_I)) )
-        self.vitality_scenario  = (numpy.any(self.mu_0) and numpy.any(self.nu))
-        self.resusceptibility_scenario  = (numpy.any(self.xi))
+        self.update_scenario_flags()
          
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -661,6 +656,16 @@ class SEIRSNetworkModel():
         assert(self.numNodes == self.numNodes_Q), "The normal and quarantine adjacency graphs must be of the same size."
 
         return
+
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    def update_scenario_flags(self):
+        self.testing_scenario   = ( (numpy.any(self.psi_I) and (numpy.any(self.theta_I) or numpy.any(self.phi_I)))  
+                                    or (numpy.any(self.psi_E) and (numpy.any(self.theta_E) or numpy.any(self.phi_E))) )
+        self.tracing_scenario   = ( (numpy.any(self.psi_E) and numpy.any(self.phi_E)) 
+                                    or (numpy.any(self.psi_I) and numpy.any(self.phi_I)) )
+        self.vitality_scenario  = (numpy.any(self.mu_0) and numpy.any(self.nu))
+        self.resusceptibility_scenario  = (numpy.any(self.xi))
 
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -868,6 +873,7 @@ class SEIRSNetworkModel():
         print_reset = True
         running     = True
         while running:
+            
             running = self.run_iteration()
 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -883,6 +889,8 @@ class SEIRSNetworkModel():
                             self.update_Q(checkpoints[param][checkpointIdx])
                         else:
                             setattr(self, param, checkpoints[param][checkpointIdx] if isinstance(checkpoints[param][checkpointIdx], (list, numpy.ndarray)) else numpy.full(fill_value=checkpoints[param][checkpointIdx], shape=(self.numNodes,1)))
+                    # Update scenario flags to represent new param values:
+                    self.update_scenario_flags()
                     # Update the next checkpoint time:
                     checkpointIdx  = numpy.searchsorted(checkpoints['t'], self.t) # Finds 1st index in list greater than given val
                     if(checkpointIdx >= numCheckpoints):
