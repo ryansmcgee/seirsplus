@@ -330,7 +330,7 @@ model = SEIRSNetworkModel(G=myNetwork, beta=0.155, sigma=1/5.2, gamma=1/12.39, p
 <a name="usage-run"></a>
 ### Running the Model
 
-Stochastic network SEIRS dynamics are simulated using the Gillepsie algorithm.
+Stochastic network SEIRS dynamics are simulated using the Gillespie algorithm.
 
 Once a model is initialized, a simulation can be run with a call to the following function:
 
