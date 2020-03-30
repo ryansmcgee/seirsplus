@@ -853,13 +853,8 @@ class SEIRSNetworkModel():
             paramNames = ['G', 'beta', 'sigma', 'gamma', 'xi', 'mu_I', 'mu_0', 'nu', 'p',
                           'Q', 'beta_D', 'sigma_D', 'gamma_D', 'mu_D', 'q',
                           'theta_E', 'theta_I', 'phi_E', 'phi_I', 'psi_E', 'psi_I']
-            for param in paramNames:
-                # For params that don't have given checkpoint values (or bad value given), 
-                # set their checkpoint values to the value they have now for all checkpoints.
-                if(param not in list(checkpoints.keys())
-                    or not isinstance(checkpoints[param], (list, numpy.ndarray)) 
-                    or len(checkpoints[param])!=numCheckpoints):
-                    checkpoints[param] = [getattr(self, param)]*numCheckpoints
+            for chkpt_param, chkpt_values in checkpoints.items():
+                assert(isinstance(chkpt_values, (list, numpy.ndarray)) and len(chkpt_values)==numCheckpoints), "Expecting a list of values with length equal to number of checkpoint times ("+str(numCheckpoints)+") for each checkpoint parameter."
             checkpointIdx  = numpy.searchsorted(checkpoints['t'], self.t) # Finds 1st index in list greater than given val
             if(checkpointIdx >= numCheckpoints):
                 # We are out of checkpoints, stop checking them:
@@ -873,7 +868,7 @@ class SEIRSNetworkModel():
         print_reset = True
         running     = True
         while running:
-            
+
             running = self.run_iteration()
 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -883,12 +878,13 @@ class SEIRSNetworkModel():
                     print("[Checkpoint: Updating parameters]")
                     # A checkpoint has been reached, update param values:
                     for param in paramNames:
-                        if(param=='G'):
-                            self.update_G(checkpoints[param][checkpointIdx])
-                        elif(param=='Q'):
-                            self.update_Q(checkpoints[param][checkpointIdx])
-                        else:
-                            setattr(self, param, checkpoints[param][checkpointIdx] if isinstance(checkpoints[param][checkpointIdx], (list, numpy.ndarray)) else numpy.full(fill_value=checkpoints[param][checkpointIdx], shape=(self.numNodes,1)))
+                        if(param in list(checkpoints.keys())):
+                            if(param=='G'):
+                                self.update_G(checkpoints[param][checkpointIdx])
+                            elif(param=='Q'):
+                                self.update_Q(checkpoints[param][checkpointIdx])
+                            else:
+                                setattr(self, param, checkpoints[param][checkpointIdx] if isinstance(checkpoints[param][checkpointIdx], (list, numpy.ndarray)) else numpy.full(fill_value=checkpoints[param][checkpointIdx], shape=(self.numNodes,1)))
                     # Update scenario flags to represent new param values:
                     self.update_scenario_flags()
                     # Update the next checkpoint time:
