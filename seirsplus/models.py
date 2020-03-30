@@ -509,7 +509,8 @@ class SEIRSNetworkModel():
     def __init__(self, G, beta, sigma, gamma, xi=0, mu_I=0, mu_0=0, nu=0, p=0,
                     Q=None, beta_D=None, sigma_D=None, gamma_D=None, mu_D=None, 
                     theta_E=0, theta_I=0, phi_E=0, phi_I=0, psi_E=0, psi_I=0, q=0,
-                    initE=0, initI=10, initD_E=0, initD_I=0, initR=0, initF=0):
+                    initE=0, initI=10, initD_E=0, initD_I=0, initR=0, initF=0,
+                    node_groups=None):
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Setup Adjacency matrix:
@@ -612,6 +613,33 @@ class SEIRSNetworkModel():
         # Initialize scenario flags:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         self.update_scenario_flags()
+
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        # Initialize node subgroup data series:
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        self.nodeGroupData = None
+        if(node_groups):
+            self.nodeGroupData = {}
+            for groupName, nodeList in node_groups.items():
+                self.nodeGroupData[groupName] = {'nodes':   numpy.array(nodeList),
+                                                 'mask':    numpy.isin(range(self.numNodes), nodeList).reshape((self.numNodes,1))}
+                self.nodeGroupData[groupName]['numS']       = numpy.zeros(5*self.numNodes)
+                self.nodeGroupData[groupName]['numE']       = numpy.zeros(5*self.numNodes)
+                self.nodeGroupData[groupName]['numI']       = numpy.zeros(5*self.numNodes)
+                self.nodeGroupData[groupName]['numD_E']     = numpy.zeros(5*self.numNodes)
+                self.nodeGroupData[groupName]['numD_I']     = numpy.zeros(5*self.numNodes)
+                self.nodeGroupData[groupName]['numR']       = numpy.zeros(5*self.numNodes)
+                self.nodeGroupData[groupName]['numF']       = numpy.zeros(5*self.numNodes)
+                self.nodeGroupData[groupName]['N']          = numpy.zeros(5*self.numNodes)
+                self.nodeGroupData[groupName]['numS'][0]    = numpy.count_nonzero(self.nodeGroupData[groupName]['mask']*self.X==self.S)
+                self.nodeGroupData[groupName]['numE'][0]    = numpy.count_nonzero(self.nodeGroupData[groupName]['mask']*self.X==self.E)
+                self.nodeGroupData[groupName]['numI'][0]    = numpy.count_nonzero(self.nodeGroupData[groupName]['mask']*self.X==self.I)
+                self.nodeGroupData[groupName]['numD_E'][0]  = numpy.count_nonzero(self.nodeGroupData[groupName]['mask']*self.X==self.D_E)
+                self.nodeGroupData[groupName]['numD_I'][0]  = numpy.count_nonzero(self.nodeGroupData[groupName]['mask']*self.X==self.D_I)
+                self.nodeGroupData[groupName]['numR'][0]    = numpy.count_nonzero(self.nodeGroupData[groupName]['mask']*self.X==self.R)
+                self.nodeGroupData[groupName]['numF'][0]    = numpy.count_nonzero(self.nodeGroupData[groupName]['mask']*self.X==self.F)
+                self.nodeGroupData[groupName]['N'][0]       = self.nodeGroupData[groupName]['numS'][0] + self.nodeGroupData[groupName]['numE'][0] + self.nodeGroupData[groupName]['numI'][0] + self.nodeGroupData[groupName]['numD_E'][0] + self.nodeGroupData[groupName]['numD_I'][0] + self.nodeGroupData[groupName]['numR'][0]
+
          
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -745,6 +773,18 @@ class SEIRSNetworkModel():
         self.numR = numpy.pad(self.numR, [(0, 5*self.numNodes)], mode='constant', constant_values=0)
         self.numF = numpy.pad(self.numF, [(0, 5*self.numNodes)], mode='constant', constant_values=0)
         self.N = numpy.pad(self.N, [(0, 5*self.numNodes)], mode='constant', constant_values=0)
+
+        if(self.nodeGroupData):
+            for groupName in self.nodeGroupData:
+                self.nodeGroupData[groupName]['numS']     = numpy.pad(self.nodeGroupData[groupName]['numS'], [(0, 5*self.numNodes)], mode='constant', constant_values=0)
+                self.nodeGroupData[groupName]['numE']     = numpy.pad(self.nodeGroupData[groupName]['numE'], [(0, 5*self.numNodes)], mode='constant', constant_values=0)
+                self.nodeGroupData[groupName]['numI']     = numpy.pad(self.nodeGroupData[groupName]['numI'], [(0, 5*self.numNodes)], mode='constant', constant_values=0)
+                self.nodeGroupData[groupName]['numD_E']   = numpy.pad(self.nodeGroupData[groupName]['numD_E'], [(0, 5*self.numNodes)], mode='constant', constant_values=0)
+                self.nodeGroupData[groupName]['numD_I']   = numpy.pad(self.nodeGroupData[groupName]['numD_I'], [(0, 5*self.numNodes)], mode='constant', constant_values=0)
+                self.nodeGroupData[groupName]['numR']     = numpy.pad(self.nodeGroupData[groupName]['numR'], [(0, 5*self.numNodes)], mode='constant', constant_values=0)
+                self.nodeGroupData[groupName]['numF']     = numpy.pad(self.nodeGroupData[groupName]['numF'], [(0, 5*self.numNodes)], mode='constant', constant_values=0)
+                self.nodeGroupData[groupName]['N']        = numpy.pad(self.nodeGroupData[groupName]['N'], [(0, 5*self.numNodes)], mode='constant', constant_values=0)
+
         return None
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
@@ -759,6 +799,18 @@ class SEIRSNetworkModel():
         self.numR = numpy.array(self.numR, dtype=float)[:self.tidx+1]
         self.numF = numpy.array(self.numF, dtype=float)[:self.tidx+1]
         self.N = numpy.array(self.N, dtype=float)[:self.tidx+1]
+
+        if(self.nodeGroupData):
+            for groupName in self.nodeGroupData:
+                self.nodeGroupData[groupName]['numS']    = numpy.array(self.nodeGroupData[groupName]['numS'], dtype=float)[:self.tidx+1]
+                self.nodeGroupData[groupName]['numE']    = numpy.array(self.nodeGroupData[groupName]['numE'], dtype=float)[:self.tidx+1]
+                self.nodeGroupData[groupName]['numI']    = numpy.array(self.nodeGroupData[groupName]['numI'], dtype=float)[:self.tidx+1]
+                self.nodeGroupData[groupName]['numD_E']  = numpy.array(self.nodeGroupData[groupName]['numD_E'], dtype=float)[:self.tidx+1]
+                self.nodeGroupData[groupName]['numD_I']  = numpy.array(self.nodeGroupData[groupName]['numD_I'], dtype=float)[:self.tidx+1]
+                self.nodeGroupData[groupName]['numR']    = numpy.array(self.nodeGroupData[groupName]['numR'], dtype=float)[:self.tidx+1]
+                self.nodeGroupData[groupName]['numF']    = numpy.array(self.nodeGroupData[groupName]['numF'], dtype=float)[:self.tidx+1]
+                self.nodeGroupData[groupName]['N']       = numpy.array(self.nodeGroupData[groupName]['N'], dtype=float)[:self.tidx+1]
+                
         return None
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -823,6 +875,17 @@ class SEIRSNetworkModel():
         self.numR[self.tidx]     = numpy.clip(numpy.count_nonzero(self.X==self.R), a_min=0, a_max=self.numNodes)
         self.numF[self.tidx]     = numpy.clip(numpy.count_nonzero(self.X==self.F), a_min=0, a_max=self.numNodes)
         self.N[self.tidx]        = numpy.clip((self.numS[self.tidx] + self.numE[self.tidx] + self.numI[self.tidx] + self.numD_E[self.tidx] + self.numD_I[self.tidx] + self.numR[self.tidx]), a_min=0, a_max=self.numNodes)
+
+        if(self.nodeGroupData):
+            for groupName in self.nodeGroupData:
+                self.nodeGroupData[groupName]['numS'][self.tidx]    = numpy.count_nonzero(self.nodeGroupData[groupName]['mask']*self.X==self.S)
+                self.nodeGroupData[groupName]['numE'][self.tidx]    = numpy.count_nonzero(self.nodeGroupData[groupName]['mask']*self.X==self.E)
+                self.nodeGroupData[groupName]['numI'][self.tidx]    = numpy.count_nonzero(self.nodeGroupData[groupName]['mask']*self.X==self.I)
+                self.nodeGroupData[groupName]['numD_E'][self.tidx]  = numpy.count_nonzero(self.nodeGroupData[groupName]['mask']*self.X==self.D_E)
+                self.nodeGroupData[groupName]['numD_I'][self.tidx]  = numpy.count_nonzero(self.nodeGroupData[groupName]['mask']*self.X==self.D_I)
+                self.nodeGroupData[groupName]['numR'][self.tidx]    = numpy.count_nonzero(self.nodeGroupData[groupName]['mask']*self.X==self.R)
+                self.nodeGroupData[groupName]['numF'][self.tidx]    = numpy.count_nonzero(self.nodeGroupData[groupName]['mask']*self.X==self.F)
+                self.nodeGroupData[groupName]['N'][self.tidx]       = numpy.clip((self.nodeGroupData[groupName]['numS'][0] + self.nodeGroupData[groupName]['numE'][0] + self.nodeGroupData[groupName]['numI'][0] + self.nodeGroupData[groupName]['numD_E'][0] + self.nodeGroupData[groupName]['numD_I'][0] + self.nodeGroupData[groupName]['numR'][0]), a_min=0, a_max=self.numNodes)
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Terminate if tmax reached or num infectious and num exposed is 0:
