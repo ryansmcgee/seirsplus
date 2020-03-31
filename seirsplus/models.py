@@ -192,9 +192,9 @@ class SEIRSModel():
             self.run_epoch(runtime=self.tmax, dt=dt)
 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-            print("t = %.2f" % self.t)
+            
             if(verbose):
+                print("t = %.2f" % self.t)
                 print("\t S   = " + str(self.numS[-1]))
                 print("\t E   = " + str(self.numE[-1]))
                 print("\t I   = " + str(self.numI[-1]))
