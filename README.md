@@ -224,8 +224,8 @@ Constructor Argument | Parameter Description | Data Type | Default Value
 ```initN  ``` | initial total number of individuals | int | 10
 ```initI  ``` | initial number of infectious individuals | int | 10
 ```initE  ``` | initial number of exposed individuals | int | 0 
-```initD_E``` | initial number of detected infectious individuals | int | 0 
-```initD_I``` | initial number of detected exposed individuals | int | 0 
+```initD_E``` | initial number of detected exposed individuals | int | 0 
+```initD_I``` | initial number of detected infectious individuals | int | 0 
 ```initR  ``` | initial number of recovered individuals | int | 0
 ```initF  ``` | initial number of deceased individuals | int | 0
 
@@ -284,8 +284,8 @@ Constructor Argument | Parameter Description | Data Type | Default Value
 ```q      ``` | probability of global interactions for quarantined individuals | float | 0
 ```initI  ``` | initial number of infectious individuals | int | 10
 ```initE  ``` | initial number of exposed individuals | int | 0 
-```initD_E``` | initial number of detected infectious individuals | int | 0 
-```initD_I``` | initial number of detected exposed individuals | int | 0 
+```initD_E``` | initial number of detected exposed individuals | int | 0 
+```initD_I``` | initial number of detected infectious individuals | int | 0 
 ```initR  ``` | initial number of recovered individuals | int | 0
 ```initF  ``` | initial number of deceased individuals | int | 0
 
