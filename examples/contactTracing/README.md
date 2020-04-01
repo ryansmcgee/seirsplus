@@ -12,7 +12,7 @@ As we can see we also assume that there are no tests happening to exposed indivi
 
 ## Contact tracing 
 
-For the case of contact tracing we examine two high-level cases; (i) contact tracing starts immediately when the epidemic starts (no lag), (ii) contact tracing starts when the social distancing measures are put in place (lag). No for each one of these cases, we consider different levels of contact tracing (aggressiveness), which can be controled through the parameters ```phi_E``` and ```phi_I```. We set both of these parameters to be equal in each simulation as we want to simulate the same level of aggressiveness for both exposed and infected individuals. This level of agressiveness can be also thought of as to what fraction of Covidburghers are using digital contact tracing (larger values of ```phi_*``` correspond to higher fraction of people participating in tracing). 
+For the case of contact tracing we examine two high-level cases; (i) contact tracing starts immediately when the epidemic starts (no lag), (ii) contact tracing starts when the social distancing measures are put in place (lag). No for each one of these cases, we consider different levels of contact tracing (aggressiveness), which can be controled through the parameters ```phi_E``` and ```phi_I```. We set both of these parameters to be equal in each simulation as we want to simulate the same level of aggressiveness for both exposed and infected individuals. This level of agressiveness can be also thought of as to what fraction of Covidburghers are using (digital) contact tracing (larger values of ```phi_*``` correspond to higher fraction of people participating in tracing). 
 
 ## Results
 
