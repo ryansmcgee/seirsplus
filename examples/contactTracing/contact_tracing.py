@@ -63,11 +63,11 @@ for phi in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]:
 deaths_df = pd.DataFrame(list(zip([0.1,0.2,0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1],
             [results_F['contact-tracing-Lag-phi:'+str(i)][-1] for i in [0.1,0.2,0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]],
             [results_F['contact-tracing-noLag-phi:'+str(i)][-1] for i in [0.1,0.2,0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]])),
-            columns=['phi','Lag','NoLag'])
+            columns=['phi','Lag','NoLag'],index=[0.1,0.2,0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1])
 
 
 fig, ax = plt.subplots()
 deaths_df[['Lag','NoLag']].plot().axhline(y=results_F['no-contact-tracing'][-1],color='r')
 plt.xlabel("phi")
 plt.ylabel("# of deaths")
-plt.annotate("No contact tracing",(3.5,results_F['no-contact-tracing'][-1]+10))
+plt.annotate("No contact tracing",(0.45,results_F['no-contact-tracing'][-1]+10))
