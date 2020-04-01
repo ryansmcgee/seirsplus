@@ -27,9 +27,11 @@ model.figure_infections(title="No contact tracing")
 
 results_I = dict()
 results_F = dict()
+results_Ts = dict(0
 
 results_I['no-contact-tracing'] = model.numI
 results_F['no-contact-tracing'] = model.numF
+results_Ts['no-contact-tracing'] = model.tseries
 
 #results.append((0,model.numF[-1],max(model.numI),model.numS[-1]))
 
@@ -47,6 +49,7 @@ for phi in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]:
   model_ct.run(T=300, checkpoints=checkpoints)
   results_I['contact-tracing-noLag-phi:'+str(phi)] = model_ct.numI
   results_F['contact-tracing-noLag-phi:'+str(phi)] = model_ct.numF
+  results_Ts['contact-tracing-noLag-phi:'+str(phi)] = model_ct.tseries
   
   #lag
   model_ct = SEIRSNetworkModel(G=G_normal,beta=0.155, sigma=1/5.2,gamma=1/16.39,mu_I=0.01,p=0.5,
@@ -57,6 +60,7 @@ for phi in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]:
   model_ct.run(T=300, checkpoints=checkpoints)
   results_I['contact-tracing-Lag-phi:'+str(phi)] = model_ct.numI
   results_F['contact-tracing-Lag-phi:'+str(phi)] = model_ct.numF
+  results_Ts['contact-tracing-Lag-phi:'+str(phi)] = model_ct.tseries
   #results.append((phi,model_ct.numF[-1],max(model_ct.numI),model_ct.numS[-1]))
   #model_ct.figure_infections(title="Contact tracing")
   
@@ -71,3 +75,19 @@ deaths_df[['Lag','NoLag']].plot().axhline(y=results_F['no-contact-tracing'][-1],
 plt.xlabel("phi")
 plt.ylabel("# of deaths")
 plt.annotate("No contact tracing",(0.45,results_F['no-contact-tracing'][-1]+10))
+
+# Infections time-series
+
+
+plt.plot(results_Ts['no-contact-tracing'],results_I['no-contact-tracing'],marker='', 
+         color='red', linewidth=2, linestyle='dashed', label="No Contact Tracing")
+plt.plot(results_Ts['contact-tracing-noLag-phi:0.1'],results_I['contact-tracing-noLag-phi:0.1'],marker='', 
+         color='olive', linewidth=2, linestyle='dashed', label="Contact Tracing (no lag)")
+plt.plot(esults_Ts['contact-tracing-Lag-phi:0.1'],results_I['contact-tracing-Lag-phi:0.1'],marker='', 
+         color='blue', linewidth=2, linestyle='dashed', label="Contact Tracing (Lag)")
+
+for phi in [0.2,0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]:
+  plt.plot(results_Ts['contact-tracing-noLag-phi:'+str(phi)],results_I['contact-tracing-noLag-phi:'+str(phi)],marker='', 
+         color='olive', linewidth=2, linestyle='dashed')
+  plt.plot(results_Ts['contact-tracing-Lag-phi:'+str(phi)],results_I['contact-tracing-Lag-phi:'+str(phi)],marker='', 
+         color='blue', linewidth=2, linestyle='dashed')
