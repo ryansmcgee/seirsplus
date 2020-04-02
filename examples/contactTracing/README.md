@@ -30,5 +30,5 @@ As it should be evident digital contact tracing significantly reduces the peak n
 
 Of course, these simulations are rather <I>qualitative</I> in nature, and while they are good at identifying expected trends from an intervention, they might not be good at quantifying the exact level of these effects. Some additional things to examine here can be:
 
-- [ ] Run its scenario several times to obtain information about the corresponding uncertainty of the results/trends. 
+- [X] Run its scenario several times to obtain information about the corresponding uncertainty of the results/trends. 
 - [ ] For the interventions (social distancing and lagged contact tracing), instead of starting them at a fixed time - 20 days after the start of the epidemic - we can envision a policy where the intervention starts after x% of the population has been infected. 
