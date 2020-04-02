@@ -12,84 +12,66 @@ G_distancing = custom_exponential_graph(baseGraph, scale=10)
 # Quarantine interactions:
 G_quarantine = custom_exponential_graph(baseGraph, scale=5)
 
-
-## first run with no contact-tracing
-
-model = SEIRSNetworkModel(G=G_normal,beta=0.155, sigma=1/5.2,gamma=1/16.39,mu_I=0.01,p=0.5,
-                          Q=G_quarantine,beta_D=0.155, sigma_D=1/5.2, gamma_D=1/12.39, mu_D=0.01,
-                          theta_E=0,theta_I=0.02,psi_E=1.0, psi_I=1.0, q=0.5, initI = 10)
-
-checkpoints = {'t': [20, 100], 'G': [G_distancing, G_normal], 'p': [0.1, 0.5]}
-
-model.run(T=300, checkpoints=checkpoints)
-
-## add contact tracing
-
 results_I = dict()
 results_F = dict()
 results_Ts = dict()
 
-results_I['no-contact-tracing'] = model.numI
-results_F['no-contact-tracing'] = model.numF
-results_Ts['no-contact-tracing'] = model.tseries
-
-# contact tracing 
-
 PhiS = list(np.linspace(0,1,11))
 
-for phi in PhiS:
-  
-  #no lag
-  model_ct = SEIRSNetworkModel(G=G_normal,beta=0.155, sigma=1/5.2,gamma=1/16.39,mu_I=0.01,p=0.5,
+for sims in range(100):
+	print("++++++++++++++++++++++ SIM: "+str(sims)+"++++++++++++++++++++++")
+	# no contact tracing for phi = 0
+	for phi in PhiS:
+		# no lag
+		model_ct = SEIRSNetworkModel(G=G_normal,beta=0.155, sigma=1/5.2,gamma=1/16.39,mu_I=0.01,p=0.5,
                           Q=G_quarantine,beta_D=0.155, sigma_D=1/5.2, gamma_D=1/12.39, mu_D=0.01,
                           theta_E=0,theta_I=0.02,psi_E=1.0, psi_I=1.0, q=0.5, phi_E = phi, phi_I=phi,initI = 10)
-
-  checkpoints = {'t': [20, 100], 'G': [G_distancing, G_normal], 'p': [0.1, 0.5]}
-
-  model_ct.run(T=300, checkpoints=checkpoints)
-  results_I['contact-tracing-noLag-phi:'+str(phi)] = model_ct.numI
-  results_F['contact-tracing-noLag-phi:'+str(phi)] = model_ct.numF
-  results_Ts['contact-tracing-noLag-phi:'+str(phi)] = model_ct.tseries
-  
-  #lag
-  model_ct = SEIRSNetworkModel(G=G_normal,beta=0.155, sigma=1/5.2,gamma=1/16.39,mu_I=0.01,p=0.5,
+		checkpoints = {'t': [20, 100], 'G': [G_distancing, G_normal], 'p': [0.1, 0.5]}
+		model_ct.run(T=300, checkpoints=checkpoints)
+		results_I['contact-tracing-noLag-phi:'+str(phi)+';'+str(sims)] = model_ct.numI
+		results_F['contact-tracing-noLag-phi:'+str(phi)+';'+str(sims)] = model_ct.numF
+		results_Ts['contact-tracing-noLag-phi:'+str(phi)+';'+str(sims)] = model_ct.tseries
+		#lag
+		model_ct = SEIRSNetworkModel(G=G_normal,beta=0.155, sigma=1/5.2,gamma=1/16.39,mu_I=0.01,p=0.5,
                           Q=G_quarantine,beta_D=0.155, sigma_D=1/5.2, gamma_D=1/12.39, mu_D=0.01,
                           theta_E=0,theta_I=0.02,psi_E=1.0, psi_I=1.0, q=0.5, phi_E = 0, phi_I=0,initI = 10)
-  
-  checkpoints = {'t': [20, 100], 'G': [G_distancing, G_normal], 'p': [0.1, 0.5], 'phi_E': [phi, phi], 'phi_I': [phi, phi]}
-  model_ct.run(T=300, checkpoints=checkpoints)
-  results_I['contact-tracing-Lag-phi:'+str(phi)] = model_ct.numI
-  results_F['contact-tracing-Lag-phi:'+str(phi)] = model_ct.numF
-  results_Ts['contact-tracing-Lag-phi:'+str(phi)] = model_ct.tseries
-  
+		checkpoints = {'t': [20, 100], 'G': [G_distancing, G_normal], 'p': [0.1, 0.5], 'phi_E': [phi, phi], 'phi_I': [phi, phi]}
+		model_ct.run(T=300, checkpoints=checkpoints)
+		results_I['contact-tracing-Lag-phi:'+str(phi)+';'+str(sims)] = model_ct.numI
+		results_F['contact-tracing-Lag-phi:'+str(phi)+';'+str(sims)] = model_ct.numF
+		results_Ts['contact-tracing-Lag-phi:'+str(phi)+';'+str(sims)] = model_ct.tseries
+
+
 deaths_df = pd.DataFrame(list(zip(PhiS,
-            [results_F['contact-tracing-Lag-phi:'+str(i)][-1] for i in PhiS],
-            [results_F['contact-tracing-noLag-phi:'+str(i)][-1] for i in PhiS])),
+            [np.mean([results_F[k][-1] for k in results_F.keys() if k.startswith('contact-tracing-Lag-phi:'+str(m))]) for m in PhiS],
+            [np.mean([results_F[k][-1] for k in results_F.keys() if k.startswith('contact-tracing-noLag-phi:'+str(m))]) for m in PhiS],
+            [np.std([results_F[k][-1] for k in results_F.keys() if k.startswith('contact-tracing-Lag-phi:'+str(m))]) for m in PhiS],
+            [np.std([results_F[k][-1] for k in results_F.keys() if k.startswith('contact-tracing-noLag-phi:'+str(m))]) for m in PhiS])),
             columns=['phi','Lag','NoLag'],index=PhiS)
 
 
 fig, ax = plt.subplots()
-deaths_df[['Lag','NoLag']].plot().axhline(y=results_F['no-contact-tracing'][-1],color='r')
+deaths_df[['Lag','NoLag']].plot() #.axhline(y=results_F['no-contact-tracing'][-1],color='r')
 plt.xlabel("phi")
 plt.ylabel("# of deaths")
 plt.annotate("No contact tracing",(0.45,results_F['no-contact-tracing'][-1]+10))
 
-# Infections time-series
+# plot infection time-series
 
+plt.plot(results_Ts['contact-tracing-Lag-phi:0.0;'+str(i)],results_I['contact-tracing-Lag-phi:0.0;'+str(i)]/numNodes,marker='',color='red', linewidth=2, linestyle='dashed', label="No Contact Tracing")
+for i in range(1,100):
+	plt.plot(results_Ts['contact-tracing-Lag-phi:0.0;'+str(i)],results_I['contact-tracing-Lag-phi:0.0;'+str(i)]/numNodes,marker='',color='red', linewidth=2, linestyle='dashed')
 
-plt.plot(results_Ts['no-contact-tracing'],results_I['no-contact-tracing']/numNodes,marker='', 
-         color='red', linewidth=2, linestyle='dashed', label="No Contact Tracing")
-plt.plot(results_Ts['contact-tracing-noLag-phi:0.1'],results_I['contact-tracing-noLag-phi:0.1']/numNodes,marker='', 
-         color='olive', linewidth=2, linestyle='dashed', label="Contact Tracing (no lag)")
-plt.plot(results_Ts['contact-tracing-Lag-phi:0.1'],results_I['contact-tracing-Lag-phi:0.1']/numNodes,marker='', 
-         color='blue', linewidth=2, linestyle='dashed', label="Contact Tracing (Lag)")
+plt.plot(results_Ts['contact-tracing-Lag-phi:'+str(PhiS[0])+";0"], results_I['contact-tracing-Lag-phi:'+str(PhiS[0])+";0"]/numNodes,marker='', color='blue', linewidth=2, linestyle='dashed', label = "Contact Tracing (Lag)")
+for i in range(100):
+	for phi in PhiS:
+		plt.plot(results_Ts['contact-tracing-Lag-phi:'+str(phi)+";"+str(i)], results_I['contact-tracing-Lag-phi:'+str(phi)+";"+str(i)]/numNodes,marker='', color='blue', linewidth=2, linestyle='dashed')
 
-for phi in Phis[2:11]:
-  plt.plot(results_Ts['contact-tracing-noLag-phi:'+str(phi)],results_I['contact-tracing-noLag-phi:'+str(phi)]/numNodes,marker='', 
-         color='olive', linewidth=2, linestyle='dashed')
-  plt.plot(results_Ts['contact-tracing-Lag-phi:'+str(phi)],results_I['contact-tracing-Lag-phi:'+str(phi)]/numNodes,marker='', 
-         color='blue', linewidth=2, linestyle='dashed')
-  
+plt.plot(results_Ts['contact-tracing-noLag-phi:'+str(PhiS[0])+";0"], results_I['contact-tracing-noLag-phi:'+str(PhiS[0])+";0"]/numNodes,marker='', color='blue', linewidth=2, linestyle='dashed', label = "Contact Tracing (No Lag)") 
+for i in range(100): 
+	for phi in PhiS:
+		plt.plot(results_Ts['contact-tracing-noLag-phi:'+str(phi)+";"+str(i)], results_I['contact-tracing-noLag-phi:'+str(phi)+";"+str(i)]/numNodes,marker='', color='blue', linewidth=2, linestyle='dashed') 
+
 plt.legend()
 plt.xlabel("Days")
 plt.ylabel("Fraction of infected population")
