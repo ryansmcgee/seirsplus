@@ -1,4 +1,5 @@
 from seirsplus.models import *
+import random
 import networkx
 import numpy as np
 import pandas as pd
@@ -75,3 +76,50 @@ for i in range(100):
 plt.legend()
 plt.xlabel("Days")
 plt.ylabel("Fraction of infected population")
+
+
+###### Explore the fraction of people using contact tracing
+
+pop_fraction = list(np.linspace(0,1,11))
+
+for sims in range(100):
+	print("++++++++++++++++++++++ SIM: "+str(sims)+"++++++++++++++++++++++")
+	for pop in pop_fraction:
+		phi = [1 if random.random() < pop else 0 for _ in range(10000)]
+		model_ct = SEIRSNetworkModel(G=G_normal,beta=0.155, sigma=1/5.2,gamma=1/16.39,mu_I=0.01,p=0.5,
+                          Q=G_quarantine,beta_D=0.155, sigma_D=1/5.2, gamma_D=1/12.39, mu_D=0.01,
+                          theta_E=0,theta_I=0.02,psi_E=1.0, psi_I=1.0, q=0.5, phi_E = phi, phi_I=phi,initI = 10)
+		checkpoints = {'t': [20, 100], 'G': [G_distancing, G_normal], 'p': [0.1, 0.5]}
+		model_ct.run(T=300, checkpoints=checkpoints)
+		results_I['contact-tracing-fraction:'+str(pop)+';'+str(sims)] = model_ct.numI
+		results_F['contact-tracing-fraction:'+str(pop)+';'+str(sims)] = model_ct.numF
+		results_Ts['contact-tracing-fraction:'+str(pop)+';'+str(sims)] = model_ct.tseries
+
+
+deaths_df = pd.DataFrame(list(zip(pop_fraction,
+            [np.mean([results_F[k][-1] for k in results_F.keys() if k.startswith('contact-tracing-fraction:'+str(m))]) for m in pop_fraction])),
+            columns=['Population','Deaths'],index=pop_fraction)
+
+
+fig, ax = plt.subplots()
+deaths_df[['Deaths']].plot() #.axhline(y=results_F['no-contact-tracing'][-1],color='r')
+plt.xlabel("Fraction of Tracking Population")
+plt.ylabel("# of deaths")
+
+# plot infections
+
+fig, axs = plt.subplots(2,5)
+
+for p in range(len(pop_fraction)-1):
+	if p < 5:
+		for i in range(100):
+			axs[0,p].plot(results_Ts['contact-tracing-fraction:'+str(pop_fraction[p])+";"+str(i)],results_I['contact-tracing-fraction:'+str(pop_fraction[p])+";"+str(i)]/numNodes,marker='',color='red', linewidth=2, linestyle='dashed')
+			axs[0,p].set(xlim=(0,300), ylim=(0, 0.1))
+			if i == 0:
+				axs[0,p].annotate("Tracing %: "+str(100*round(pop_fraction[p],1))+"%",(50,0.09))
+	else:
+		for i in range(100):
+			axs[1,p-5].plot(results_Ts['contact-tracing-fraction:'+str(pop_fraction[p])+";"+str(i)],results_I['contact-tracing-fraction:'+str(pop_fraction[p])+";"+str(i)]/numNodes,marker='',color='red', linewidth=2, linestyle='dashed')
+			axs[1,p-5].set(xlim=(0,300), ylim=(0, 0.1))
+			if i == 0:
+				axs[1,p-5].annotate("Tracing %: "+str(100*round(pop_fraction[p],1))+"%",(50,0.09))
