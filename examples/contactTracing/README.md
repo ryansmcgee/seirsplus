@@ -12,7 +12,7 @@ As we can see we also assume that there are no tests happening to exposed indivi
 
 ## Contact tracing 
 
-For the case of contact tracing we examine two high-level cases; (i) contact tracing starts immediately when the epidemic starts (no lag), (ii) contact tracing starts when the social distancing measures are put in place (lag). No for each one of these cases, we consider different levels of contact tracing (aggressiveness), which can be controled through the parameters ```phi_E``` and ```phi_I```. We set both of these parameters to be equal in each simulation as we want to simulate the same level of aggressiveness for both exposed and infected individuals. This level of agressiveness can be also thought of as to what fraction of Covidburghers are using (digital) contact tracing (larger values of ```phi_*``` correspond to higher fraction of people participating in tracing). 
+For the case of contact tracing we examine two high-level cases; (i) contact tracing starts immediately when the epidemic starts (no lag), (ii) contact tracing starts when the social distancing measures are put in place (lag). No for each one of these cases, we consider different levels of contact tracing (aggressiveness), which can be controled through the parameters ```phi_E``` and ```phi_I```. We set both of these parameters to be equal in each simulation as we want to simulate the same level of aggressiveness for both exposed and infected individuals. This level of agressiveness can be also thought of as to how fast the tracing system in place can identify and quarantine people (larger values of ```phi_*``` correspond to faster tracing - e.g., digital tracing). 
 
 ## Results
 
@@ -20,13 +20,15 @@ We start by examining the total number of deaths in each scenario, shown below:
 
 <img src="seirplus_phi.png" width = "450">
 
-As we can see even with small contact tracing, there is approximately a 35% reduction in the number of deaths. Increased contact tracing levels, reduce the number of deaths further. Having contact tracing from the start of the epidemic, as compared to starting this intervention later, <I>seems</I> to provide benefits when it is more aggressive (higher ```phi```). 
+As we can see even with small contact tracing, there is approximately a 35% reduction in the number of deaths. Increased/faster contact tracing, reduces the number of deaths further. Having contact tracing from the start of the epidemic, as compared to starting this intervention later, <I>seems</I> to provide benefits when it is <I>faster</I> (higher ```phi```). 
 
 We also examined the number of infected individuals during the period simulated across the different settings: 
 
 <img src="seirplus_contact_tracing.png" width = "450">
 
-As it should be evident digital contact tracing significantly reduces the peak number of infected individuals during the epidemic, which might be indicutive of smaller strain to the health system. 
+As it should be evident contact tracing significantly reduces the peak number of infected individuals during the epidemic, which might be indicutive of smaller strain to the health system. 
+
+
 
 Of course, these simulations are rather <I>qualitative</I> in nature, and while they are good at identifying expected trends from an intervention, they might not be good at quantifying the exact level of these effects. Some additional things to examine here can be:
 
