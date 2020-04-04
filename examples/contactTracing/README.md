@@ -14,6 +14,8 @@ As we can see we also assume that there are no tests happening to exposed indivi
 
 For the case of contact tracing we examine two high-level cases; (i) contact tracing starts immediately when the epidemic starts (no lag), (ii) contact tracing starts when the social distancing measures are put in place (lag). No for each one of these cases, we consider different levels of contact tracing (aggressiveness), which can be controled through the parameters ```phi_E``` and ```phi_I```. We set both of these parameters to be equal in each simulation as we want to simulate the same level of aggressiveness for both exposed and infected individuals. This level of agressiveness can be also thought of as to how fast the tracing system in place can identify and quarantine people (larger values of ```phi_*``` correspond to faster tracing - e.g., digital tracing). 
 
+We have also added a simulation scenario where an exposed individual is traced very quickly (```phi_* = 1```) but not everyone in the population is being traced. We explore the impact of the fraction of the population being traced to the final results. 
+
 ## Results
 
 We start by examining the total number of deaths in each scenario, shown below: 
@@ -28,6 +30,11 @@ We also examined the number of infected individuals during the period simulated 
 
 As it should be evident contact tracing significantly reduces the peak number of infected individuals during the epidemic, which might be indicutive of smaller strain to the health system. 
 
+Furthermore, while the more people that participate in contact tracing the better, even if a fraction of people only participate in (fast, i.e., digital) tracing, lives can be saved as the following figures show: 
+
+<img src="pop_fraction_deaths.png" width = "450">
+
+<img src="infected_pop_fraction_2.png" width = "750">
 
 
 Of course, these simulations are rather <I>qualitative</I> in nature, and while they are good at identifying expected trends from an intervention, they might not be good at quantifying the exact level of these effects. Some additional things to examine here can be:
