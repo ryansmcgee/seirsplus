@@ -42,7 +42,7 @@ The rates of transition between the states are given by the parameters:
 * μ<sub>I</sub>: rate of mortality from the disease (deaths per infectious individual per time)
 
 <a name="model-seirstesting"></a>
-### SEIRS Dyanmics with Testing
+### SEIRS Dynamics with Testing
 
 The effect of testing for infection on the dynamics can be modeled by introducing states corresponding to **detected exposed (*D<sub>E</sub>*)** and **detected infectious (*D<sub>I</sub>*)**. Exposed and infectious individuals are tested at rates *θ<sub>E</sub>* and *θ<sub>I</sub>*, respectively, and test positively for infection with rates *ψ<sub>E</sub>* and *ψ<sub>I</sub>*, respectively  (the false positive rate is assumed to be zero, so susceptible individuals never test positive). Testing positive moves an individual into the appropriate detected case state, where rates of transmission, progression, recovery, and/or mortality (as well as network connectivity in the network model) may be different than those of undetected cases.
 
@@ -81,7 +81,7 @@ The evolution of the SEIRS dynamics described above can be described by the foll
   <img src="https://github.com/ryansmcgee/seirsplus/blob/master/images/SEIRS_deterministic_equations.png" width="210"></div>
 </p>
 
-where *S*, *E*, *I*, *R*, and *F* are the numbers of susceptible, exposed, infectious, receovered, and deceased individuals, respectively, and *N* is the total number of individuals in the population (parameters are described above).
+where *S*, *E*, *I*, *R*, and *F* are the numbers of susceptible, exposed, infectious, recovered, and deceased individuals, respectively, and *N* is the total number of individuals in the population (parameters are described above).
 
 #### SEIRS Dynamics with Testing
 
@@ -89,7 +89,7 @@ where *S*, *E*, *I*, *R*, and *F* are the numbers of susceptible, exposed, infec
   <img src="https://github.com/ryansmcgee/seirsplus/blob/master/images/SEIRStesting_deterministic_equations.png" width="400"></div>
 </p>
 
-where *S*, *E*, *I*, *D<sub>E</sub>*, *D<sub>I</sub>*, *R*, and *F* are the numbers of susceptible, exposed, infectious, detected exposed, detected infectious, receovered, and deceased individuals, respectively, and *N* is the total number of individuals in the population (parameters are described above).
+where *S*, *E*, *I*, *D<sub>E</sub>*, *D<sub>I</sub>*, *R*, and *F* are the numbers of susceptible, exposed, infectious, detected exposed, detected infectious, recovered, and deceased individuals, respectively, and *N* is the total number of individuals in the population (parameters are described above).
 
 <a name="model-network"></a>
 ### Network Model
@@ -108,7 +108,7 @@ Each node *i* has a state *X<sub>i</sub>* that updates according to the followin
   <img src="https://github.com/ryansmcgee/seirsplus/blob/master/images/SEIRSnetwork_transitions.png" width="500"></div>
 </p>
 
-where *δ<sub>Xi=A</sub> = 1* if the state of *X_i* is *A*, or *0* if not, and where *C<sub>G</sub>(i)* denotes the set of close contacts of node *i*. For large populations and *p=1*, this stochastic model approaches the same dynamics as the deterministic SEIRS model.
+where *δ<sub>Xi=A</sub> = 1* if the state of *X<sub>i</sub>* is *A*, or *0* if not, and where *C<sub>G</sub>(i)* denotes the set of close contacts of node *i*. For large populations and *p=1*, this stochastic model approaches the same dynamics as the deterministic SEIRS model.
 
 This implementation builds on the work of Dottori et al. (2015).
 * Dottori, M. and Fabricius, G., 2015. SIR model on a dynamical network and the endemic state of an infectious disease. Physica A: Statistical Mechanics and its Applications, 434, pp.25-35.
@@ -138,7 +138,7 @@ where *δ<sub>Xi=A</sub>=1* if the state of *X<sub>i</sub>* is *A*, or *0* if no
 <a name="usage"></a>
 ## Code Usage
 
-This package was designed with broad usability in mind. Complex scenarios can be simulated with very few lines of code or, in many cases, no new coding or knowledge of python by simply modifying the parameter values in the example notebooks provided. See the Quick Start section and the rest of this documentation for more details.
+This package was designed with broad usability in mind. Complex scenarios can be simulated with very few lines of code or, in many cases, no new coding or knowledge of Python by simply modifying the parameter values in the example notebooks provided. See the Quick Start section and the rest of this documentation for more details.
 
 Don't be fooled by the length of the README, running these models is quick and easy. The package does all the hard work for you. As an example, here's a complete script that simulates the SEIRS dyanmics on a network with social distancing, testing, contact tracing, and quarantining in only 10 lines of code (see the [example notebooks](https://github.com/ryansmcgee/seirsplus/tree/master/examples) for more explanation of this example):
 ```python
@@ -168,7 +168,7 @@ model.figure_infections()
 <a name="usage-start"></a>
 ### Quick Start
 
-The [```examples```](https://github.com/ryansmcgee/seirsplus/tree/master/examples) directory contains two Jupyter notebooks: one for the deterministic model and one for the [network model](https://github.com/ryansmcgee/seirsplus/blob/master/examples/network_model_demo.ipynb). These notebooks walk through full simulations using each of these models with description of the steps involved.
+The [```examples```](https://github.com/ryansmcgee/seirsplus/tree/master/examples) directory contains two Jupyter notebooks: one for the [deterministic model](https://github.com/ryansmcgee/seirsplus/blob/master/examples/deterministic_model_demo.ipynb) and one for the [network model](https://github.com/ryansmcgee/seirsplus/blob/master/examples/network_model_demo.ipynb). These notebooks walk through full simulations using each of these models with description of the steps involved.
 
 **These notebooks can also serve as ready-to-run sandboxes for trying your own simulation scenarios by simply changing the parameter values in the notebook.**
 
@@ -224,8 +224,8 @@ Constructor Argument | Parameter Description | Data Type | Default Value
 ```initN  ``` | initial total number of individuals | int | 10
 ```initI  ``` | initial number of infectious individuals | int | 10
 ```initE  ``` | initial number of exposed individuals | int | 0 
-```initD_E``` | initial number of detected infectious individuals | int | 0 
-```initD_I``` | initial number of detected exposed individuals | int | 0 
+```initD_E``` | initial number of detected exposed individuals | int | 0 
+```initD_I``` | initial number of detected infectious individuals | int | 0 
 ```initR  ``` | initial number of recovered individuals | int | 0
 ```initF  ``` | initial number of deceased individuals | int | 0
 
@@ -284,8 +284,8 @@ Constructor Argument | Parameter Description | Data Type | Default Value
 ```q      ``` | probability of global interactions for quarantined individuals | float | 0
 ```initI  ``` | initial number of infectious individuals | int | 10
 ```initE  ``` | initial number of exposed individuals | int | 0 
-```initD_E``` | initial number of detected infectious individuals | int | 0 
-```initD_I``` | initial number of detected exposed individuals | int | 0 
+```initD_E``` | initial number of detected exposed individuals | int | 0 
+```initD_I``` | initial number of detected infectious individuals | int | 0 
 ```initR  ``` | initial number of recovered individuals | int | 0
 ```initF  ``` | initial number of deceased individuals | int | 0
 
@@ -434,7 +434,7 @@ checkpoints = {'t':       [20, 100],
 
 *The checkpoints shown here correspond to starting social distancing and testing at time ```t=20``` (the graph ```G``` is updated to ```G_distancing``` and locality parameter ```p``` is decreased to ```0.1```; testing params ```theta_E```, ```theta_I```, ```phi```, and ```phi_I``` are set to non-zero values) and then stopping social distancing at time ```t=100``` (```G``` and ```p``` changed back to their "normal" values; testing params remain non-zero).*
 
-Any model parameter listed in the model constrcutor can be updated in this way. Only model parameters that are included in the checkpoints dictionary have their values updated at the checkpoint times, all other parameters keep their pre-existing values.
+Any model parameter listed in the model constructor can be updated in this way. Only model parameters that are included in the checkpoints dictionary have their values updated at the checkpoint times, all other parameters keep their pre-existing values.
 
 Use cases of this feature include: 
 
@@ -452,7 +452,7 @@ model.run(T=200)    # simulate the model for an additional 200 time units, picki
 ```
 
 <a name="usage-viz"></a>
-### Visualization
+## Visualization
 
 ### Visualizing the results
 The ```SEIRSModel``` and ```SEIRSNetworkModel``` classes have a ```plot()``` convenience function for plotting simulation results on a matplotlib axis. This function generates a line plot of the frequency of each model state in the population by default, but there are many optional arguments that can be used to customize the plot.
