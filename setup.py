@@ -6,7 +6,7 @@ import setuptools
 setuptools.setup(
     packages=setuptools.find_packages(),
     name="seirsplus",
-    version='0.0.14',
+    version='0.0.15',
     description='Models of SEIRS epidemic dynamics with extensions, including network-structured populations, testing, contact tracing, and social distancing.',
     # long_description=long_description,
     # long_description_content_type="text/markdown",

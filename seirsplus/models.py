@@ -475,7 +475,8 @@ class SEIRSNetworkModel():
     A class to simulate the SEIRS Stochastic Network Model
     ===================================================
     Params: G       Network adjacency matrix (numpy array) or Networkx graph object.
-            beta    Rate of transmission (exposure) 
+            beta    Rate of transmission (exposure) (global)
+            beta_local    Rate(s) of transmission (exposure) for adjacent individuals (optional)
             sigma   Rate of infection (upon exposure) 
             gamma   Rate of recovery (upon infection) 
             xi      Rate of re-susceptibility (upon recovery)  
@@ -485,7 +486,8 @@ class SEIRSNetworkModel():
             p       Probability of interaction outside adjacent nodes
             
             Q       Quarantine adjacency matrix (numpy array) or Networkx graph object.
-            beta_D  Rate of transmission (exposure) for individuals with detected infections
+            beta_D  Rate of transmission (exposure) for individuals with detected infections (global)
+            beta_local    Rate(s) of transmission (exposure) for adjacent individuals with detected infections (optional)
             sigma_D Rate of infection (upon exposure) for individuals with detected infections
             gamma_D Rate of recovery (upon infection) for individuals with detected infections
             mu_D    Rate of infection-related death for individuals with detected infections
@@ -506,11 +508,11 @@ class SEIRSNetworkModel():
                     (all remaining nodes initialized susceptible)   
     """
 
-    def __init__(self, G, beta, sigma, gamma, xi=0, mu_I=0, mu_0=0, nu=0, p=0,
-                    Q=None, beta_D=None, sigma_D=None, gamma_D=None, mu_D=None, 
+    def __init__(self, G, beta, sigma, gamma, xi=0, mu_I=0, mu_0=0, nu=0, beta_local=None, p=0,
+                    Q=None, beta_D=None, sigma_D=None, gamma_D=None, mu_D=None, beta_D_local=None,
                     theta_E=0, theta_I=0, phi_E=0, phi_I=0, psi_E=0, psi_I=0, q=0,
                     initE=0, initI=10, initD_E=0, initD_I=0, initR=0, initF=0,
-                    node_groups=None):
+                    node_groups=None, store_Xseries=False):
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Setup Adjacency matrix:
@@ -525,75 +527,64 @@ class SEIRSNetworkModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Model Parameters:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        self.beta   = numpy.array(beta).reshape((self.numNodes, 1))  if isinstance(beta, (list, numpy.ndarray)) else numpy.full(fill_value=beta, shape=(self.numNodes,1))
-        self.sigma  = numpy.array(sigma).reshape((self.numNodes, 1)) if isinstance(sigma, (list, numpy.ndarray)) else numpy.full(fill_value=sigma, shape=(self.numNodes,1))
-        self.gamma  = numpy.array(gamma).reshape((self.numNodes, 1)) if isinstance(gamma, (list, numpy.ndarray)) else numpy.full(fill_value=gamma, shape=(self.numNodes,1))
-        self.xi     = numpy.array(xi).reshape((self.numNodes, 1))    if isinstance(xi, (list, numpy.ndarray)) else numpy.full(fill_value=xi, shape=(self.numNodes,1))
-        self.mu_I   = numpy.array(mu_I).reshape((self.numNodes, 1))  if isinstance(mu_I, (list, numpy.ndarray)) else numpy.full(fill_value=mu_I, shape=(self.numNodes,1))
-        self.mu_0   = numpy.array(mu_0).reshape((self.numNodes, 1))  if isinstance(mu_0, (list, numpy.ndarray)) else numpy.full(fill_value=mu_0, shape=(self.numNodes,1))
-        self.nu     = numpy.array(nu).reshape((self.numNodes, 1))    if isinstance(nu, (list, numpy.ndarray)) else numpy.full(fill_value=nu, shape=(self.numNodes,1))
-        self.p      = numpy.array(p).reshape((self.numNodes, 1))     if isinstance(p, (list, numpy.ndarray)) else numpy.full(fill_value=p, shape=(self.numNodes,1))
-
-        # Testing-related parameters:
-        self.beta_D   = (numpy.array(beta_D).reshape((self.numNodes, 1))  if isinstance(beta_D, (list, numpy.ndarray)) else numpy.full(fill_value=beta_D, shape=(self.numNodes,1))) if beta_D is not None else self.beta
-        self.sigma_D  = (numpy.array(sigma_D).reshape((self.numNodes, 1)) if isinstance(sigma_D, (list, numpy.ndarray)) else numpy.full(fill_value=sigma_D, shape=(self.numNodes,1))) if sigma_D is not None else self.sigma
-        self.gamma_D  = (numpy.array(gamma_D).reshape((self.numNodes, 1)) if isinstance(gamma_D, (list, numpy.ndarray)) else numpy.full(fill_value=gamma_D, shape=(self.numNodes,1))) if gamma_D is not None else self.gamma
-        self.mu_D     = (numpy.array(mu_D).reshape((self.numNodes, 1))    if isinstance(mu_D, (list, numpy.ndarray)) else numpy.full(fill_value=mu_D, shape=(self.numNodes,1))) if mu_D is not None else self.mu_I
-        self.theta_E  = numpy.array(theta_E).reshape((self.numNodes, 1))  if isinstance(theta_E, (list, numpy.ndarray)) else numpy.full(fill_value=theta_E, shape=(self.numNodes,1))
-        self.theta_I  = numpy.array(theta_I).reshape((self.numNodes, 1))  if isinstance(theta_I, (list, numpy.ndarray)) else numpy.full(fill_value=theta_I, shape=(self.numNodes,1))
-        self.phi_E    = numpy.array(phi_E).reshape((self.numNodes, 1))    if isinstance(phi_E, (list, numpy.ndarray)) else numpy.full(fill_value=phi_E, shape=(self.numNodes,1))
-        self.phi_I    = numpy.array(phi_I).reshape((self.numNodes, 1))    if isinstance(phi_I, (list, numpy.ndarray)) else numpy.full(fill_value=phi_I, shape=(self.numNodes,1))
-        self.psi_E    = numpy.array(psi_E).reshape((self.numNodes, 1))    if isinstance(psi_E, (list, numpy.ndarray)) else numpy.full(fill_value=psi_E, shape=(self.numNodes,1))
-        self.psi_I    = numpy.array(psi_I).reshape((self.numNodes, 1))    if isinstance(psi_I, (list, numpy.ndarray)) else numpy.full(fill_value=psi_I, shape=(self.numNodes,1))
-        self.q        = numpy.array(q).reshape((self.numNodes, 1))        if isinstance(q, (list, numpy.ndarray)) else numpy.full(fill_value=q, shape=(self.numNodes,1))
+        self.parameters = { 'beta':beta, 'sigma':sigma, 'gamma':gamma, 'xi':xi, 'mu_I':mu_I, 'mu_0':mu_0, 'nu':nu, 
+                            'beta_D':beta_D, 'sigma_D':sigma_D, 'gamma_D':gamma_D, 'mu_D':mu_D, 
+                            'beta_local':beta_local, 'beta_D_local':beta_D_local, 'p':p,'q':q,
+                            'theta_E':theta_E, 'theta_I':theta_I, 'phi_E':phi_E, 'phi_I':phi_I, 'psi_E':phi_E, 'psi_I':psi_I }
+        self.update_parameters()
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Each node can undergo up to 4 transitions (sans vitality/re-susceptibility returns to S state),
         # so there are ~numNodes*4 events/timesteps expected; initialize numNodes*5 timestep slots to start 
         # (will be expanded during run if needed)
-        self.tseries = numpy.zeros(5*self.numNodes)
-        self.numE   = numpy.zeros(5*self.numNodes)
-        self.numI   = numpy.zeros(5*self.numNodes)
-        self.numD_E = numpy.zeros(5*self.numNodes)
-        self.numD_I = numpy.zeros(5*self.numNodes)
-        self.numR   = numpy.zeros(5*self.numNodes)
-        self.numF   = numpy.zeros(5*self.numNodes)
-        self.numS   = numpy.zeros(5*self.numNodes)
-        self.N      = numpy.zeros(5*self.numNodes)
+        self.tseries    = numpy.zeros(5*self.numNodes)
+        self.numE       = numpy.zeros(5*self.numNodes)
+        self.numI       = numpy.zeros(5*self.numNodes)
+        self.numD_E     = numpy.zeros(5*self.numNodes)
+        self.numD_I     = numpy.zeros(5*self.numNodes)
+        self.numR       = numpy.zeros(5*self.numNodes)
+        self.numF       = numpy.zeros(5*self.numNodes)
+        self.numS       = numpy.zeros(5*self.numNodes)
+        self.N          = numpy.zeros(5*self.numNodes)
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Initialize Timekeeping:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        self.t      = 0
-        self.tmax   = 0 # will be set when run() is called
-        self.tidx   = 0
+        self.t          = 0
+        self.tmax       = 0 # will be set when run() is called
+        self.tidx       = 0
         self.tseries[0] = 0
         
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Initialize Counts of inidividuals with each state:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        self.numE[0] = int(initE)
-        self.numI[0] = int(initI)
-        self.numD_E[0] = int(initD_E)
-        self.numD_I[0] = int(initD_I)
-        self.numR[0] = int(initR)
-        self.numF[0] = int(initF)
-        self.numS[0] = self.numNodes - self.numE[0] - self.numI[0] - self.numD_E[0] - self.numD_I[0] - self.numR[0] - self.numF[0]
-        self.N[0]    = self.numS[0] + self.numE[0] + self.numI[0] + self.numD_E[0] + self.numD_I[0] + self.numR[0]
+        self.numE[0]    = int(initE)
+        self.numI[0]    = int(initI)
+        self.numD_E[0]  = int(initD_E)
+        self.numD_I[0]  = int(initD_I)
+        self.numR[0]    = int(initR)
+        self.numF[0]    = int(initF)
+        self.numS[0]    = self.numNodes - self.numE[0] - self.numI[0] - self.numD_E[0] - self.numD_I[0] - self.numR[0] - self.numF[0]
+        self.N[0]       = self.numS[0] + self.numE[0] + self.numI[0] + self.numD_E[0] + self.numD_I[0] + self.numR[0]
         
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Node states:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        self.S      = 1
-        self.E      = 2
-        self.I      = 3
-        self.D_E    = 4
-        self.D_I    = 5
-        self.R      = 6
-        self.F      = 7
+        self.S          = 1
+        self.E          = 2
+        self.I          = 3
+        self.D_E        = 4
+        self.D_I        = 5
+        self.R          = 6
+        self.F          = 7
 
         self.X = numpy.array([self.S]*int(self.numS[0]) + [self.E]*int(self.numE[0]) + [self.I]*int(self.numI[0]) + [self.D_E]*int(self.numD_E[0]) + [self.D_I]*int(self.numD_I[0]) + [self.R]*int(self.numR[0]) + [self.F]*int(self.numF[0])).reshape((self.numNodes,1))
         numpy.random.shuffle(self.X)
+
+        self.store_Xseries = store_Xseries
+        if(store_Xseries):
+            self.Xseries        = numpy.zeros(shape=(5*self.numNodes, self.numNodes), dtype='uint8')
+            self.Xseries[0,:]   = self.X.T
 
         self.transitions =  { 
                                 'StoE': {'currentState':self.S, 'newState':self.E},
@@ -608,11 +599,6 @@ class SEIRSNetworkModel():
                                 'DItoF': {'currentState':self.D_I, 'newState':self.F},
                                 '_toS': {'currentState':True, 'newState':self.S},
                             }
-
-        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        # Initialize scenario flags:
-        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        self.update_scenario_flags()
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Initialize node subgroup data series:
@@ -641,6 +627,85 @@ class SEIRSNetworkModel():
                 self.nodeGroupData[groupName]['N'][0]       = self.nodeGroupData[groupName]['numS'][0] + self.nodeGroupData[groupName]['numE'][0] + self.nodeGroupData[groupName]['numI'][0] + self.nodeGroupData[groupName]['numD_E'][0] + self.nodeGroupData[groupName]['numD_I'][0] + self.nodeGroupData[groupName]['numR'][0]
 
          
+
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    def update_parameters(self):
+        import time
+        updatestart = time.time()
+
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        # Model parameters:
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        self.beta           = numpy.array(self.parameters['beta']).reshape((self.numNodes, 1))  if isinstance(self.parameters['beta'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['beta'], shape=(self.numNodes,1))
+        self.sigma          = numpy.array(self.parameters['sigma']).reshape((self.numNodes, 1)) if isinstance(self.parameters['sigma'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['sigma'], shape=(self.numNodes,1))
+        self.gamma          = numpy.array(self.parameters['gamma']).reshape((self.numNodes, 1)) if isinstance(self.parameters['gamma'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['gamma'], shape=(self.numNodes,1))
+        self.xi             = numpy.array(self.parameters['xi']).reshape((self.numNodes, 1))    if isinstance(self.parameters['xi'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['xi'], shape=(self.numNodes,1))
+        self.mu_I           = numpy.array(self.parameters['mu_I']).reshape((self.numNodes, 1))  if isinstance(self.parameters['mu_I'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['mu_I'], shape=(self.numNodes,1))
+        self.mu_0           = numpy.array(self.parameters['mu_0']).reshape((self.numNodes, 1))  if isinstance(self.parameters['mu_0'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['mu_0'], shape=(self.numNodes,1))
+        self.nu             = numpy.array(self.parameters['nu']).reshape((self.numNodes, 1))    if isinstance(self.parameters['nu'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['nu'], shape=(self.numNodes,1))
+        self.p              = numpy.array(self.parameters['p']).reshape((self.numNodes, 1))     if isinstance(self.parameters['p'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['p'], shape=(self.numNodes,1))
+        
+        # Testing-related parameters:
+        self.beta_D         = (numpy.array(self.parameters['beta_D']).reshape((self.numNodes, 1))  if isinstance(self.parameters['beta_D'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['beta_D'], shape=(self.numNodes,1))) if self.parameters['beta_D'] is not None else self.beta
+        self.sigma_D        = (numpy.array(self.parameters['sigma_D']).reshape((self.numNodes, 1)) if isinstance(self.parameters['sigma_D'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['sigma_D'], shape=(self.numNodes,1))) if self.parameters['sigma_D'] is not None else self.sigma
+        self.gamma_D        = (numpy.array(self.parameters['gamma_D']).reshape((self.numNodes, 1)) if isinstance(self.parameters['gamma_D'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['gamma_D'], shape=(self.numNodes,1))) if self.parameters['gamma_D'] is not None else self.gamma
+        self.mu_D           = (numpy.array(self.parameters['mu_D']).reshape((self.numNodes, 1))    if isinstance(self.parameters['mu_D'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['mu_D'], shape=(self.numNodes,1))) if self.parameters['mu_D'] is not None else self.mu_I
+        self.theta_E        = numpy.array(self.parameters['theta_E']).reshape((self.numNodes, 1))  if isinstance(self.parameters['theta_E'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['theta_E'], shape=(self.numNodes,1))
+        self.theta_I        = numpy.array(self.parameters['theta_I']).reshape((self.numNodes, 1))  if isinstance(self.parameters['theta_I'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['theta_I'], shape=(self.numNodes,1))
+        self.phi_E          = numpy.array(self.parameters['phi_E']).reshape((self.numNodes, 1))    if isinstance(self.parameters['phi_E'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['phi_E'], shape=(self.numNodes,1))
+        self.phi_I          = numpy.array(self.parameters['phi_I']).reshape((self.numNodes, 1))    if isinstance(self.parameters['phi_I'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['phi_I'], shape=(self.numNodes,1))
+        self.psi_E          = numpy.array(self.parameters['psi_E']).reshape((self.numNodes, 1))    if isinstance(self.parameters['psi_E'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['psi_E'], shape=(self.numNodes,1))
+        self.psi_I          = numpy.array(self.parameters['psi_I']).reshape((self.numNodes, 1))    if isinstance(self.parameters['psi_I'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['psi_I'], shape=(self.numNodes,1))
+        self.q              = numpy.array(self.parameters['q']).reshape((self.numNodes, 1))        if isinstance(self.parameters['q'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['q'], shape=(self.numNodes,1))
+
+        #Local transmission parameters:
+        if(self.parameters['beta_local'] is not None):
+            if(isinstance(self.parameters['beta_local'], (list, numpy.ndarray))):
+                if(isinstance(self.parameters['beta_local'], list)):
+                    self.beta_local = numpy.array(self.parameters['beta_local'])
+                else: # is numpy.ndarray
+                    self.beta_local = self.parameters['beta_local']
+                if(self.beta_local.ndim == 1):
+                    self.beta_local.reshape((self.numNodes, 1))
+                elif(self.beta_local.ndim == 2):
+                    self.beta_local.reshape((self.numNodes, self.numNodes))
+            else:
+                self.beta_local = numpy.full_like(self.beta, fill_value=self.parameters['beta_local'])
+        else:
+            self.beta_local = self.beta
+        #----------------------------------------
+        if(self.parameters['beta_D_local'] is not None):
+            if(isinstance(self.parameters['beta_D_local'], (list, numpy.ndarray))):
+                if(isinstance(self.parameters['beta_D_local'], list)):
+                    self.beta_D_local = numpy.array(self.parameters['beta_D_local'])
+                else: # is numpy.ndarray
+                    self.beta_D_local = self.parameters['beta_D_local']
+                if(self.beta_D_local.ndim == 1):
+                    self.beta_D_local.reshape((self.numNodes, 1))
+                elif(self.beta_D_local.ndim == 2):
+                    self.beta_D_local.reshape((self.numNodes, self.numNodes))
+            else:
+                self.beta_D_local = numpy.full_like(self.beta_D, fill_value=self.parameters['beta_D_local'])
+        else:
+            self.beta_D_local = self.beta_D
+        
+        # Pre-multiply beta values by the adjacency matrix ("transmission weight connections")
+        if(self.beta_local.ndim == 1):
+            self.A_beta     = scipy.sparse.csr_matrix.multiply(self.A, numpy.tile(self.beta_local, (1,self.numNodes))).tocsr()
+        elif(self.beta_local.ndim == 2):
+            self.A_beta     = scipy.sparse.csr_matrix.multiply(self.A, self.beta_local).tocsr()
+        # Pre-multiply beta_D values by the quarantine adjacency matrix ("transmission weight connections")
+        if(self.beta_D_local.ndim == 1):
+            self.A_Q_beta_D = scipy.sparse.csr_matrix.multiply(self.A_Q, numpy.tile(self.beta_D_local, (1,self.numNodes))).tocsr()
+        elif(self.beta_D_local.ndim == 2):
+            self.A_Q_beta_D = scipy.sparse.csr_matrix.multiply(self.A_Q, self.beta_D_local).tocsr()
+
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        # Update scenario flags:
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        self.update_scenario_flags()
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -704,16 +769,18 @@ class SEIRSNetworkModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Pre-calculate matrix multiplication terms that may be used in multiple propensity calculations,
         # and check to see if their computation is necessary before doing the multiplication
-        numContacts_I = numpy.zeros(shape=(self.numNodes,1))
+        numContacts_I       = numpy.zeros(shape=(self.numNodes,1))
+        transmissionTerms_I = numpy.zeros(shape=(self.numNodes,1))
         if(numpy.any(self.numI[self.tidx]) 
             and numpy.any(self.beta!=0)):
-            numContacts_I = numpy.asarray( scipy.sparse.csr_matrix.dot(self.A, self.X==self.I) )
+            transmissionTerms_I = numpy.asarray( scipy.sparse.csr_matrix.dot(self.A_beta, self.X==self.I) )
 
         numQuarantineContacts_DI = numpy.zeros(shape=(self.numNodes,1))
+        transmissionTerms_DI = numpy.zeros(shape=(self.numNodes,1))
         if(self.testing_scenario 
             and numpy.any(self.numD_I[self.tidx])
             and numpy.any(self.beta_D)):
-            numQuarantineContacts_DI = numpy.asarray( scipy.sparse.csr_matrix.dot(self.A_Q, self.X==self.D_I) )
+            transmissionTerms_DI = numpy.asarray( scipy.sparse.csr_matrix.dot(self.A_Q_beta_D, self.X==self.D_I) )
 
         numContacts_D = numpy.zeros(shape=(self.numNodes,1))
         if(self.tracing_scenario 
@@ -724,7 +791,7 @@ class SEIRSNetworkModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
         propensities_StoE   = ( self.p*((self.beta*self.numI[self.tidx] + self.q*self.beta_D*self.numD_I[self.tidx])/self.N[self.tidx])
-                                + (1-self.p)*numpy.divide((self.beta*numContacts_I + self.beta_D*numQuarantineContacts_DI), self.degree, out=numpy.zeros_like(self.degree), where=self.degree!=0)
+                                + (1-self.p)*numpy.divide((transmissionTerms_I + transmissionTerms_DI), self.degree, out=numpy.zeros_like(self.degree), where=self.degree!=0)
                               )*(self.X==self.S)
 
         propensities_EtoI   = self.sigma*(self.X==self.E)
@@ -764,15 +831,18 @@ class SEIRSNetworkModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^    
 
     def increase_data_series_length(self):
-        self.tseries = numpy.pad(self.tseries, [(0, 5*self.numNodes)], mode='constant', constant_values=0)
-        self.numS = numpy.pad(self.numS, [(0, 5*self.numNodes)], mode='constant', constant_values=0)
-        self.numE = numpy.pad(self.numE, [(0, 5*self.numNodes)], mode='constant', constant_values=0)
-        self.numI = numpy.pad(self.numI, [(0, 5*self.numNodes)], mode='constant', constant_values=0)
+        self.tseries= numpy.pad(self.tseries, [(0, 5*self.numNodes)], mode='constant', constant_values=0)
+        self.numS   = numpy.pad(self.numS, [(0, 5*self.numNodes)], mode='constant', constant_values=0)
+        self.numE   = numpy.pad(self.numE, [(0, 5*self.numNodes)], mode='constant', constant_values=0)
+        self.numI   = numpy.pad(self.numI, [(0, 5*self.numNodes)], mode='constant', constant_values=0)
         self.numD_E = numpy.pad(self.numD_E, [(0, 5*self.numNodes)], mode='constant', constant_values=0)
         self.numD_I = numpy.pad(self.numD_I, [(0, 5*self.numNodes)], mode='constant', constant_values=0)
-        self.numR = numpy.pad(self.numR, [(0, 5*self.numNodes)], mode='constant', constant_values=0)
-        self.numF = numpy.pad(self.numF, [(0, 5*self.numNodes)], mode='constant', constant_values=0)
-        self.N = numpy.pad(self.N, [(0, 5*self.numNodes)], mode='constant', constant_values=0)
+        self.numR   = numpy.pad(self.numR, [(0, 5*self.numNodes)], mode='constant', constant_values=0)
+        self.numF   = numpy.pad(self.numF, [(0, 5*self.numNodes)], mode='constant', constant_values=0)
+        self.N      = numpy.pad(self.N, [(0, 5*self.numNodes)], mode='constant', constant_values=0)
+
+        if(self.store_Xseries):
+            self.Xseries = numpy.pad(self.Xseries, [(0, 5*self.numNodes), (0,0)], mode=constant, constant_values=0)
 
         if(self.nodeGroupData):
             for groupName in self.nodeGroupData:
@@ -790,15 +860,18 @@ class SEIRSNetworkModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
 
     def finalize_data_series(self):
-        self.tseries = numpy.array(self.tseries, dtype=float)[:self.tidx+1]
-        self.numS = numpy.array(self.numS, dtype=float)[:self.tidx+1]
-        self.numE = numpy.array(self.numE, dtype=float)[:self.tidx+1]
-        self.numI = numpy.array(self.numI, dtype=float)[:self.tidx+1]
+        self.tseries= numpy.array(self.tseries, dtype=float)[:self.tidx+1]
+        self.numS   = numpy.array(self.numS, dtype=float)[:self.tidx+1]
+        self.numE   = numpy.array(self.numE, dtype=float)[:self.tidx+1]
+        self.numI   = numpy.array(self.numI, dtype=float)[:self.tidx+1]
         self.numD_E = numpy.array(self.numD_E, dtype=float)[:self.tidx+1]
         self.numD_I = numpy.array(self.numD_I, dtype=float)[:self.tidx+1]
-        self.numR = numpy.array(self.numR, dtype=float)[:self.tidx+1]
-        self.numF = numpy.array(self.numF, dtype=float)[:self.tidx+1]
-        self.N = numpy.array(self.N, dtype=float)[:self.tidx+1]
+        self.numR   = numpy.array(self.numR, dtype=float)[:self.tidx+1]
+        self.numF   = numpy.array(self.numF, dtype=float)[:self.tidx+1]
+        self.N      = numpy.array(self.N, dtype=float)[:self.tidx+1]
+
+        if(self.store_Xseries):
+            self.Xseries = self.Xseries[:self.tidx+1, :]
 
         if(self.nodeGroupData):
             for groupName in self.nodeGroupData:
@@ -810,7 +883,7 @@ class SEIRSNetworkModel():
                 self.nodeGroupData[groupName]['numR']    = numpy.array(self.nodeGroupData[groupName]['numR'], dtype=float)[:self.tidx+1]
                 self.nodeGroupData[groupName]['numF']    = numpy.array(self.nodeGroupData[groupName]['numF'], dtype=float)[:self.tidx+1]
                 self.nodeGroupData[groupName]['N']       = numpy.array(self.nodeGroupData[groupName]['N'], dtype=float)[:self.tidx+1]
-                
+
         return None
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -876,6 +949,9 @@ class SEIRSNetworkModel():
         self.numF[self.tidx]     = numpy.clip(numpy.count_nonzero(self.X==self.F), a_min=0, a_max=self.numNodes)
         self.N[self.tidx]        = numpy.clip((self.numS[self.tidx] + self.numE[self.tidx] + self.numI[self.tidx] + self.numD_E[self.tidx] + self.numD_I[self.tidx] + self.numR[self.tidx]), a_min=0, a_max=self.numNodes)
 
+        if(self.store_Xseries):
+            self.Xseries[self.tidx,:] = self.X.T
+
         if(self.nodeGroupData):
             for groupName in self.nodeGroupData:
                 self.nodeGroupData[groupName]['numS'][self.tidx]    = numpy.count_nonzero(self.nodeGroupData[groupName]['mask']*self.X==self.S)
@@ -902,7 +978,7 @@ class SEIRSNetworkModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    def run(self, T, checkpoints=None, print_interval=10, verbose=False):
+    def run(self, T, checkpoints=None, print_interval=10, verbose='t'):
         if(T>0):
             self.tmax += T
         else:
@@ -913,9 +989,6 @@ class SEIRSNetworkModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         if(checkpoints):
             numCheckpoints = len(checkpoints['t'])
-            paramNames = ['G', 'beta', 'sigma', 'gamma', 'xi', 'mu_I', 'mu_0', 'nu', 'p',
-                          'Q', 'beta_D', 'sigma_D', 'gamma_D', 'mu_D', 'q',
-                          'theta_E', 'theta_I', 'phi_E', 'phi_I', 'psi_E', 'psi_I']
             for chkpt_param, chkpt_values in checkpoints.items():
                 assert(isinstance(chkpt_values, (list, numpy.ndarray)) and len(chkpt_values)==numCheckpoints), "Expecting a list of values with length equal to number of checkpoint times ("+str(numCheckpoints)+") for each checkpoint parameter."
             checkpointIdx  = numpy.searchsorted(checkpoints['t'], self.t) # Finds 1st index in list greater than given val
@@ -938,18 +1011,18 @@ class SEIRSNetworkModel():
             # Handle checkpoints if applicable:
             if(checkpoints):
                 if(self.t >= checkpointTime):
-                    print("[Checkpoint: Updating parameters]")
+                    if(verbose is not False):
+                        print("[Checkpoint: Updating parameters]")
                     # A checkpoint has been reached, update param values:
-                    for param in paramNames:
+                    if('G' in list(checkpoints.keys())):
+                        self.update_G(checkpoints['G'][checkpointIdx])
+                    if('Q' in list(checkpoints.keys())):
+                        self.update_Q(checkpoints['Q'][checkpointIdx])
+                    for param in list(self.parameters.keys()):
                         if(param in list(checkpoints.keys())):
-                            if(param=='G'):
-                                self.update_G(checkpoints[param][checkpointIdx])
-                            elif(param=='Q'):
-                                self.update_Q(checkpoints[param][checkpointIdx])
-                            else:
-                                setattr(self, param, checkpoints[param][checkpointIdx] if isinstance(checkpoints[param][checkpointIdx], (list, numpy.ndarray)) else numpy.full(fill_value=checkpoints[param][checkpointIdx], shape=(self.numNodes,1)))
-                    # Update scenario flags to represent new param values:
-                    self.update_scenario_flags()
+                            self.parameters.update({param: checkpoints[param][checkpointIdx]})
+                    # Update parameter data structures and scenario flags:
+                    self.update_parameters()
                     # Update the next checkpoint time:
                     checkpointIdx  = numpy.searchsorted(checkpoints['t'], self.t) # Finds 1st index in list greater than given val
                     if(checkpointIdx >= numCheckpoints):
@@ -963,8 +1036,10 @@ class SEIRSNetworkModel():
 
             if(print_interval):
                 if(print_reset and (int(self.t) % print_interval == 0)):
-                    print("t = %.2f" % self.t)
-                    if(verbose):
+                    if(verbose=="t"):
+                        print("t = %.2f" % self.t)
+                    if(verbose==True):
+                        print("t = %.2f" % self.t)
                         print("\t S   = " + str(self.numS[self.tidx]))
                         print("\t E   = " + str(self.numE[self.tidx]))
                         print("\t I   = " + str(self.numI[self.tidx]))
@@ -1213,10 +1288,14 @@ class SEIRSNetworkModel():
                         ylim=ylim, xlim=xlim, legend=legend, title=title, side_title=side_title, plot_percentages=plot_percentages)
 
         pyplot.show()
+        
+
 
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
