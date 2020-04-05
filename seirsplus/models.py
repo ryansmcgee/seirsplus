@@ -1270,7 +1270,7 @@ class SEIRSNetworkModel():
                             shaded_reference_results=None, shaded_reference_label='reference', 
                             vlines=[], vline_colors=[], vline_styles=[], vline_labels=[],
                             ylim=None, xlim=None, legend=True, title=None, side_title=None, plot_percentages=True,
-                            figsize=(12,8), use_seaborn=True, show):
+                            figsize=(12,8), use_seaborn=True, show=True):
 
         import matplotlib.pyplot as pyplot
 
