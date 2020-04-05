@@ -409,7 +409,7 @@ class SEIRSModel():
                         shaded_reference_results=None, shaded_reference_label='reference', 
                         vlines=[], vline_colors=[], vline_styles=[], vline_labels=[],
                         ylim=None, xlim=None, legend=True, title=None, side_title=None, plot_percentages=True,
-                        figsize=(12,8), use_seaborn=True):
+                        figsize=(12,8), use_seaborn=True, show=True):
 
         import matplotlib.pyplot as pyplot
 
@@ -429,7 +429,10 @@ class SEIRSModel():
                         vlines=vlines, vline_colors=vline_colors, vline_styles=vline_styles, vline_labels=vline_labels,
                         ylim=ylim, xlim=xlim, legend=legend, title=title, side_title=side_title, plot_percentages=plot_percentages)
 
-        pyplot.show()
+        if(show):
+            pyplot.show()
+
+        return fig, ax
 
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -463,7 +466,10 @@ class SEIRSModel():
                         vlines=vlines, vline_colors=vline_colors, vline_styles=vline_styles, vline_labels=vline_labels, 
                         ylim=ylim, xlim=xlim, legend=legend, title=title, side_title=side_title, plot_percentages=plot_percentages)
 
-        pyplot.show()
+        if(show):
+            pyplot.show()
+
+        return fig, ax
 
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
