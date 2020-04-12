@@ -233,6 +233,16 @@ class SEIRSModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+    def total_num_infections(self, t_idx=None):
+        if(t_idx is None):
+            return (self.numE[:] + self.numI[:] + self.numD_E[:] + self.numD_I[:])  
+        else:
+            return (self.numE[t_idx] + self.numI[t_idx] + self.numD_E[t_idx] + self.numD_I[t_idx])   
+
+
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
     def plot(self, ax=None,  plot_S='line', plot_E='line', plot_I='line',plot_R='line', plot_F='line',
                             plot_D_E='line', plot_D_I='line', combine_D=True,
                             color_S='tab:green', color_E='orange', color_I='crimson', color_R='tab:blue', color_F='black',
@@ -765,6 +775,14 @@ class SEIRSNetworkModel():
                                     or (numpy.any(self.psi_I) and numpy.any(self.phi_I)) )
         self.vitality_scenario  = (numpy.any(self.mu_0) and numpy.any(self.nu))
         self.resusceptibility_scenario  = (numpy.any(self.xi))
+
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    def total_num_infections(self, t_idx=None):
+        if(t_idx is None):
+            return (self.numE[:] + self.numI[:] + self.numD_E[:] + self.numD_I[:])            
+        else:
+            return (self.numE[t_idx] + self.numI[t_idx] + self.numD_E[t_idx] + self.numD_I[t_idx])          
 
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
