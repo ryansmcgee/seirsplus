@@ -2145,11 +2145,11 @@ class SymptomaticSEIRSNetworkModel():
         if(dashed_reference_results):
             dashedReference_tseries       = dashed_reference_results.tseries[::int(self.numNodes/100)]
             dashedReference_infectedStack = dashed_reference_results.total_num_infections()[::int(self.numNodes/100)] / (self.numNodes if plot_percentages else 1)
-            ax.plot(dashedReference_tseries, dashedReference_infectedStack, color='#E0E0E0', linestyle='--', label='$Total infections$ ('+dashed_reference_label+')', zorder=0)
+            ax.plot(dashedReference_tseries, dashedReference_infectedStack, color='#E0E0E0', linestyle='--', label='Total infections ('+dashed_reference_label+')', zorder=0)
         if(shaded_reference_results):
             shadedReference_tseries       = shaded_reference_results.tseries
             shadedReference_infectedStack = shaded_reference_results.total_num_infections() / (self.numNodes if plot_percentages else 1)
-            ax.fill_between(shaded_reference_results.tseries, shadedReference_infectedStack, 0, color='#EFEFEF', label='$Total infections$ ('+shaded_reference_label+')', zorder=0)
+            ax.fill_between(shaded_reference_results.tseries, shadedReference_infectedStack, 0, color='#EFEFEF', label='Total infections ('+shaded_reference_label+')', zorder=0)
             ax.plot(shaded_reference_results.tseries, shadedReference_infectedStack, color='#E0E0E0', zorder=1)
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2174,7 +2174,7 @@ class SymptomaticSEIRSNetworkModel():
                 ax.plot(        numpy.ma.masked_where(D_Eseries<=0, self.tseries), numpy.ma.masked_where(D_Eseries<=0, topstack+D_Eseries),           color=color_D_E, zorder=3)
                 topstack = topstack+D_Eseries
             if(any(D_preseries) and plot_D_pre=='stacked'):
-                ax.fill_between(numpy.ma.masked_where(D_preseries<=0, self.tseries), numpy.ma.masked_where(D_preseries<=0, topstack+D_preseries), topstack, color=color_D_pre, alpha=0.5, label='$D_pre$', zorder=2)
+                ax.fill_between(numpy.ma.masked_where(D_preseries<=0, self.tseries), numpy.ma.masked_where(D_preseries<=0, topstack+D_preseries), topstack, color=color_D_pre, alpha=0.5, label='$D_{pre}$', zorder=2)
                 ax.plot(        numpy.ma.masked_where(D_preseries<=0, self.tseries), numpy.ma.masked_where(D_preseries<=0, topstack+D_preseries),           color=color_D_pre, zorder=3)
                 topstack = topstack+D_preseries
             if(any(D_Sseries) and plot_D_S=='stacked'):
@@ -2190,7 +2190,7 @@ class SymptomaticSEIRSNetworkModel():
             ax.plot(        numpy.ma.masked_where(Eseries<=0, self.tseries), numpy.ma.masked_where(Eseries<=0, topstack+Eseries),           color=color_E, zorder=3)
             topstack = topstack+Eseries
         if(any(I_preseries) and plot_I_pre=='stacked'):
-            ax.fill_between(numpy.ma.masked_where(I_preseries<=0, self.tseries), numpy.ma.masked_where(I_preseries<=0, topstack+I_preseries), topstack, color=color_I_pre, alpha=0.5, label='$I_pre$', zorder=2)
+            ax.fill_between(numpy.ma.masked_where(I_preseries<=0, self.tseries), numpy.ma.masked_where(I_preseries<=0, topstack+I_preseries), topstack, color=color_I_pre, alpha=0.5, label='$I_{pre}$', zorder=2)
             ax.plot(        numpy.ma.masked_where(I_preseries<=0, self.tseries), numpy.ma.masked_where(I_preseries<=0, topstack+I_preseries),           color=color_I_pre, zorder=3)
             topstack = topstack+I_preseries
         if(any(I_Sseries) and plot_I_S=='stacked'):
@@ -2227,7 +2227,7 @@ class SymptomaticSEIRSNetworkModel():
                 ax.fill_between(numpy.ma.masked_where(D_Eseries<=0, self.tseries), numpy.ma.masked_where(D_Eseries<=0, D_Eseries), 0, color=color_D_E, alpha=0.5, label='$D_E$', zorder=4)
                 ax.plot(        numpy.ma.masked_where(D_Eseries<=0, self.tseries), numpy.ma.masked_where(D_Eseries<=0, D_Eseries),    color=color_D_E, zorder=5)
             if(any(D_preseries) and plot_D_pre=='shaded'):
-                ax.fill_between(numpy.ma.masked_where(D_preseries<=0, self.tseries), numpy.ma.masked_where(D_preseries<=0, D_preseries), 0, color=color_D_pre, alpha=0.5, label='$D_pre$', zorder=4)
+                ax.fill_between(numpy.ma.masked_where(D_preseries<=0, self.tseries), numpy.ma.masked_where(D_preseries<=0, D_preseries), 0, color=color_D_pre, alpha=0.5, label='$D_{pre}$', zorder=4)
                 ax.plot(        numpy.ma.masked_where(D_preseries<=0, self.tseries), numpy.ma.masked_where(D_preseries<=0, D_preseries),    color=color_D_pre, zorder=5)
             if(any(D_Sseries) and plot_D_S=='shaded'):
                 ax.fill_between(numpy.ma.masked_where(D_Sseries<=0, self.tseries), numpy.ma.masked_where(D_Sseries<=0, D_Sseries), 0, color=color_D_S, alpha=0.5, label='$D_S$', zorder=4)
@@ -2239,7 +2239,7 @@ class SymptomaticSEIRSNetworkModel():
             ax.fill_between(numpy.ma.masked_where(Eseries<=0, self.tseries), numpy.ma.masked_where(Eseries<=0, Eseries), 0, color=color_E, alpha=0.5, label='$E$', zorder=4)
             ax.plot(        numpy.ma.masked_where(Eseries<=0, self.tseries), numpy.ma.masked_where(Eseries<=0, Eseries),    color=color_E, zorder=5)
         if(any(I_preseries) and plot_I_pre=='shaded'):
-            ax.fill_between(numpy.ma.masked_where(I_preseries<=0, self.tseries), numpy.ma.masked_where(I_preseries<=0, I_preseries), 0, color=color_I_pre, alpha=0.5, label='$I_pre$', zorder=4)
+            ax.fill_between(numpy.ma.masked_where(I_preseries<=0, self.tseries), numpy.ma.masked_where(I_preseries<=0, I_preseries), 0, color=color_I_pre, alpha=0.5, label='$I_{pre}$', zorder=4)
             ax.plot(        numpy.ma.masked_where(I_preseries<=0, self.tseries), numpy.ma.masked_where(I_preseries<=0, I_preseries),    color=color_I_pre, zorder=5)
         if(any(I_Sseries) and plot_I_S=='shaded'):
             ax.fill_between(numpy.ma.masked_where(I_Sseries<=0, self.tseries), numpy.ma.masked_where(I_Sseries<=0, I_Sseries), 0, color=color_I_S, alpha=0.5, label='$I_S$', zorder=4)
@@ -2267,7 +2267,7 @@ class SymptomaticSEIRSNetworkModel():
             if(any(D_Eseries) and plot_D_E=='line'):
                 ax.plot(numpy.ma.masked_where(D_Eseries<=0, self.tseries), numpy.ma.masked_where(D_Eseries<=0, D_Eseries), color=color_D_E, label='$D_E$', zorder=6)
             if(any(D_preseries) and plot_D_pre=='line'):
-                ax.plot(numpy.ma.masked_where(D_preseries<=0, self.tseries), numpy.ma.masked_where(D_preseries<=0, D_preseries), color=color_D_pre, label='$D_pre$', zorder=6)
+                ax.plot(numpy.ma.masked_where(D_preseries<=0, self.tseries), numpy.ma.masked_where(D_preseries<=0, D_preseries), color=color_D_pre, label='$D_{pre}$', zorder=6)
             if(any(D_Sseries) and plot_D_S=='line'):
                 ax.plot(numpy.ma.masked_where(D_Sseries<=0, self.tseries), numpy.ma.masked_where(D_Sseries<=0, D_Sseries), color=color_D_S, label='$D_S$', zorder=6)
             if(any(D_Aseries) and plot_D_A=='line'):
@@ -2275,7 +2275,7 @@ class SymptomaticSEIRSNetworkModel():
         if(any(Eseries) and plot_E=='line'):
             ax.plot(numpy.ma.masked_where(Eseries<=0, self.tseries), numpy.ma.masked_where(Eseries<=0, Eseries), color=color_E, label='$E$', zorder=6)
         if(any(I_preseries) and plot_I_pre=='line'):
-            ax.plot(numpy.ma.masked_where(I_preseries<=0, self.tseries), numpy.ma.masked_where(I_preseries<=0, I_preseries), color=color_I_pre, label='$I_pre$', zorder=6)
+            ax.plot(numpy.ma.masked_where(I_preseries<=0, self.tseries), numpy.ma.masked_where(I_preseries<=0, I_preseries), color=color_I_pre, label='$I_{pre}$', zorder=6)
         if(any(I_Sseries) and plot_I_S=='line'):
             ax.plot(numpy.ma.masked_where(I_Sseries<=0, self.tseries), numpy.ma.masked_where(I_Sseries<=0, I_Sseries), color=color_I_S, label='$I_S$', zorder=6)
         if(any(I_Aseries) and plot_I_A=='line'):
