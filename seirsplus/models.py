@@ -1807,7 +1807,7 @@ class SymptomaticSEIRSNetworkModel():
 
         propensities_IAtoDA     = (self.theta_A + self.phi_A*numContacts_D)*self.d_A*(self.X==self.I_A)
 
-        propensities_DEtoIPRE   = self.sigma_D*(self.X==self.D_E)
+        propensities_DEtoDPRE   = self.sigma_D*(self.X==self.D_E)
 
         propensities_DPREtoDS   = (1-self.a)*self.lamda_D*(self.X==self.D_pre)
 
@@ -1826,11 +1826,11 @@ class SymptomaticSEIRSNetworkModel():
         propensities = numpy.hstack([propensities_StoE, propensities_EtoIPRE, propensities_IPREtoIS, propensities_IPREtoIA,
                                      propensities_IStoR, propensities_IStoH, propensities_IAtoR, propensities_HtoR, propensities_HtoF, 
                                      propensities_EtoDE, propensities_IPREtoDPRE, propensities_IStoDS, propensities_IAtoDA, 
-                                     propensities_DEtoIPRE, propensities_DPREtoDS, propensities_DPREtoDA, propensities_DStoR, propensities_DStoH, 
+                                     propensities_DEtoDPRE, propensities_DPREtoDS, propensities_DPREtoDA, propensities_DStoR, propensities_DStoH, 
                                      propensities_DAtoR, propensities_RtoS, propensities__toS])
 
         columns = ['StoE', 'EtoIPRE', 'IPREtoIS', 'IPREtoIA', 'IStoR', 'IStoH', 'IAtoR', 'HtoR', 'HtoF', 
-                   'EtoDE', 'IPREtoDPRE', 'IStoDS', 'IAtoDA', 'DEtoIPRE', 'DPREtoDS', 'DPREtoDA', 'DStoR', 'DStoH', 'DAtoR', 
+                   'EtoDE', 'IPREtoDPRE', 'IStoDS', 'IAtoDA', 'DEtoDPRE', 'DPREtoDS', 'DPREtoDA', 'DStoR', 'DStoH', 'DAtoR', 
                    'RtoS', '_toS']
 
         return propensities, columns
