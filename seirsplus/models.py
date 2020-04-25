@@ -864,7 +864,7 @@ class SEIRSNetworkModel():
         self.N      = numpy.pad(self.N, [(0, 5*self.numNodes)], mode='constant', constant_values=0)
 
         if(self.store_Xseries):
-            self.Xseries = numpy.pad(self.Xseries, [(0, 5*self.numNodes), (0,0)], mode=constant, constant_values=0)
+            self.Xseries = numpy.pad(self.Xseries, [(0, 5*self.numNodes), (0,0)], mode='constant', constant_values=0)
 
         if(self.nodeGroupData):
             for groupName in self.nodeGroupData:
@@ -1856,7 +1856,7 @@ class SymptomaticSEIRSNetworkModel():
         self.N          = numpy.pad(self.N, [(0, 5*self.numNodes)], mode='constant', constant_values=0)
 
         if(self.store_Xseries):
-            self.Xseries = numpy.pad(self.Xseries, [(0, 5*self.numNodes), (0,0)], mode=constant, constant_values=0)
+            self.Xseries = numpy.pad(self.Xseries, [(0, 5*self.numNodes), (0,0)], mode='constant', constant_values=0)
 
         if(self.nodeGroupData):
             for groupName in self.nodeGroupData:
