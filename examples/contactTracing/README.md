@@ -37,7 +37,7 @@ Furthermore, while the more people that participate in contact tracing the bette
 <img src="infected_pop_fraction_2.png" width = "750">
 
 
-Of course, these simulations are rather <I>qualitative</I> in nature, and while they are good at identifying expected trends from an intervention, they might not be good at quantifying the exact level of these effects. Some additional things to examine here can be:
+Of course, these simulations are rather <I>qualitative</I> in nature, and while they are good at identifying expected trends from an intervention, they might not be good at quantifying the exact level of these effects. For example, the disease parameters are also important. For instance, a highly transmitable disease most probably requires much higher user adoption to be effective. Some additional things to examine here can be:
 
 - [X] Run its scenario several times to obtain information about the corresponding uncertainty of the results/trends. 
 - [ ] For the interventions (social distancing and lagged contact tracing), instead of starting them at a fixed time - 20 days after the start of the epidemic - we can envision a policy where the intervention starts after x% of the population has been infected. 
