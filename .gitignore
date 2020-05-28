@@ -1,0 +1,4 @@
+# ignore temporary swap files
+*.swp
+
+.DS_Store
