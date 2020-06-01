@@ -1,7 +1,5 @@
 from __future__ import division
 import numpy
-import sys
-
 import scipy
 import networkx
 import FARZ as FARZ
