@@ -14,6 +14,77 @@ import matplotlib.pyplot as pyplot
 
 
 
+def generate_workplace_contact_network(num_cohorts=1, num_nodes_per_cohort=100, num_teams_per_cohort=10,
+                                        mean_intracohort_degree=6, pct_contacts_intercohort=0.2,
+                                        farz_params={'alpha':5.0, 'gamma':5.0, 'beta':0.5, 'r':1, 'q':0.0, 'phi':1, 
+                                                     'b':0, 'epsilon':1e-6, 'directed': False, 'weighted': False},
+                                        distancing_scales=[]):
+
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Generate FARZ networks of intra-cohort contacts:
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    cohortNetworks = []
+
+    teams_indices = {}
+
+    for i in range(num_cohorts):
+
+        numNodes            = num_nodes_per_cohort[i] if isinstance(num_nodes_per_cohort, list) else num_nodes_per_cohort
+        numTeams            = num_teams_per_cohort[i] if isinstance(num_teams_per_cohort, list) else num_teams_per_cohort
+        cohortMeanDegree    = mean_intracohort_degree[i] if isinstance(mean_intracohort_degree, list) else mean_intracohort_degree
+
+        farz_params.update({'n':numNodes, 'k':numTeams, 'm':cohortMeanDegree})
+
+        cohortNetwork, cohortTeamLabels = FARZ.generate(farz_params=farz_params)
+
+        cohortNetworks.append(cohortNetwork)
+
+        for node, teams in cohortTeamLabels.items():
+            for team in teams:
+                try:
+                    teams_indices['c'+str(i)+'-t'+str(team)].append(node)
+                except KeyError:
+                    teams_indices['c'+str(i)+'-t'+str(team)] = [node]    
+
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Establish inter-cohort contacts:
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    cohortsAdjMatrices = [networkx.adj_matrix(cohortNetwork) for cohortNetwork in cohortNetworks]
+
+    workplaceAdjMatrix = scipy.sparse.block_diag(cohortsAdjMatrices)
+    workplaceNetwork   = networkx.from_scipy_sparse_matrix(workplaceAdjMatrix)
+
+    N = workplaceNetwork.number_of_nodes()
+
+    cohorts_indices = {}
+    cohortStartIdx  = -1
+    cohortFinalIdx  = -1
+    for c, cohortNetwork in enumerate(cohortNetworks):
+
+        cohortStartIdx = cohortFinalIdx + 1
+        cohortFinalIdx = cohortStartIdx + cohortNetwork.number_of_nodes() - 1
+        cohorts_indices['c'+str(c)] = range(cohortStartIdx, cohortFinalIdx)
+
+        for team, indices in teams_indices.items():
+            if('c'+str(c) in team):
+                teams_indices[team] = [idx+cohortStartIdx for idx in indices]
+
+        for i in range(cohortNetwork.number_of_nodes()):
+            i_intraCohortDegree = cohortNetwork.degree[i]
+            i_interCohortDegree = int( ((1/(1-pct_contacts_intercohort))*i_intraCohortDegree)-i_intraCohortDegree )
+            for d in range(i_interCohortDegree):
+                j = numpy.random.choice(range(0, cohortStartIdx)+range(cohortFinalIdx+1, N))
+                workplaceNetwork.add_edge(i, j)
+
+    return workplaceNetwork, cohorts_indices, teams_indices
+
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 def generate_demographic_contact_network(N, demographic_data, layer_generator='LFR', layer_info=None, distancing_scales=[], isolation_groups=[]):
 
     graphs = {}

@@ -368,9 +368,36 @@ class ExtSEIRSNetworkModel():
         self.q              = numpy.array(self.parameters['q']).reshape((self.numNodes, 1))             if isinstance(self.parameters['q'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['q'], shape=(self.numNodes,1))
 
         #----------------------------------------
+
+        self.beta_pairwise_mode = self.parameters['beta_pairwise_mode']
+
+        #----------------------------------------
+        # Global transmission parameters:
+        #----------------------------------------
+        if(self.beta_pairwise_mode == 'infected' or self.beta_pairwise_mode is None):
+            self.beta_global         = numpy.full_like(self.beta, fill_value=numpy.mean(self.beta))
+            self.beta_Q_global       = numpy.full_like(self.beta_Q, fill_value=numpy.mean(self.beta_Q))
+            self.beta_asym_global    = numpy.full_like(self.beta_asym, fill_value=numpy.mean(self.beta_asym))
+        elif(self.beta_pairwise_mode == 'infectee'):
+            self.beta_global         = self.beta      
+            self.beta_Q_global       = self.beta_Q    
+            self.beta_asym_global    = self.beta_asym
+        elif(self.beta_pairwise_mode == 'min'):
+            self.beta_global         = numpy.minimum(self.beta, numpy.mean(beta)) 
+            self.beta_Q_global       = numpy.minimum(self.beta_Q, numpy.mean(beta_Q)) 
+            self.beta_asym_global    = numpy.minimum(self.beta_asym, numpy.mean(beta_asym))
+        elif(self.beta_pairwise_mode == 'max'):
+            self.beta_global         = numpy.maximum(self.beta, numpy.mean(beta)) 
+            self.beta_Q_global       = numpy.maximum(self.beta_Q, numpy.mean(beta_Q)) 
+            self.beta_asym_global    = numpy.maximum(self.beta_asym, numpy.mean(beta_asym))
+        elif(self.beta_pairwise_mode == 'mean'):
+            self.beta_global         = (self.beta + numpy.full_like(self.beta, fill_value=numpy.mean(self.beta)))/2
+            self.beta_Q_global       = (self.beta_Q + numpy.full_like(self.beta_Q, fill_value=numpy.mean(self.beta_Q)))/2
+            self.beta_asym_global    = (self.beta_asym + numpy.full_like(self.beta_asym, fill_value=numpy.mean(self.beta_asym)))/2
+            
+        #----------------------------------------
         # Local transmission parameters:
         #----------------------------------------
-        self.beta_pairwise_mode = self.parameters['beta_pairwise_mode']
         self.beta_local         = self.beta      if self.parameters['beta_local'] is None      else numpy.array(self.parameters['beta_local'])      if isinstance(self.parameters['beta_local'], (list, numpy.ndarray))      else numpy.full(fill_value=self.parameters['beta_local'], shape=(self.numNodes,1))
         self.beta_Q_local       = self.beta_Q    if self.parameters['beta_Q_local'] is None    else numpy.array(self.parameters['beta_Q_local'])    if isinstance(self.parameters['beta_Q_local'], (list, numpy.ndarray))    else numpy.full(fill_value=self.parameters['beta_Q_local'], shape=(self.numNodes,1))
         self.beta_asym_local    = None           if self.parameters['beta_asym_local'] is None else numpy.array(self.parameters['beta_asym_local']) if isinstance(self.parameters['beta_asym_local'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['beta_asym_local'], shape=(self.numNodes,1))
@@ -618,10 +645,10 @@ class ExtSEIRSNetworkModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
         propensities_StoE       = ( 
-                                    self.o*(numpy.mean(self.beta)*self.prevalence_ext)
+                                    self.o*(self.beta_global*self.prevalence_ext)
                                     + (1-self.o)*(
-                                        self.p*((numpy.mean(self.beta)*self.numI_sym[self.tidx] + numpy.mean(self.beta_asym)*(self.numI_pre[self.tidx] + self.numI_asym[self.tidx])
-                                        + self.q*numpy.mean(self.beta_Q)*(self.numQ_pre[self.tidx] + self.numQ_sym[self.tidx] + self.numQ_asym[self.tidx]))/self.N[self.tidx])
+                                        self.p*((self.beta_global*self.numI_sym[self.tidx] + self.beta_asym_global*(self.numI_pre[self.tidx] + self.numI_asym[self.tidx])
+                                        + self.q*self.beta_Q_global*(self.numQ_pre[self.tidx] + self.numQ_sym[self.tidx] + self.numQ_asym[self.tidx]))/self.N[self.tidx])
                                         + (1-self.p)*(numpy.divide(self.transmissionTerms_I, self.degree, out=numpy.zeros_like(self.degree), where=self.degree!=0)
                                                       + numpy.divide(self.transmissionTerms_Q, self.degree_Q, out=numpy.zeros_like(self.degree_Q), where=self.degree_Q!=0)))
                                   )*(self.X==self.S)
@@ -629,10 +656,10 @@ class ExtSEIRSNetworkModel():
         propensities_QStoQE = numpy.zeros_like(propensities_StoE)
         if(numpy.any(self.X==self.Q_S)):
             propensities_QStoQE = (
-                                    self.o*(self.q*numpy.mean(self.beta)*self.prevalence_ext)
+                                    self.o*(self.q*self.beta_global*self.prevalence_ext)
                                     + (1-self.o)*(
-                                        self.p*(self.q*(numpy.mean(self.beta)*self.numI_sym[self.tidx] + numpy.mean(self.beta_asym)*(self.numI_pre[self.tidx] + self.numI_asym[self.tidx])
-                                        + numpy.mean(self.beta_Q)*(self.numQ_pre[self.tidx] + self.numQ_sym[self.tidx] + self.numQ_asym[self.tidx]))/self.N[self.tidx])
+                                        self.p*(self.q*(self.beta_global*self.numI_sym[self.tidx] + self.beta_asym_global*(self.numI_pre[self.tidx] + self.numI_asym[self.tidx])
+                                        + self.beta_Q_global*(self.numQ_pre[self.tidx] + self.numQ_sym[self.tidx] + self.numQ_asym[self.tidx]))/self.N[self.tidx])
                                         + (1-self.p)*(numpy.divide(self.transmissionTerms_IQ+self.transmissionTerms_Q, self.degree_Q, out=numpy.zeros_like(self.degree_Q), where=self.degree_Q!=0)))
                                    )*(self.X==self.Q_S)
 
