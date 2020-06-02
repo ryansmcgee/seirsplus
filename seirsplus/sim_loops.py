@@ -373,7 +373,7 @@ def run_workplace_testing_sim(model, T,
 
             numNewExposures=numpy.random.poisson(lam=average_introductions_per_interval)
             
-            model.new_exposures(num_new_exposures=numNewExposures)
+            model.introduce_exposures(num_new_exposures=numNewExposures)
 
             if(numNewExposures > 0):
                 print("[NEW EXPOSURE @ t = %.2f (%d exposed)]" % (model.t, numNewExposures))

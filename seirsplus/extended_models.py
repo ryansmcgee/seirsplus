@@ -817,6 +817,16 @@ class ExtSEIRSNetworkModel():
     def set_positive(self, node, positive):
         self.positive[node] = positive
 
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    def introduce_exposures(self, num_new_exposures):
+        exposedNodes = numpy.random.choice(range(self.numNodes), size=num_new_exposures, replace=False)
+        for exposedNode in exposedNodes:
+            if(self.X[exposedNode]==self.S):
+                self.X[exposedNode] = self.E
+            elif(self.X[exposedNode]==self.Q_S):
+                self.X[exposedNode] = self.Q_E
+
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   
