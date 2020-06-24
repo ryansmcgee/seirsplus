@@ -85,6 +85,7 @@ class ExtSEIRSNetworkModel():
 
         if(seed):
             numpy.random.seed(seed)
+            self.seed = seed
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Model Parameters:
