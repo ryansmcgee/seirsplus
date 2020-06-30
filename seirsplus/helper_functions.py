@@ -19,31 +19,33 @@ def get_regular_series_output(model, tmax):
     Fills in zero for days past the end of the models
     """
     total_i= model.numI_pre + model.numI_sym + model.numI_asym
-    total_i_e = total_i + model.numE
-    total_i_e_q = total_i_e + model.numQ_pre + model.numQ_sym + model.numQ_asym + model.numQ_R
-
-    i_e_series = pd.Series(total_i_e, index=model.tseries)
-
+    total_e = model.numE
+    total_q = model.numQ_pre + model.numQ_sym + model.numQ_asym + model.numQ_R + model.numQ_S + model.numQ_E
+    total_r = model.numR + model.numQ_R
     # Build the
-    reg_i_e = []
+    reg_e = []
     reg_i = []
-    reg_i_e_q = []
+    reg_q = []
+    reg_r = []
     times = []
     for i in np.arange(0,tmax,1):
         last_timepoint = np.searchsorted(model.tseries, i)
         times.append(i)
         if last_timepoint < len(model.tseries):
-            reg_i_e.append(total_i_e[last_timepoint])
+            reg_e.append(total_e[last_timepoint])
             reg_i.append(total_i[last_timepoint])
-            reg_i_e_q.append(total_i_e_q[last_timepoint])
+            reg_q.append(total_q[last_timepoint])
+            reg_r.append(total_r[last_timepoint])
         else:
-            reg_i_e.append(total_i_e[-1])
+            reg_e.append(total_e[-1])
             reg_i.append(total_i[-1])
-            reg_i_e_q.append(total_i_e_q[-1])
-
+            reg_q.append(total_q[-1])
+            reg_r.append(total_r[-1])
+    total_num_infected = model.total_num_infected()[-1]+model.total_num_recovered()[-1] # Overall infections in the model
     return(pd.DataFrame({'total_i':reg_i,
-                        'total_i_q_e':reg_i_e_q,
-                        'total_i_e': reg_i_e,
+                        'total_q':reg_q,
+                        'total_e': reg_e,
+                        'overall_infections': total_num_infected,
                         'time':times,
                         'seed':model.seed}
     ))

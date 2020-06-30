@@ -45,6 +45,37 @@ def weekly_testing_simulation(model, time):
     """
     run_rtw_testing_sim(model=model, T=time, symptomatic_selfiso_compliance_rate=0.3, testing_cadence='weekly')
 
+def semiweekly_testing_simulation(model, time):
+    """
+    Basic model with weekly testing on Mondays and
+    with some level of symptomatic self isolation
+    """
+    run_rtw_testing_sim(model=model, T=time, symptomatic_selfiso_compliance_rate=0.3, testing_cadence='semiweekly')
+
+def biweekly_testing_simulation(model, time):
+    """
+    Basic model with weekly testing on Mondays and
+    with some level of symptomatic self isolation
+    """
+    run_rtw_testing_sim(model=model, T=time, symptomatic_selfiso_compliance_rate=0.3, testing_cadence='biweekly')
+
+
+def daily_testing_simulation(model, time):
+    """
+    Basic model with weekly testing on Mondays and
+    with some level of symptomatic self isolation
+    """
+    run_rtw_testing_sim(model=model, T=time, symptomatic_selfiso_compliance_rate=0.3, testing_cadence='everyday')
+
+def weekly_continuous_testing_simulation(model, time):
+    """
+    Basic model with weekly testing on Mondays and
+    with some level of symptomatic self isolation
+    """
+    run_rtw_testing_sim(model=model, T=time, symptomatic_selfiso_compliance_rate=0.3, testing_cadence='everyday', pct_tested_per_day=1/7)
+
+
+
 def repeat_runs(n_repeats, simulation_fxn, outfile_name=None):
     """
     A wrapper for repeating the runs, that takes a simulation function defined above.
@@ -52,7 +83,8 @@ def repeat_runs(n_repeats, simulation_fxn, outfile_name=None):
     NOTE - most of these parameters are defined outside the function.
     """
     output_frames = []
-    for i in np.arange(1, n_repeats):
+    model_overview = []
+    for i in np.arange(0, n_repeats):
         G_baseline, G_quarantine, cohorts, teams = build_farz_graph(num_cohorts = num_cohorts, num_nodes_per_cohort = num_nodes_per_cohort, num_teams_per_cohort = number_teams_per_cohort, pct_contacts_intercohort = pct_contacts_intercohort)
 
         SIGMA, LAMDA, GAMMA, BETA, BETA_Q = basic_distributions(N, R0_mean = R0_MEAN, R0_coeffvar = np.random.uniform(R0_COEFFVAR_LOW, R0_COEFFVAR_HIGH))
@@ -71,9 +103,12 @@ def repeat_runs(n_repeats, simulation_fxn, outfile_name=None):
 ### Define some parameters
 
 
+### Graph params for N=1000
 num_cohorts = 10 # number of different groups
 number_teams_per_cohort = 5 # number of teams
 num_nodes_per_cohort = 100 # total number of people per group
+
+
 N = num_cohorts*num_nodes_per_cohort
 pct_contacts_intercohort = 0.2
 isolation_time=14
@@ -87,11 +122,36 @@ P_GLOBALINTXN = 0.4
 MAX_TIME = 200
 
 
-repeats = 10
+repeats = 1000
 
 baseline = repeat_runs(repeats, baseline_simulation)
 weekly_tests = repeat_runs(repeats, weekly_testing_simulation)
+semi_weekly_tests = repeat_runs(repeats, semiweekly_testing_simulation)
+
+baseline.to_csv('/Users/julianhomburger/Data/covid/seirsplus/200624/seir_baseline200629.csv', index=False)
+weekly_tests.to_csv('/Users/julianhomburger/Data/covid/seirsplus/200624/seir_weekly_tests200629.csv', index=False)
+semi_weekly_tests.to_csv('/Users/julianhomburger/Data/covid/seirsplus/200624/seir_semiweekly_tests200629.csv', index=False)
+
+# daily_tests = repeat_runs(repeats, daily_testing_simulation)
+# semiweekly_tests = repeat_runs(repeats, semiweekly_testing_simulation)
+#
+# # weekly_continuous = repeat_runs(repeats, weekly_continuous_testing_simulation)
+# semiweekly_tests.to_csv('/Users/julianhomburger/Data/covid/seirsplus/200624/seir_semiweekly_tests200626', index=False)
+# daily_tests.to_csv('/Users/julianhomburger/Data/covid/seirsplus/200624/seir_daily_tests200626', index=False)
+# weekly_continuous.to_csv('/Users/julianhomburger/Data/covid/seirsplus/200624/seir_weekly_continuous_tests200626.csv'. index=False)
 
 
-baseline.to_csv('/Users/julianhomburger/Data/covid/seirsplus/200624/seir_baseline200624.csv', index=False)
-weekly_tests.to_csv('/Users/julianhomburger/Data/covid/seirsplus/200624/seir_weekly_tests200624', index=False)
+### Graph params for N=100
+num_cohorts = 2 # number of different groups
+number_teams_per_cohort = 5 # number of teams
+num_nodes_per_cohort = 50 # total number of people per group
+N = num_cohorts*num_nodes_per_cohort
+
+
+baseline_n100 = repeat_runs(repeats, baseline_simulation)
+weekly_tests_n100 = repeat_runs(repeats, weekly_testing_simulation)
+semi_weekly_tests_n100 = repeat_runs(repeats, semiweekly_testing_simulation)
+
+baseline_n100.to_csv('/Users/julianhomburger/Data/covid/seirsplus/200624/seir_baseline200629_n100.csv', index=False)
+weekly_tests_n100.to_csv('/Users/julianhomburger/Data/covid/seirsplus/200624/seir_weekly_tests200629_n100.csv', index=False)
+semi_weekly_tests_n100.to_csv('/Users/julianhomburger/Data/covid/seirsplus/200624/seir_semiweekly_tests200629_n100.csv', index=False)

@@ -83,7 +83,7 @@ class ExtSEIRSNetworkModel():
                     o=0, prevalence_ext=0,
                     transition_mode='exponential_rates', node_groups=None, store_Xseries=False, seed=None):
 
-        if(seed):
+        if(seed is not None):
             numpy.random.seed(seed)
             self.seed = seed
 
