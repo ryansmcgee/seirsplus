@@ -52,7 +52,7 @@ R0_COEFFVAR_LOW = 0.15
 P_GLOBALINTXN = 0.3
 MAX_TIME = 365
 
-nrepeats = 2
+nrepeats = 1000
 
 param_outfile_name = 'rtw_model_repeats_parameters.csv'
 param_outfile = open(param_outfile_name, 'w')
@@ -68,7 +68,7 @@ for x in itertools.product(r0_lists, population_sizes, introduction_rate, tats, 
         INIT_EXPOSED = 0
     these_results = repeat_runs(nrepeats, dummy_testing_simulation)
     these_results['param_hash'] = param_hash
-    these_results.to_csv(f'{param_hash}.csv')
+    these_results.to_csv(f'rtwsim{param_hash}.csv', index=False)
     param_outfile.write(f'{param_hash},{R0_MEAN},{N},{intro_rate},{tat},{cadence}\n')
 
 param.outfile.close()
