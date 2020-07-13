@@ -97,7 +97,7 @@ def semiweekly_escalation_testing_simulation(model, time):
 
 
 
-def repeat_runs(n_repeats, simulation_fxn, outfile_name=None, save_escalation_time = False):
+def repeat_runs(n_repeats, simulation_fxn, save_escalation_time = False):
     """
     A wrapper for repeating the runs, that takes a simulation function defined above.
 

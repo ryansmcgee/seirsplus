@@ -362,7 +362,7 @@ def run_rtw_testing_sim(model, T,
                         teams=None, average_introductions_per_day=0,
                         print_interval=10, timeOfLastPrint=-1, verbose='t', sensitivity_offset = 0,
                         test_logistics='cadence', continuous_days_between_tests=0,
-                        escalate_on_positive=False, escalate_days_between_tests=0):
+                        escalate_on_positive=False, escalate_days_between_tests=0, full_time=False):
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -417,8 +417,10 @@ def run_rtw_testing_sim(model, T,
     model.tmax  = T
     running     = True
     while running:
-
-        running = model.run_iteration()
+        if full_time:
+            running = model.run_iteration_full_time()
+        else:
+            running = model.run_iteration()
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Introduce exogenous exposures randomly at designated intervals:
@@ -484,7 +486,7 @@ def run_rtw_testing_sim(model, T,
                 # on cadence testing days
                 #----------------------------------------
                 if test_logistics == 'cadence':
-                    randomSelection = []
+                    testing_strategy_selection = []
                     cadenceDayNumber = int(model.t % 28)
                     if(cadenceDayNumber in testingDays):
 
@@ -500,6 +502,7 @@ def run_rtw_testing_sim(model, T,
 
                         if(len(testingPool) > 0):
                             testing_strategy_selection = testingPool[numpy.random.choice(len(testingPool), min(len(testingPool), numRandomTests), replace=False)]
+
 
                 if test_logistics == 'continuous':
                     testing_date = int(model.t % continuous_days_between_tests)
@@ -518,7 +521,7 @@ def run_rtw_testing_sim(model, T,
                                              & ((nodeStates==model.I_sym)|(nodeStates==model.Q_sym))
                                             ).flatten()
 
-                seekingSelection = [seekNode for seekNode in seekingPool if seekNode not in randomSelection]
+                seekingSelection = [seekNode for seekNode in seekingPool if seekNode not in testing_strategy_selection]
 
 
                 #----------------------------------------
