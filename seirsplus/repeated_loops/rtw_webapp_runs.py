@@ -13,14 +13,25 @@ from sim_loops import *
 from helper_functions import *
 from repeated_loops.rtw_runs200624 import *
 
+def write_parallel_inputs(pfilename):
+    # Writes a file with arguments for the parallel files
+    introduction_rate = [0, 7, 28] # parameterized in mean days to next introduction
+    tats = [1,3,5] # test turnaround times
+    testing_cadence = ['none', 'everyday', 'semiweekly', 'weekly', 'biweekly', 'monthly']
+    pfile = open(pfilename, "w")
+    for y in itertools.product(testing_cadence, introduction_rate, tats):
+        c, ir, t = y
+        pfile.write(f'{c} {ir} {t}\n')
+    pfile.close()
+
 ### Write out the lists of parameters to loop over
 
 r0_lists = [2.5, 2.0, 1.5, 1.0]
 population_sizes = [50, 100, 500, 1000]
 
-introduction_rate = [0, 7, 28] # parameterized in mean days to next introduction
-tats = [1,3,5] # test turnaround times
 testing_cadence = sys.argv[1]
+introduction_rate = sys.argv[2] # parameterized in mean days to next introduction
+tats = sys.argv[3] # test turnaround times
 # Dummy model fxn that takes in parameters
 def dummy_testing_simulation(model, time):
     """
@@ -56,9 +67,10 @@ nrepeats = 1000
 
 
 # Thanks itertools!
-for x in itertools.product(r0_lists, population_sizes, introduction_rate, tats, testing_cadence):
+for x in itertools.product(r0_lists, population_sizes ):
     param_hash = hash(x)
-    R0_MEAN, N, intro_rate, tat, cadence = x
+    R0_MEAN, N  = x
+    intro_rate, tat, cadence = introduction_rate, tats, testing_cadence
     num_nodes_per_cohort = N
     if introduction_rate==0:
         INIT_EXPOSED = 1
