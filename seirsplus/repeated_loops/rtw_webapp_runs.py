@@ -20,7 +20,7 @@ population_sizes = [50, 100, 500, 1000]
 
 introduction_rate = [0, 7, 28] # parameterized in mean days to next introduction
 tats = [1,3,5] # test turnaround times
-testing_cadence = ['none', 'everyday', 'semiweekly', 'weekly', 'biweekly', 'monthly']
+testing_cadence = sys.argv[1]
 # Dummy model fxn that takes in parameters
 def dummy_testing_simulation(model, time):
     """
@@ -54,8 +54,6 @@ MAX_TIME = 365
 
 nrepeats = 1000
 
-param_outfile_name = 'rtw_model_repeats_parameters.csv'
-param_outfile = open(param_outfile_name, 'w')
 
 # Thanks itertools!
 for x in itertools.product(r0_lists, population_sizes, introduction_rate, tats, testing_cadence):
@@ -69,6 +67,9 @@ for x in itertools.product(r0_lists, population_sizes, introduction_rate, tats, 
     these_results = repeat_runs(nrepeats, dummy_testing_simulation)
     these_results['param_hash'] = param_hash
     these_results.to_csv(f'rtwsim{param_hash}.csv', index=False)
-    param_outfile.write(f'{param_hash},{R0_MEAN},{N},{intro_rate},{tat},{cadence}\n')
 
-param.outfile.close()
+    param_outfile_name = f'rtw_params{param_hash}.csv'
+    param_outfile = open(param_outfile_name, 'w')
+
+    param_outfile.write(f'{param_hash},{R0_MEAN},{N},{intro_rate},{tat},{cadence}\n')
+    param.outfile.close()
