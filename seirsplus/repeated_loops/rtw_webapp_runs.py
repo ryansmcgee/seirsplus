@@ -70,7 +70,7 @@ nrepeats = 1000
 for x in itertools.product(r0_lists, population_sizes ):
     param_hash = hash(x)
     R0_MEAN, N  = x
-    intro_rate, tat, cadence = introduction_rate, tats, testing_cadence
+    intro_rate, tat, cadence = int(introduction_rate), int(tats), testing_cadence
     num_nodes_per_cohort = N
     if introduction_rate==0:
         INIT_EXPOSED = 1
