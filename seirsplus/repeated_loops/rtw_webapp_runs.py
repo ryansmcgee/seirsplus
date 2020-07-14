@@ -21,7 +21,7 @@ def write_parallel_inputs(pfilename):
     pfile = open(pfilename, "w")
     for y in itertools.product(testing_cadence, introduction_rate, tats):
         c, ir, t = y
-        pfile.write(f'{c} {ir} {t}\n')
+        pfile.write(f'{c},{ir},{t}\n')
     pfile.close()
 
 ### Write out the lists of parameters to loop over
@@ -29,9 +29,9 @@ def write_parallel_inputs(pfilename):
 r0_lists = [2.5, 2.0, 1.5, 1.0]
 population_sizes = [50, 100, 500, 1000]
 
-testing_cadence = sys.argv[1]
-introduction_rate = sys.argv[2] # parameterized in mean days to next introduction
-tats = sys.argv[3] # test turnaround times
+testing_cadence, introduction_rate, tats = sys.argv[1].split(',')
+# introduction_rate = sys.argv[2] # parameterized in mean days to next introduction
+# tats = sys.argv[3] # test turnaround times
 # Dummy model fxn that takes in parameters
 def dummy_testing_simulation(model, time):
     """
