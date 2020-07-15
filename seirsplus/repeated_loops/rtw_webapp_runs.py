@@ -75,7 +75,7 @@ for x in itertools.product(r0_lists, population_sizes ):
     param_hash = hash((R0_MEAN, N, intro_rate, tat, cadence))
 
     results_name = f'rtwsim{param_hash}.csv.gz'
-    if os.exists(results_name):
+    if os.path.exists(results_name):
         continue
     num_nodes_per_cohort = N
     if introduction_rate==0:
