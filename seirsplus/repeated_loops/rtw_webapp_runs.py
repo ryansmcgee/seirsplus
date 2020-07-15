@@ -72,6 +72,10 @@ for x in itertools.product(r0_lists, population_sizes ):
     R0_MEAN, N  = x
     intro_rate, tat, cadence = int(introduction_rate), int(tats), testing_cadence
     param_hash = hash((R0_MEAN, N, intro_rate, tat, cadence))
+
+    results_name = f'rtwsim{param_hash}.csv.gz'
+    if os.exists(results_name):
+        continue
     num_nodes_per_cohort = N
     if introduction_rate==0:
         INIT_EXPOSED = 1
@@ -79,7 +83,7 @@ for x in itertools.product(r0_lists, population_sizes ):
         INIT_EXPOSED = 0
     these_results = repeat_runs(nrepeats, dummy_testing_simulation)
     these_results['param_hash'] = param_hash
-    these_results.to_csv(f'rtwsim{param_hash}.csv', index=False)
+    these_results.to_csv(results_name, index=False, compression='gzip')
 
     param_outfile_name = f'rtw_params{param_hash}.csv'
     param_outfile = open(param_outfile_name, 'w')
