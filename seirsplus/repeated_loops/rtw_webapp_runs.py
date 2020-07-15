@@ -6,6 +6,7 @@ import networkx
 import numpy as np
 import pandas as pd
 import itertools
+import os
 
 from extended_models import *
 from networks import *
