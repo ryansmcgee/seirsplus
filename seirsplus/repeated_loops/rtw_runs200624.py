@@ -95,6 +95,14 @@ def semiweekly_escalation_testing_simulation(model, time):
     """
     return run_rtw_testing_sim(model=model, T=time, symptomatic_selfiso_compliance_rate=0.3, test_logistics='continuous', continuous_days_between_tests=28, escalate_on_positive=True, escalate_days_between_tests=4 )
 
+def no_symptomatic_baseline(model, time):
+    return run_rtw_testing_sim(model=model, T=time, symptomatic_selfiso_compliance_rate=0.0)
+
+def full_symptomatic_baseline(model, time):
+    return run_rtw_testing_sim(model=model, T=time, symptomatic_selfiso_compliance_rate=1.0)
+
+def high_symptomatic_baseline(model, time):
+    return run_rtw_testing_sim(model=model, T=time, symptomatic_selfiso_compliance_rate=0.7)
 
 
 def repeat_runs(n_repeats, simulation_fxn, save_escalation_time = False):
@@ -132,22 +140,23 @@ def repeat_runs(n_repeats, simulation_fxn, save_escalation_time = False):
 
 
 ### Graph params for N=1000
-num_cohorts = 10 # number of different groups
-number_teams_per_cohort = 5 # number of teams
-num_nodes_per_cohort = 100 # total number of people per group
+def make_params():
+    num_cohorts = 10 # number of different groups
+    number_teams_per_cohort = 5 # number of teams
+    num_nodes_per_cohort = 100 # total number of people per group
 
 
-N = num_cohorts*num_nodes_per_cohort
-pct_contacts_intercohort = 0.2
-isolation_time=14
-q = 0
+    N = num_cohorts*num_nodes_per_cohort
+    pct_contacts_intercohort = 0.2
+    isolation_time=14
+    q = 0
 
-INIT_EXPOSED = 1
-R0_MEAN = 2.0
-R0_COEFFVAR_HIGH = 2.2
-R0_COEFFVAR_LOW = 0.15
-P_GLOBALINTXN = 0.4
-MAX_TIME = 200
+    INIT_EXPOSED = 1
+    R0_MEAN = 2.0
+    R0_COEFFVAR_HIGH = 2.2
+    R0_COEFFVAR_LOW = 0.15
+    P_GLOBALINTXN = 0.4
+    MAX_TIME = 200
 
 
 repeats = 1000
@@ -198,3 +207,11 @@ def main():
 
     escalation_month_week_n100 = repeat_runs(repeats, weekly_escalation_testing_simulation, save_escalation_time=True)
     escalation_month_week_n100.to_csv('/Users/julianhomburger/Data/covid/seirsplus/200624/seir_escalation_month_week_tests200706_n100.csv', index=False)
+
+    no_symptomatic = repeat_runs(repeats, no_symptomatic_baseline)
+    no_symptomatic.to_csv('/Users/julianhomburger/Data/covid/seirsplus/200624/no_symptomatic_baseline200713.csv')
+    full_symptomatic = repeat_runs(repeats, full_symptomatic_baseline)
+    full_symptomatic.to_csv('/Users/julianhomburger/Data/covid/seirsplus/200624/all_symptomatic_baseline200713.csv')
+
+    high_symptomatic = repeat_runs(repeats, high_symptomatic_baseline)
+    high_symptomatic.to_csv('/Users/julianhomburger/Data/covid/seirsplus/200624/high_symptomatic_baseline200713.csv')

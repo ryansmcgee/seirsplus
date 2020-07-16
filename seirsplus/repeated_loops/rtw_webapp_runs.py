@@ -74,7 +74,7 @@ for x in itertools.product(r0_lists, population_sizes ):
     intro_rate, tat, cadence = int(introduction_rate), int(tats), testing_cadence
     param_hash = hash((R0_MEAN, N, intro_rate, tat, cadence))
 
-    results_name = f'rtwsim{param_hash}.csv.gz'
+    results_name = f'{cadence}_{R0_MEAN}_{N}_{intro_rate}_{tat}_results.csv.gz'
     if os.path.exists(results_name):
         continue
     num_nodes_per_cohort = N
