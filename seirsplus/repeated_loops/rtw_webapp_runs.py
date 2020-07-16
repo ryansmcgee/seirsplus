@@ -25,6 +25,33 @@ def write_parallel_inputs(pfilename):
         pfile.write(f'{c},{ir},{t}\n')
     pfile.close()
 
+def repeat_runs_webapp(n_repeats, simulation_fxn, save_escalation_time = False):
+    """
+    A wrapper for repeating the runs, that takes a simulation function defined above.
+
+    NOTE - most of these parameters are defined outside the function.
+    """
+    output_frames = []
+    model_overview = []
+    for i in np.arange(0, n_repeats):
+        G_baseline, G_quarantine, cohorts, teams = build_farz_graph(num_cohorts = num_cohorts, num_nodes_per_cohort = num_nodes_per_cohort, num_teams_per_cohort = number_teams_per_cohort, pct_contacts_intercohort = pct_contacts_intercohort)
+
+        SIGMA, LAMDA, GAMMA, BETA, BETA_Q = basic_distributions(N, R0_mean = R0_MEAN, R0_coeffvar = np.random.uniform(R0_COEFFVAR_LOW, R0_COEFFVAR_HIGH))
+        model = ExtSEIRSNetworkModel(G=G_baseline, p=P_GLOBALINTXN,
+                                        beta=BETA, sigma=SIGMA, lamda=LAMDA, gamma=GAMMA,
+                                        gamma_asym=GAMMA,
+                                        G_Q=G_quarantine, q=q, beta_Q=BETA_Q, isolation_time=isolation_time,
+                                        initE=INIT_EXPOSED, seed = i)
+        intervention_time, escalation_time, escalation_from_screen, total_tests = simulation_fxn(model, MAX_TIME)
+
+        thisout = get_regular_series_output(model, MAX_TIME)
+        thisout['total_tests'] = total_tests
+        if save_escalation_time:
+            print(escalation_time)
+            thisout['escalation_time'] = escalation_time
+            thisout['escalation_from_screen'] = escalation_from_screen
+        output_frames.append(thisout)
+    return(pd.concat(output_frames))
 ### Write out the lists of parameters to loop over
 
 r0_lists = [2.5, 2.0, 1.5, 1.0]
@@ -82,7 +109,7 @@ for x in itertools.product(r0_lists, population_sizes ):
         INIT_EXPOSED = 1
     else:
         INIT_EXPOSED = 0
-    these_results = repeat_runs(nrepeats, dummy_testing_simulation)
+    these_results = repeat_runs_webapp(nrepeats, dummy_testing_simulation)
     these_results['param_hash'] = param_hash
     these_results.to_csv(results_name, index=False, compression='gzip')
 
