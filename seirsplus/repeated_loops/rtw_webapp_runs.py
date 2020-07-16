@@ -1,6 +1,9 @@
 ### Model loops for web models
 ## Goal:
 
+#### Need to install python3 tkinter
+#### Need to add seirsplus to pythonpath
+
 import sys
 import networkx
 import numpy as np
@@ -95,7 +98,7 @@ R0_COEFFVAR_LOW = 0.15
 P_GLOBALINTXN = 0.3
 MAX_TIME = 365
 
-nrepeats = 1000
+nrepeats = 2
 
 
 # Thanks itertools!
@@ -110,10 +113,8 @@ for x in itertools.product(r0_lists, population_sizes ):
     if os.path.exists(results_name):
         continue
     num_nodes_per_cohort = N
-    if introduction_rate==0:
-        INIT_EXPOSED = 1
-    else:
-        INIT_EXPOSED = 0
+
+    INIT_EXPOSED = 1
     these_results = repeat_runs_webapp(nrepeats, dummy_testing_simulation)
     param_dict = {'r0':R0_MEAN, 'pop_size':N, 'cadence':cadence, 'tat':tat, 'intro_rate':intro_rate}
     assign_new_cols(these_results, param_dict)
