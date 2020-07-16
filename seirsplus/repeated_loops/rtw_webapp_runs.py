@@ -95,7 +95,7 @@ R0_COEFFVAR_LOW = 0.15
 P_GLOBALINTXN = 0.3
 MAX_TIME = 365
 
-nrepeats = 2
+nrepeats = 1000
 
 
 # Thanks itertools!
