@@ -24,7 +24,7 @@ def build_farz_graph(farz_params= DEFAULT_FARZ_PARAMS, num_cohorts=1, num_nodes_
     Builds the FARZ graph and returns the baseline graph, quarantine graph, cohorts, and teams
     """
 
-    G_baseline, cohorts, teams = generate_workplace_contact_network(num_cohorts=num_cohorts, num_nodes_per_cohort=num_nodes_per_cohort, num_teams_per_cohort=int(N/50),
+    G_baseline, cohorts, teams = generate_workplace_contact_network(num_cohorts=num_cohorts, num_nodes_per_cohort=num_nodes_per_cohort, num_teams_per_cohort=num_teams_per_cohort,
                                        mean_intracohort_degree=10, pct_contacts_intercohort=pct_contacts_intercohort,
                                        farz_params=farz_params)
     G_quarantine = networkx.classes.function.create_empty_copy(G_baseline)

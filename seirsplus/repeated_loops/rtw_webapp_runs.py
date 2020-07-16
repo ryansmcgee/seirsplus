@@ -74,6 +74,10 @@ def dummy_testing_simulation(model, time):
                 isolation_lag = tat,
                 average_introductions_per_day = avg_intros)
 
+def assign_new_cols(df, newdict):
+    for x in newdict.keys():
+        df[x] = newdict[x]
+
 # Define the network structure
 # We decided on no subdivision, with 10 contacts on average
 num_cohorts = 1 # number of different groups
@@ -82,7 +86,7 @@ number_teams_per_cohort = 1 # number of teams
 # N = num_cohorts*num_nodes_per_cohort
 
 
-pct_contacts_intercohort = 0.2
+pct_contacts_intercohort = 0.0
 isolation_time=14
 q = 0
 
@@ -91,13 +95,14 @@ R0_COEFFVAR_LOW = 0.15
 P_GLOBALINTXN = 0.3
 MAX_TIME = 365
 
-nrepeats = 1000
+nrepeats = 2
 
 
 # Thanks itertools!
 for x in itertools.product(r0_lists, population_sizes ):
 
     R0_MEAN, N  = x
+
     intro_rate, tat, cadence = int(introduction_rate), int(tats), testing_cadence
     param_hash = hash((R0_MEAN, N, intro_rate, tat, cadence))
 
@@ -110,11 +115,12 @@ for x in itertools.product(r0_lists, population_sizes ):
     else:
         INIT_EXPOSED = 0
     these_results = repeat_runs_webapp(nrepeats, dummy_testing_simulation)
-    these_results['param_hash'] = param_hash
+    param_dict = {'r0':R0_MEAN, 'pop_size':N, 'cadence':cadence, 'tat':tat, 'intro_rate':intro_rate}
+    assign_new_cols(these_results, param_dict)
     these_results.to_csv(results_name, index=False, compression='gzip')
 
-    param_outfile_name = f'rtw_params{param_hash}.csv'
-    param_outfile = open(param_outfile_name, 'w')
-
-    param_outfile.write(f'{param_hash},{R0_MEAN},{N},{intro_rate},{tat},{cadence}\n')
-    param_outfile.close()
+    # param_outfile_name = f'rtw_params{param_hash}.csv'
+    # param_outfile = open(param_outfile_name, 'w')
+    #
+    # param_outfile.write(f'{param_hash},{R0_MEAN},{N},{intro_rate},{tat},{cadence}\n')
+    # param_outfile.close()
