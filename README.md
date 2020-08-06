@@ -10,7 +10,6 @@ Notably, this package includes stochastic implementations of these models on dyn
    * [ Extended SEIRS Model ](#model-extseirs)
       * [ Testing, Tracing, & Isolation ](#model-tti)
    * [ Network Model ](#model-network)
-      * [ Network Model with Testing, Contact Tracing, and Quarantining ](#model-network-ttq)
 * [ Code Usage ](#usage)
    * [ Quick Start ](#usage-start)
    * [ Installing and Importing the Package ](#usage-install)
