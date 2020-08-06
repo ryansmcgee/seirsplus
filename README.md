@@ -7,10 +7,9 @@ Notably, this package includes stochastic implementations of these models on dyn
 **README Contents:**
 * [ Model Description ](#model)
    * [ SEIRS Dynamics ](#model-seirs)
-   * [ SEIRS Dynamics with Testing ](#model-seirstesting)
-   * [ Deterministic Model ](#model-determ)
+   * [ Extended SEIRS Model ](#model-extseirs)
+      * [ Testing, Tracing, & Isolation ](#model-tti)
    * [ Network Model ](#model-network)
-      * [ Network Model with Testing, Contact Tracing, and Quarantining ](#model-network-ttq)
 * [ Code Usage ](#usage)
    * [ Quick Start ](#usage-start)
    * [ Installing and Importing the Package ](#usage-install)
@@ -35,61 +34,59 @@ The foundation of the models in this package is the classic SEIR model of infect
 </p>
 
 The rates of transition between the states are given by the parameters:
-* β: rate of transmission (transmissions per S-I contact per time)
 * σ: rate of progression (inverse of incubation period)
 * γ: rate of recovery (inverse of infectious period)
 * ξ: rate of re-susceptibility (inverse of temporary immunity period; 0 if permanent immunity)
 * μ<sub>I</sub>: rate of mortality from the disease (deaths per infectious individual per time)
-
-<a name="model-seirstesting"></a>
-### SEIRS Dynamics with Testing
-
-The effect of testing for infection on the dynamics can be modeled by introducing states corresponding to **detected exposed (*D<sub>E</sub>*)** and **detected infectious (*D<sub>I</sub>*)**. Exposed and infectious individuals are tested at rates *θ<sub>E</sub>* and *θ<sub>I</sub>*, respectively, and test positively for infection with rates *ψ<sub>E</sub>* and *ψ<sub>I</sub>*, respectively  (the false positive rate is assumed to be zero, so susceptible individuals never test positive). Testing positive moves an individual into the appropriate detected case state, where rates of transmission, progression, recovery, and/or mortality (as well as network connectivity in the network model) may be different than those of undetected cases.
-
-<p align="center">
-  <img src="https://github.com/ryansmcgee/seirsplus/blob/master/images/SEIRStesting_diagram.png" width="400"></div>
-</p>
-
-The rates of transition between the states are given by the parameters:
-* β: rate of transmission (transmissions per S-I contact per time)
-* σ: rate of progression (inverse of incubation period)
-* γ: rate of recovery (inverse of infectious period)
-* μ<sub>I</sub>: rate of mortality from the disease (deaths per infectious individual per time)
-* ξ: rate of re-susceptibility (inverse of temporary immunity period; 0 if permanent immunity)
-* θ<sub>E</sub>: rate of testing for exposed individuals 
-* θ<sub>I</sub>: rate of testing for infectious individuals 
-* ψ<sub>E</sub>: rate of positive test results for exposed individuals 
-* ψ<sub>I</sub>: rate of positive test results for infectious individuals 
-* β<sub>D</sub>: rate of transmission for detected cases (transmissions per S-D<sub>I</sub> contact per time)
-* σ<sub>D</sub>: rate of progression for detected cases (inverse of incubation period)
-* γ<sub>D</sub>: rate of recovery for detected cases (inverse of infectious period)
-* μ<sub>D</sub>: rate of mortality from the disease for detected cases (deaths per infectious individual per time)
 
 *Vital dynamics are also supported in these models (optional, off by default), but aren't discussed in the README.* 
 
-*See [model equations documentation](https://github.com/ryansmcgee/seirsplus/blob/master/docs/SEIRSplus_Model.pdf) for more information about the  model equations.*
+<a name="model-extseirs"></a>
+### Extended SEIRS Model
 
+This model extends the classic SEIRS model of infectious disease to represent pre-symptomatic, asymptomatic, and severely symptomatic disease states, which are of particular relevance to the SARS-CoV-2 pandemic. The standard SEIR model divides the population into **susceptible (*S*)**, **exposed (*E*)**, **infectious (*I*)**, and **recovered (*R*)** individuals. In this extended model, the infectious subpopulation is further subdivided into **pre-symptomatic (*I<sub>pre</sub>*)**, **asymptomatic (*I<sub>asym</sub>*)**, **symptomatic (*I<sub>sym</sub>*)**, and **hospitalized (severely symptomatic, *I<sub>H</sub>*)**. All of these *I* compartments represent contagious individuals, but transmissibility, rates of recovery, and other parameters may vary between these disease states.
 
-<a name="model-determ"></a>
-### Deterministic Model
-
-The evolution of the SEIRS dynamics described above can be described by the following systems of differential equations. Importantly, this version of the model is deterministic and assumes a uniformly-mixed population. 
-
-#### SEIRS Dynamics
+A susceptible (*S*) member of the population becomes infected (exposed) when making a transmissive contact with an infectious individual. Newly exposed (*E*) individuals first experience a latent period during which time they are not contagious (e.g., while a virus is replicating, but before shedding). Infected individuals then progress to a pre-symptomatic infectious state (*I<sub>pre</sub>*), in which they are contagious but not yet presenting symptoms. Some infectious individuals go on to develop symptoms (*I<sub>sym</sub>*), while a portion of the population never develops symptoms despite being contagious (*I<sub>asym</sub>*). A subset of symptomatic individuals progress to a severe clinical state and must be hospitalized (*I<sub>H</sub>*), and some fraction severe cases are fatal (*F*). At the conclusion of the infectious period, infected individuals enter the recovered state (*R*) and are no longer contagious or susceptible to infection. As in a SEIR*S* model, recovered individuals may become resusceptible some time after recovering (although re-susceptibility can be excluded if not applicable or desired).
 
 <p align="center">
-  <img src="https://github.com/ryansmcgee/seirsplus/blob/master/images/SEIRS_deterministic_equations.png" width="210"></div>
+  <img src="https://github.com/ryansmcgee/seirx-dev/blob/master/ExtSEIRS_compartments.png" width="700"></div>
 </p>
 
-where *S*, *E*, *I*, *R*, and *F* are the numbers of susceptible, exposed, infectious, recovered, and deceased individuals, respectively, and *N* is the total number of individuals in the population (parameters are described above).
+The rates of transition between the states are governed by the parameters:
+* σ: rate of progression to infectiousness (inverse of latent period)
+* λ: rate of progression to (a)symptomatic state (inverse of pre-symptomatic period)
+* a: probability of an infected individual remaining asymptomatic
+* h: probability of a symptomatic individual being hospitalized
+* η: rate of progression to hospitalized state (inverse of onset-to-admission period)
+* γ: rate of recovery for non-hospitalized symptomatic individuals (inverse of symptomatic infectious period)
+* γ<sub>A</sub>: rate of recovery for asymptomatic individuals (inverse of asymptomatic infectious period)
+* γ<sub>H</sub>: rate of recovery hospitalized symptomatic individuals (inverse of hospitalized infectious period)
+* f: probability of death for hospitalized individuals (case fatality rate)
+* μ<sub>H</sub>: rate of death for hospitalized individuals (inverse of admission-to-death period)
+* ξ: rate of re-susceptibility (inverse of temporary immunity period; 0 if permanent immunity)
 
-#### SEIRS Dynamics with Testing
+Note that the extended model reduces to the basic SEIRS model for *a = 0*, *h = 0*, and *σ → 0*.
+
+<a name="model-tti"></a>
+#### Testing, Tracing, & Isolation
+
+The effect of isolation-based interventions (e.g., isolating individuals in response to testing or contact tracing) are modeled by introducing compartments representing quarantined individuals. An individual may be quarantined in any disease state, and every disease state has a corresponding quarantine compartment (with the exception of the hospitalized state, which is considered a quarantine state for transmission and other purposes). Quarantined individuals follow the same progression through the disease states, but the rates of transition or other parameters may be different. There are multiple methods by which individuals can be moved into or out of a quarantine state in this framework.
 
 <p align="center">
-  <img src="https://github.com/ryansmcgee/seirsplus/blob/master/images/SEIRStesting_deterministic_equations.png" width="400"></div>
+  <img src="https://github.com/ryansmcgee/seirx-dev/blob/master/ExtSEIRS_compartments_quarantine.png" width="700"></div>
 </p>
 
-where *S*, *E*, *I*, *D<sub>E</sub>*, *D<sub>I</sub>*, *R*, and *F* are the numbers of susceptible, exposed, infectious, detected exposed, detected infectious, recovered, and deceased individuals, respectively, and *N* is the total number of individuals in the population (parameters are described above).
+In addition to the parameters given above, transitions between quarantine states are governed by the parameters:
+* σ<sub>Q</sub>: rate of progression to infectiousness for quarantined individuals (inverse of latent period)
+* λ<sub>Q</sub>: rate of progression to (a)symptomatic state for quarantined individuals (inverse of pre-symptomatic period)
+* γ<sub>Q<sub>S</sub></sub>: rate of recovery for quarantined non-hospitalized symptomatic individuals (inverse of symptomatic infectious period)
+* γ<sub>Q<sub>A</sub></sub>: rate of recovery for non-hospitalized asymptomatic individuals (inverse of asymptomatic infectious period)
+
+
+
+
+
+
 
 <a name="model-network"></a>
 ### Network Model
@@ -98,42 +95,20 @@ The standard SEIRS model captures important features of infectious disease dynam
 
 This package includes implementation of the SEIRS dynamics on stochastic dynamical networks. This avails analysis of the realtionship between network structure and effective transmission rates, including the effect of network-based interventions such as social distancing, quarantining, and contact tracing.
 
-<img align="right" src="https://github.com/ryansmcgee/seirsplus/blob/master/images/network_contacts.png" height="250">
+<img align="right" src="https://github.com/ryansmcgee/seirx-dev/blob/master/network_p.png" height="220">
 
-Consider a graph **_G_** representing individuals (nodes) and their interactions (edges). Each individual (node) has a state (*S, E, I, D<sub>E</sub>, D<sub>I</sub>, R, or F*). The set of nodes adjacent (connected by an edge) to an individual defines their set of "close contacts" (highlighted in black).  At a given time, each individual makes contact with a random individual from their set of close contacts with probability *(1-p)β* or with a random individual from anywhere in the network (highlighted in blue) with probability *pβ*. The latter global contacts represent individuals interacting with the population at large (i.e., individuals outside of ones social circle, such as on public transit, at an event, etc.) with some probability. When a susceptible individual interacts with an infectious individual they become exposed. The parameter *p* defines the locality of the network: for *p=0* an individual only interacts with their close contacts, while *p=1* represents a uniformly mixed population. Social distancing interventions may increase the locality of the network (i.e., decrease *p*) and/or decrease local connectivity of the network (i.e., decrease the degree of individuals).
+Consider a graph **_G_** representing individuals (nodes) and their interactions (edges). Each individual (node) has a state (*S, E, I<sub>pre</sub>, I<sub>sym</sub>, I<sub>asym</sub>, H, R, F*, etc). The set of nodes adjacent (connected by an edge) to an individual defines their set of "close contacts" (highlighted in black).  At a given time, each individual makes contact with a random individual from their set of close contacts with probability *(1-p)* or with a random individual from anywhere in the network (highlighted in teal) with probability *p*. The latter global contacts represent individuals interacting with the population at large (i.e., individuals outside of ones' social circle, such as on public transit, at an event, etc.) with some probability. The parameter *p* defines the locality of the network: for *p=0* an individual only interacts with their close contacts, while *p=1* represents a uniformly mixed population. Social distancing interventions may increase the locality of the network (i.e., decrease *p*) and/or decrease local connectivity of the network (i.e., decrease the degree of individuals).
 
-Each node *i* has a state *X<sub>i</sub>* that updates according to the following probability transition rates: 
+When a susceptible individual interacts with an infectious individual they may become exposed. The probability of transmission from an infectious individual *i* to a susceptible individual *j* depends in general on the transmissibility of the infectious individual and the susceptibility of the susceptible individual (the product of these parameters weight the interaction edges).
 
-<p align="center">
-  <img src="https://github.com/ryansmcgee/seirsplus/blob/master/images/SEIRSnetwork_transitions.png" width="500"></div>
-</p>
 
-where *δ<sub>Xi=A</sub> = 1* if the state of *X<sub>i</sub>* is *A*, or *0* if not, and where *C<sub>G</sub>(i)* denotes the set of close contacts of node *i*. For large populations and *p=1*, this stochastic model approaches the same dynamics as the deterministic SEIRS model.
+#### Quarantine Contacts
 
-This implementation builds on the work of Dottori et al. (2015).
-* Dottori, M. and Fabricius, G., 2015. SIR model on a dynamical network and the endemic state of an infectious disease. Physica A: Statistical Mechanics and its Applications, 434, pp.25-35.
+<img align="right" src="https://github.com/ryansmcgee/seirx-dev/blob/master/network_qp.png" height="220">
 
-<a name="model-network-ttq"></a>
-#### Network Model with Testing, Contact Tracing, and Quarantining
+Now we also consider another graph **_G<sub>Q</sub>_** which represents the interactions that each individual has while in a quarantine state. The quarantine has the effect of dropping some fraction of the edges connecting the quarantined individual to others (according to a rule of the user's choice when generating the graph *G<sub>Q</sub>*). The edges of *G<sub>Q</sub>* (highlighted in purple) for each individual are then a subset of the normal edges of *G* for that individual. The set of nodes that are adjacent to a quarantined individual define their set of "quarantine contacts" (highlighted in purple). At a given time, a quarantined individual comes into contact with an individual in their set of quarantine contacts with probability *(1-p)* or comes into contact with a random individual from anywhere in the network with probability *p*. The parameter *q* (down)weights the intensity of interactions with the population at large while in quarantine relative to baseline. The transmissibility, susceptibility, and other parameters may be different for individuals in quarantine. 
 
-##### Testing & Contact Tracing
 
-As with the deterministic model, exposed and infectious individuals are tested at rates *θ<sub>E</sub>* and *θ<sub>I</sub>*, respectively, and test positively for infection with rates *ψ<sub>E</sub>* and *ψ<sub>I</sub>*, respectively (the false positive rate is assumed to be zero, so susceptible individuals never test positive). Testing positive moves an individual into the appropriate detected case state (*D<sub>E</sub>* or *D<sub>I</sub>*), where rates of transmission, progression, recovery, and/or mortality (as well as network connectivity in the network model) may be different than those of undetected cases.
-
-Consideration of interaction networks allows us to model contact tracing, where the close contacts of an positively-tested individual are more likely to be tested in response. In this model, an individual is tested due to contact tracing at a rate equal to *φ* times the number of its close contacts who have tested positively.
-
-##### Quarantining
-
-<img align="right" src="https://github.com/ryansmcgee/seirsplus/blob/master/images/network_contacts_quarantine.png" height="250">
-
-Now we also consider another graph **_Q_** which represents the interactions that each individual has if they test positively for the disease (i.e., individuals in the *D<sub>E</sub>* or *D<sub>I</sub>* states) and enter into a form of quarantine. The quarantine has the effect of dropping some fraction of the edges connecting the quarantined individual to others (according to a rule of the user's choice when generating the graph *Q*). The edges of *Q* (highlighted in purple) for each individual are then a subset of the normal edges of *G* for that individual. The set of nodes that are adjacent to a quarantined individual define their set of "quarantine contacts" (highlighted in purple). At a given time, a quarantined individual may come into contact with another individual in this quarantine contact set with probability *(1-p)β<sub>D</sub>*. A quarantined individual may also be come in contact with a random individual from anywhere in the network with rate *qpβ<sub>D</sub>*.
-
-Each node *i* has a state *X<sub>i</sub>* that updates according to the following probability transition rates: 
-<p align="center">
-  <img src="https://github.com/ryansmcgee/seirsplus/blob/master/images/SEIRSnetworktesting_transitions.png" width="800"></div>
-</p>
-
-where *δ<sub>Xi=A</sub>=1* if the state of *X<sub>i</sub>* is *A*, or *0* if not, and where *C<sub>G</sub>(i)* and *C<sub>Q</sub>(i)* denotes the set of close contacts and quarantine contacts of node *i*, respectively. For large populations and *p=1*, this stochastic model approaches the same dynamics as the deterministic SEIRS model (sans contact tracing, which is not included in the uniformly-mixed model).
 
 <a name="usage"></a>
 ## Code Usage
