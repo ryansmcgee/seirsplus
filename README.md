@@ -7,7 +7,8 @@ Notably, this package includes stochastic implementations of these models on dyn
 **README Contents:**
 * [ Model Description ](#model)
    * [ SEIRS Dynamics ](#model-seirs)
-   * [ SEIRS Dynamics with Testing ](#model-seirstesting)
+   * [ Extended SEIRS Model ](#model-extseirs)
+      * [ Testing, Tracing, & Isolation ](#model-tti)
    * [ Deterministic Model ](#model-determ)
    * [ Network Model ](#model-network)
       * [ Network Model with Testing, Contact Tracing, and Quarantining ](#model-network-ttq)
@@ -41,33 +42,51 @@ The rates of transition between the states are given by the parameters:
 * ξ: rate of re-susceptibility (inverse of temporary immunity period; 0 if permanent immunity)
 * μ<sub>I</sub>: rate of mortality from the disease (deaths per infectious individual per time)
 
-<a name="model-seirstesting"></a>
-### SEIRS Dynamics with Testing
-
-The effect of testing for infection on the dynamics can be modeled by introducing states corresponding to **detected exposed (*D<sub>E</sub>*)** and **detected infectious (*D<sub>I</sub>*)**. Exposed and infectious individuals are tested at rates *θ<sub>E</sub>* and *θ<sub>I</sub>*, respectively, and test positively for infection with rates *ψ<sub>E</sub>* and *ψ<sub>I</sub>*, respectively  (the false positive rate is assumed to be zero, so susceptible individuals never test positive). Testing positive moves an individual into the appropriate detected case state, where rates of transmission, progression, recovery, and/or mortality (as well as network connectivity in the network model) may be different than those of undetected cases.
-
-<p align="center">
-  <img src="https://github.com/ryansmcgee/seirsplus/blob/master/images/SEIRStesting_diagram.png" width="400"></div>
-</p>
-
-The rates of transition between the states are given by the parameters:
-* β: rate of transmission (transmissions per S-I contact per time)
-* σ: rate of progression (inverse of incubation period)
-* γ: rate of recovery (inverse of infectious period)
-* μ<sub>I</sub>: rate of mortality from the disease (deaths per infectious individual per time)
-* ξ: rate of re-susceptibility (inverse of temporary immunity period; 0 if permanent immunity)
-* θ<sub>E</sub>: rate of testing for exposed individuals 
-* θ<sub>I</sub>: rate of testing for infectious individuals 
-* ψ<sub>E</sub>: rate of positive test results for exposed individuals 
-* ψ<sub>I</sub>: rate of positive test results for infectious individuals 
-* β<sub>D</sub>: rate of transmission for detected cases (transmissions per S-D<sub>I</sub> contact per time)
-* σ<sub>D</sub>: rate of progression for detected cases (inverse of incubation period)
-* γ<sub>D</sub>: rate of recovery for detected cases (inverse of infectious period)
-* μ<sub>D</sub>: rate of mortality from the disease for detected cases (deaths per infectious individual per time)
-
 *Vital dynamics are also supported in these models (optional, off by default), but aren't discussed in the README.* 
 
-*See [model equations documentation](https://github.com/ryansmcgee/seirsplus/blob/master/docs/SEIRSplus_Model.pdf) for more information about the  model equations.*
+<a name="model-extseirs"></a>
+### Extended SEIRS Model
+
+This model extends the classic SEIRS model of infectious disease to represent pre-symptomatic, asymptomatic, and severely symptomatic disease states, which are of particular relevance to the SARS-CoV-2 pandemic. The standard SEIR model divides the population into **susceptible (*S*)**, **exposed (*E*)**, **infectious (*I*)**, and **recovered (*R*)** individuals. In this extended model, the infectious subpopulation is further subdivided into **pre-symptomatic (*I<sub>pre</sub>*)**, **asymptomatic (*I<sub>asym</sub>*)**, **symptomatic (*I<sub>sym</sub>*)**, and **hospitalized (severely symptomatic, *I<sub>H</sub>*)**. All of these *I* compartments represent contagious individuals, but transmissibility, rates of recovery, and other parameters may vary between these disease states (see TODO transmissibility link).
+
+A susceptible (*S*) member of the population becomes infected (exposed) when making a transmissive contact with an infectious individual. Newly exposed (*E*) individuals first experience a latent period during which time they are not contagious (e.g., while a virus is replicating, but before shedding). Infected individuals then progress to a pre-symptomatic infectious state (*I<sub>pre</sub>*), in which they are contagious but not yet presenting symptoms. Some infectious individuals go on to develop symptoms (*I<sub>sym</sub>*), while a portion of the population never develops symptoms despite being contagious (*I<sub>asym</sub>*). A subset of symptomatic individuals progress to a severe clinical state and must be hospitalized (*I<sub>H</sub>*), and some fraction severe cases are fatal (*F*). At the conclusion of the infectious period, infected individuals enter the recovered state (*R*) and are no longer contagious or susceptible to infection. As in a SEIR*S* model, recovered individuals may become resusceptible some time after recovering (although re-susceptibility can be excluded if not applicable or desired).
+
+<p align="center">
+  <img src="https://github.com/ryansmcgee/seirx-dev/blob/master/ExtSEIRS_compartments.png" width="700"></div>
+</p>
+
+The rates of transition between the states are governed by the parameters:
+* σ: rate of progression to infectiousness (inverse of latent period)
+* λ: rate of progression to (a)symptomatic state (inverse of pre-symptomatic period)
+* a: probability of an infected individual remaining asymptomatic
+* h: probability of a symptomatic individual being hospitalized
+* η: rate of progression to hospitalized state (inverse of onset-to-admission period)
+* γ: rate of recovery for non-hospitalized symptomatic individuals (inverse of symptomatic infectious period)
+* γ<sub>A</sub>: rate of recovery for asymptomatic individuals (inverse of asymptomatic infectious period)
+* γ<sub>H</sub>: rate of recovery hospitalized symptomatic individuals (inverse of hospitalized infectious period)
+* f: probability of death for hospitalized individuals (case fatality rate)
+* μ<sub>H</sub>: rate of death for hospitalized individuals (inverse of admission-to-death period)
+* ξ: rate of re-susceptibility (inverse of temporary immunity period; 0 if permanent immunity)
+
+Note that the extended model reduces to the basic SEIRS model for *a = 0*, *h = 0*, and *σ → 0*.
+
+<a name="model-tti"></a>
+#### Testing, Tracing, & Isolation
+
+The effect of isolation-based interventions (e.g., isolating individuals in response to testing or contact tracing) are modeled by introducing compartments representing quarantined individuals. An individual may be quarantined in any disease state, and every disease state has a corresponding quarantine compartment (with the exception of the hospitalized state, which is considered a quarantine state for transmission and other purposes). Quarantined individuals follow the same progression through the disease states, but the rates of transition or other parameters may be different. There are multiple methods by which individuals can be moved into or out of a quarantine state; see the [Testing & Isolation (deterministic model)](TODO link), [Testing (network model)](TODO link), [Tracing (network model)](TODO link), and [Isolation (network model)](TODO link) sections below for more information.
+
+<p align="center">
+  <img src="https://github.com/ryansmcgee/seirx-dev/blob/master/ExtSEIRS_compartments_quarantine.png" width="700"></div>
+</p>
+
+In addition to the parameters given above, transitions between quarantine states are governed by the parameters:
+* σ<sub>Q</sub>: rate of progression to infectiousness for quarantined individuals (inverse of latent period)
+* λ<sub>Q</sub>: rate of progression to (a)symptomatic state for quarantined individuals (inverse of pre-symptomatic period)
+* γ<sub>Q<sub>S</sub></sub>: rate of recovery for quarantined non-hospitalized symptomatic individuals (inverse of symptomatic infectious period)
+* γ<sub>Q<sub>A</sub></sub>: rate of recovery for non-hospitalized asymptomatic individuals (inverse of asymptomatic infectious period)
+
+
+
 
 
 <a name="model-determ"></a>
