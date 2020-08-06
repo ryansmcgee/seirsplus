@@ -36,7 +36,6 @@ The foundation of the models in this package is the classic SEIR model of infect
 </p>
 
 The rates of transition between the states are given by the parameters:
-* β: rate of transmission (transmissions per S-I contact per time)
 * σ: rate of progression (inverse of incubation period)
 * γ: rate of recovery (inverse of infectious period)
 * ξ: rate of re-susceptibility (inverse of temporary immunity period; 0 if permanent immunity)
