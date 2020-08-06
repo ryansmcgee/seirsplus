@@ -109,27 +109,7 @@ When a susceptible individual interacts with an infectious individual they may b
 
 Now we also consider another graph **_G<sub>Q</sub>_** which represents the interactions that each individual has while in a quarantine state. The quarantine has the effect of dropping some fraction of the edges connecting the quarantined individual to others (according to a rule of the user's choice when generating the graph *G<sub>Q</sub>*). The edges of *G<sub>Q</sub>* (highlighted in purple) for each individual are then a subset of the normal edges of *G* for that individual. The set of nodes that are adjacent to a quarantined individual define their set of "quarantine contacts" (highlighted in purple). At a given time, a quarantined individual comes into contact with an individual in their set of quarantine contacts with probability *(1-p)* or comes into contact with a random individual from anywhere in the network with probability *p*. The parameter *q* (down)weights the intensity of interactions with the population at large while in quarantine relative to baseline. The transmissibility, susceptibility, and other parameters may be different for individuals in quarantine. 
 
-<a name="model-network-ttq"></a>
-#### Network Model with Testing, Contact Tracing, and Quarantining
 
-##### Testing & Contact Tracing
-
-As with the deterministic model, exposed and infectious individuals are tested at rates *θ<sub>E</sub>* and *θ<sub>I</sub>*, respectively, and test positively for infection with rates *ψ<sub>E</sub>* and *ψ<sub>I</sub>*, respectively (the false positive rate is assumed to be zero, so susceptible individuals never test positive). Testing positive moves an individual into the appropriate detected case state (*D<sub>E</sub>* or *D<sub>I</sub>*), where rates of transmission, progression, recovery, and/or mortality (as well as network connectivity in the network model) may be different than those of undetected cases.
-
-Consideration of interaction networks allows us to model contact tracing, where the close contacts of an positively-tested individual are more likely to be tested in response. In this model, an individual is tested due to contact tracing at a rate equal to *φ* times the number of its close contacts who have tested positively.
-
-##### Quarantining
-
-<img align="right" src="https://github.com/ryansmcgee/seirsplus/blob/master/images/network_contacts_quarantine.png" height="250">
-
-Now we also consider another graph **_Q_** which represents the interactions that each individual has if they test positively for the disease (i.e., individuals in the *D<sub>E</sub>* or *D<sub>I</sub>* states) and enter into a form of quarantine. The quarantine has the effect of dropping some fraction of the edges connecting the quarantined individual to others (according to a rule of the user's choice when generating the graph *Q*). The edges of *Q* (highlighted in purple) for each individual are then a subset of the normal edges of *G* for that individual. The set of nodes that are adjacent to a quarantined individual define their set of "quarantine contacts" (highlighted in purple). At a given time, a quarantined individual may come into contact with another individual in this quarantine contact set with probability *(1-p)β<sub>D</sub>*. A quarantined individual may also be come in contact with a random individual from anywhere in the network with rate *qpβ<sub>D</sub>*.
-
-Each node *i* has a state *X<sub>i</sub>* that updates according to the following probability transition rates: 
-<p align="center">
-  <img src="https://github.com/ryansmcgee/seirsplus/blob/master/images/SEIRSnetworktesting_transitions.png" width="800"></div>
-</p>
-
-where *δ<sub>Xi=A</sub>=1* if the state of *X<sub>i</sub>* is *A*, or *0* if not, and where *C<sub>G</sub>(i)* and *C<sub>Q</sub>(i)* denotes the set of close contacts and quarantine contacts of node *i*, respectively. For large populations and *p=1*, this stochastic model approaches the same dynamics as the deterministic SEIRS model (sans contact tracing, which is not included in the uniformly-mixed model).
 
 <a name="usage"></a>
 ## Code Usage
