@@ -73,9 +73,9 @@ class ExtSEIRSNetworkModel():
                             (all remaining nodes initialized susceptible)   
     """
     def __init__(self, G, beta, sigma, lamda, gamma, 
-                    gamma_asym=None, eta=0, gamma_H=None, mu_H=0, xi=0, mu_0=0, nu=0, a=0, h=0, f=0, p=0,             
-                    beta_local=None, beta_asym=None, beta_asym_local=None, beta_pairwise_mode='mean', alpha=None, alpha_pairwise_mode=None,
-                    G_Q=None, beta_Q=None, beta_Q_local=None, sigma_Q=None, lamda_Q=None, eta_Q=None, gamma_Q_sym=None, gamma_Q_asym=None, alpha_Q=None,
+                    gamma_asym=None, eta=0, gamma_H=None, mu_H=0, alpha=1.0, xi=0, mu_0=0, nu=0, a=0, h=0, f=0, p=0,             
+                    beta_local=None, beta_asym=None, beta_asym_local=None, beta_pairwise_mode='mean', delta=None, delta_pairwise_mode=None,
+                    G_Q=None, beta_Q=None, beta_Q_local=None, sigma_Q=None, lamda_Q=None, eta_Q=None, gamma_Q_sym=None, gamma_Q_asym=None, alpha_Q=None, delta_Q=None,
                     theta_S=0, theta_E=0, theta_pre=0, theta_sym=0, theta_asym=0, phi_S=0, phi_E=0, phi_pre=0, phi_sym=0, phi_asym=0,    
                     d_S=0, d_E=1, d_pre=1, d_sym=1, d_asym=1, q=0, isolation_time=14,
                     initE=0, initI_pre=0, initI_sym=0, initI_asym=0, initH=0, initR=0, initF=0,        
@@ -83,8 +83,9 @@ class ExtSEIRSNetworkModel():
                     o=0, prevalence_ext=0,
                     transition_mode='exponential_rates', node_groups=None, store_Xseries=False, seed=None):
 
-        if(seed):
+        if(seed is not None):
             numpy.random.seed(seed)
+            self.seed = seed
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Model Parameters:
@@ -94,9 +95,9 @@ class ExtSEIRSNetworkModel():
                             'eta':eta, 'gamma_asym':gamma_asym, 'gamma_H':gamma_H, 'mu_H':mu_H, 
                             'xi':xi, 'mu_0':mu_0, 'nu':nu, 'a':a, 'h':h, 'f':f, 'p':p, 
                             'beta_local':beta_local, 'beta_asym':beta_asym, 'beta_asym_local':beta_asym_local, 'beta_pairwise_mode':beta_pairwise_mode,
-                            'alpha':alpha, 'alpha_pairwise_mode':alpha_pairwise_mode,
-                            'lamda_Q':lamda_Q, 'beta_Q':beta_Q, 'beta_Q_local':beta_Q_local, 'sigma_Q':sigma_Q, 
-                            'eta_Q':eta_Q, 'gamma_Q_sym':gamma_Q_sym, 'gamma_Q_asym':gamma_Q_asym, 'alpha_Q':alpha_Q,
+                            'alpha':alpha, 'delta':delta, 'delta_pairwise_mode':delta_pairwise_mode,
+                            'lamda_Q':lamda_Q, 'beta_Q':beta_Q, 'beta_Q_local':beta_Q_local, 'alpha_Q':alpha_Q, 'sigma_Q':sigma_Q, 
+                            'eta_Q':eta_Q, 'gamma_Q_sym':gamma_Q_sym, 'gamma_Q_asym':gamma_Q_asym, 'delta_Q':delta_Q,
                             'theta_S':theta_S, 'theta_E':theta_E, 'theta_pre':theta_pre, 'theta_sym':theta_sym, 'theta_asym':theta_asym, 
                             'phi_S':phi_S, 'phi_E':phi_E, 'phi_pre':phi_pre, 'phi_sym':phi_sym, 'phi_asym':phi_asym, 
                             'd_S':d_S, 'd_E':d_E, 'd_pre':d_pre, 'd_sym':d_sym, 'd_asym':d_asym, 'q':q, 'isolation_time':isolation_time,
@@ -323,6 +324,7 @@ class ExtSEIRSNetworkModel():
         self.gamma_asym     = (numpy.array(self.parameters['gamma_asym']).reshape((self.numNodes, 1))   if isinstance(self.parameters['gamma_asym'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['gamma_asym'], shape=(self.numNodes,1))) if self.parameters['gamma_asym'] is not None else self.gamma
         self.gamma_H        = (numpy.array(self.parameters['gamma_H']).reshape((self.numNodes, 1))      if isinstance(self.parameters['gamma_H'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['gamma_H'], shape=(self.numNodes,1))) if self.parameters['gamma_H'] is not None else self.gamma
         self.mu_H           = numpy.array(self.parameters['mu_H']).reshape((self.numNodes, 1))          if isinstance(self.parameters['mu_H'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['mu_H'], shape=(self.numNodes,1))
+        self.alpha          = numpy.array(self.parameters['alpha']).reshape((self.numNodes, 1))         if isinstance(self.parameters['alpha'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['alpha'], shape=(self.numNodes,1))
         self.xi             = numpy.array(self.parameters['xi']).reshape((self.numNodes, 1))            if isinstance(self.parameters['xi'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['xi'], shape=(self.numNodes,1))
         self.mu_0           = numpy.array(self.parameters['mu_0']).reshape((self.numNodes, 1))          if isinstance(self.parameters['mu_0'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['mu_0'], shape=(self.numNodes,1))
         self.nu             = numpy.array(self.parameters['nu']).reshape((self.numNodes, 1))            if isinstance(self.parameters['nu'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['nu'], shape=(self.numNodes,1))
@@ -350,6 +352,7 @@ class ExtSEIRSNetworkModel():
         self.gamma_Q_sym    = (numpy.array(self.parameters['gamma_Q_sym']).reshape((self.numNodes, 1))  if isinstance(self.parameters['gamma_Q_sym'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['gamma_Q_sym'], shape=(self.numNodes,1))) if self.parameters['gamma_Q_sym'] is not None else self.gamma
         self.gamma_Q_asym   = (numpy.array(self.parameters['gamma_Q_asym']).reshape((self.numNodes, 1)) if isinstance(self.parameters['gamma_Q_asym'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['gamma_Q_asym'], shape=(self.numNodes,1))) if self.parameters['gamma_Q_asym'] is not None else self.gamma
         self.eta_Q          = (numpy.array(self.parameters['eta_Q']).reshape((self.numNodes, 1))        if isinstance(self.parameters['eta_Q'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['eta_Q'], shape=(self.numNodes,1))) if self.parameters['eta_Q'] is not None else self.eta
+        self.alpha_Q        = (numpy.array(self.parameters['alpha_Q']).reshape((self.numNodes, 1))      if isinstance(self.parameters['alpha_Q'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['alpha_Q'], shape=(self.numNodes,1))) if self.parameters['alpha_Q'] is not None else self.alpha
         self.theta_S        = numpy.array(self.parameters['theta_S']).reshape((self.numNodes, 1))       if isinstance(self.parameters['theta_S'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['theta_S'], shape=(self.numNodes,1))
         self.theta_E        = numpy.array(self.parameters['theta_E']).reshape((self.numNodes, 1))       if isinstance(self.parameters['theta_E'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['theta_E'], shape=(self.numNodes,1))
         self.theta_pre      = numpy.array(self.parameters['theta_pre']).reshape((self.numNodes, 1))     if isinstance(self.parameters['theta_pre'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['theta_pre'], shape=(self.numNodes,1))
@@ -368,9 +371,36 @@ class ExtSEIRSNetworkModel():
         self.q              = numpy.array(self.parameters['q']).reshape((self.numNodes, 1))             if isinstance(self.parameters['q'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['q'], shape=(self.numNodes,1))
 
         #----------------------------------------
+
+        self.beta_pairwise_mode = self.parameters['beta_pairwise_mode']
+
+        #----------------------------------------
+        # Global transmission parameters:
+        #----------------------------------------
+        if(self.beta_pairwise_mode == 'infected' or self.beta_pairwise_mode is None):
+            self.beta_global         = numpy.full_like(self.beta, fill_value=numpy.mean(self.beta))
+            self.beta_Q_global       = numpy.full_like(self.beta_Q, fill_value=numpy.mean(self.beta_Q))
+            self.beta_asym_global    = numpy.full_like(self.beta_asym, fill_value=numpy.mean(self.beta_asym))
+        elif(self.beta_pairwise_mode == 'infectee'):
+            self.beta_global         = self.beta      
+            self.beta_Q_global       = self.beta_Q    
+            self.beta_asym_global    = self.beta_asym
+        elif(self.beta_pairwise_mode == 'min'):
+            self.beta_global         = numpy.minimum(self.beta, numpy.mean(beta)) 
+            self.beta_Q_global       = numpy.minimum(self.beta_Q, numpy.mean(beta_Q)) 
+            self.beta_asym_global    = numpy.minimum(self.beta_asym, numpy.mean(beta_asym))
+        elif(self.beta_pairwise_mode == 'max'):
+            self.beta_global         = numpy.maximum(self.beta, numpy.mean(beta)) 
+            self.beta_Q_global       = numpy.maximum(self.beta_Q, numpy.mean(beta_Q)) 
+            self.beta_asym_global    = numpy.maximum(self.beta_asym, numpy.mean(beta_asym))
+        elif(self.beta_pairwise_mode == 'mean'):
+            self.beta_global         = (self.beta + numpy.full_like(self.beta, fill_value=numpy.mean(self.beta)))/2
+            self.beta_Q_global       = (self.beta_Q + numpy.full_like(self.beta_Q, fill_value=numpy.mean(self.beta_Q)))/2
+            self.beta_asym_global    = (self.beta_asym + numpy.full_like(self.beta_asym, fill_value=numpy.mean(self.beta_asym)))/2
+            
+        #----------------------------------------
         # Local transmission parameters:
         #----------------------------------------
-        self.beta_pairwise_mode = self.parameters['beta_pairwise_mode']
         self.beta_local         = self.beta      if self.parameters['beta_local'] is None      else numpy.array(self.parameters['beta_local'])      if isinstance(self.parameters['beta_local'], (list, numpy.ndarray))      else numpy.full(fill_value=self.parameters['beta_local'], shape=(self.numNodes,1))
         self.beta_Q_local       = self.beta_Q    if self.parameters['beta_Q_local'] is None    else numpy.array(self.parameters['beta_Q_local'])    if isinstance(self.parameters['beta_Q_local'], (list, numpy.ndarray))    else numpy.full(fill_value=self.parameters['beta_Q_local'], shape=(self.numNodes,1))
         self.beta_asym_local    = None           if self.parameters['beta_asym_local'] is None else numpy.array(self.parameters['beta_asym_local']) if isinstance(self.parameters['beta_asym_local'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['beta_asym_local'], shape=(self.numNodes,1))
@@ -452,71 +482,71 @@ class ExtSEIRSNetworkModel():
         #----------------------------------------
         # Degree-based transmission scaling parameters:
         #----------------------------------------
-        self.alpha_pairwise_mode = self.parameters['alpha_pairwise_mode']
-        self.alpha               = numpy.log(self.degree)/numpy.log(numpy.mean(self.degree))     if self.parameters['alpha'] is None   else numpy.array(self.parameters['alpha'])   if isinstance(self.parameters['alpha'], (list, numpy.ndarray))   else numpy.full(fill_value=self.parameters['alpha'], shape=(self.numNodes,1))
-        self.alpha_Q             = numpy.log(self.degree_Q)/numpy.log(numpy.mean(self.degree_Q)) if self.parameters['alpha_Q'] is None else numpy.array(self.parameters['alpha_Q']) if isinstance(self.parameters['alpha_Q'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['alpha_Q'], shape=(self.numNodes,1))
+        self.delta_pairwise_mode = self.parameters['delta_pairwise_mode']
+        self.delta               = numpy.log(self.degree)/numpy.log(numpy.mean(self.degree))     if self.parameters['delta'] is None   else numpy.array(self.parameters['delta'])   if isinstance(self.parameters['delta'], (list, numpy.ndarray))   else numpy.full(fill_value=self.parameters['delta'], shape=(self.numNodes,1))
+        self.delta_Q             = numpy.log(self.degree_Q)/numpy.log(numpy.mean(self.degree_Q)) if self.parameters['delta_Q'] is None else numpy.array(self.parameters['delta_Q']) if isinstance(self.parameters['delta_Q'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['delta_Q'], shape=(self.numNodes,1))
         #----------------------------------------
-        if(self.alpha.ndim == 2 and self.alpha.shape[0] == self.numNodes and self.alpha.shape[1] == self.numNodes):
-            self.A_alpha_pairwise = self.alpha
-        elif((self.alpha.ndim == 1 and self.alpha.shape[0] == self.numNodes) or (self.alpha.ndim == 2 and (self.alpha.shape[0] == self.numNodes or self.alpha.shape[1] == self.numNodes))):
-            self.alpha = self.alpha.reshape((self.numNodes,1))
-            # Pre-multiply alpha values by the adjacency matrix ("transmission weight connections")
-            A_alpha_pairwise_byInfected = scipy.sparse.csr_matrix.multiply(self.A, self.alpha.T).tocsr()
-            A_alpha_pairwise_byInfectee = scipy.sparse.csr_matrix.multiply(self.A, self.alpha).tocsr()    
+        if(self.delta.ndim == 2 and self.delta.shape[0] == self.numNodes and self.delta.shape[1] == self.numNodes):
+            self.A_delta_pairwise = self.delta
+        elif((self.delta.ndim == 1 and self.delta.shape[0] == self.numNodes) or (self.delta.ndim == 2 and (self.delta.shape[0] == self.numNodes or self.delta.shape[1] == self.numNodes))):
+            self.delta = self.delta.reshape((self.numNodes,1))
+            # Pre-multiply delta values by the adjacency matrix ("transmission weight connections")
+            A_delta_pairwise_byInfected = scipy.sparse.csr_matrix.multiply(self.A, self.delta.T).tocsr()
+            A_delta_pairwise_byInfectee = scipy.sparse.csr_matrix.multiply(self.A, self.delta).tocsr()    
             #------------------------------
-            # Compute the effective pairwise alpha values as a function of the infected/infectee pair:
-            if(self.alpha_pairwise_mode == 'infected'):
-                self.A_alpha_pairwise = A_alpha_pairwise_byInfected
-            elif(self.alpha_pairwise_mode == 'infectee'):
-                self.A_alpha_pairwise = A_alpha_pairwise_byInfectee
-            elif(self.alpha_pairwise_mode == 'min'):
-                self.A_alpha_pairwise = scipy.sparse.csr_matrix.minimum(A_alpha_pairwise_byInfected, A_alpha_pairwise_byInfectee)
-            elif(self.alpha_pairwise_mode == 'max'):
-                self.A_alpha_pairwise = scipy.sparse.csr_matrix.maximum(A_alpha_pairwise_byInfected, A_alpha_pairwise_byInfectee)
-            elif(self.alpha_pairwise_mode == 'mean'):
-                self.A_alpha_pairwise = (A_alpha_pairwise_byInfected + A_alpha_pairwise_byInfectee)/2
-            elif(self.alpha_pairwise_mode is None):
-                self.A_alpha_pairwise = self.A
+            # Compute the effective pairwise delta values as a function of the infected/infectee pair:
+            if(self.delta_pairwise_mode == 'infected'):
+                self.A_delta_pairwise = A_delta_pairwise_byInfected
+            elif(self.delta_pairwise_mode == 'infectee'):
+                self.A_delta_pairwise = A_delta_pairwise_byInfectee
+            elif(self.delta_pairwise_mode == 'min'):
+                self.A_delta_pairwise = scipy.sparse.csr_matrix.minimum(A_delta_pairwise_byInfected, A_delta_pairwise_byInfectee)
+            elif(self.delta_pairwise_mode == 'max'):
+                self.A_delta_pairwise = scipy.sparse.csr_matrix.maximum(A_delta_pairwise_byInfected, A_delta_pairwise_byInfectee)
+            elif(self.delta_pairwise_mode == 'mean'):
+                self.A_delta_pairwise = (A_delta_pairwise_byInfected + A_delta_pairwise_byInfectee)/2
+            elif(self.delta_pairwise_mode is None):
+                self.A_delta_pairwise = self.A
             else:
-                print("Unrecognized alpha_pairwise_mode value (support for 'infected', 'infectee', 'min', 'max', and 'mean').")
+                print("Unrecognized delta_pairwise_mode value (support for 'infected', 'infectee', 'min', 'max', and 'mean').")
         else:
-            print("Invalid values given for alpha (expected 1xN list/array or NxN 2d array)")
+            print("Invalid values given for delta (expected 1xN list/array or NxN 2d array)")
         #----------------------------------------
-        if(self.alpha_Q.ndim == 2 and self.alpha_Q.shape[0] == self.numNodes and self.alpha_Q.shape[1] == self.numNodes):
-            self.A_Q_alpha_Q_pairwise = self.alpha_Q
-        elif((self.alpha_Q.ndim == 1 and self.alpha_Q.shape[0] == self.numNodes) or (self.alpha_Q.ndim == 2 and (self.alpha_Q.shape[0] == self.numNodes or self.alpha_Q.shape[1] == self.numNodes))):
-            self.alpha_Q = self.alpha_Q.reshape((self.numNodes,1))
-            # Pre-multiply alpha_Q values by the isolation adjacency matrix ("transmission weight connections")
-            A_Q_alpha_Q_pairwise_byInfected      = scipy.sparse.csr_matrix.multiply(self.A_Q, self.alpha_Q).tocsr()
-            A_Q_alpha_Q_pairwise_byInfectee      = scipy.sparse.csr_matrix.multiply(self.A_Q, self.alpha_Q.T).tocsr()
+        if(self.delta_Q.ndim == 2 and self.delta_Q.shape[0] == self.numNodes and self.delta_Q.shape[1] == self.numNodes):
+            self.A_Q_delta_Q_pairwise = self.delta_Q
+        elif((self.delta_Q.ndim == 1 and self.delta_Q.shape[0] == self.numNodes) or (self.delta_Q.ndim == 2 and (self.delta_Q.shape[0] == self.numNodes or self.delta_Q.shape[1] == self.numNodes))):
+            self.delta_Q = self.delta_Q.reshape((self.numNodes,1))
+            # Pre-multiply delta_Q values by the isolation adjacency matrix ("transmission weight connections")
+            A_Q_delta_Q_pairwise_byInfected      = scipy.sparse.csr_matrix.multiply(self.A_Q, self.delta_Q).tocsr()
+            A_Q_delta_Q_pairwise_byInfectee      = scipy.sparse.csr_matrix.multiply(self.A_Q, self.delta_Q.T).tocsr()
             #------------------------------
-            # Compute the effective pairwise alpha values as a function of the infected/infectee pair:
-            if(self.alpha_pairwise_mode == 'infected'):
-                self.A_Q_alpha_Q_pairwise = A_Q_alpha_Q_pairwise_byInfected
-            elif(self.alpha_pairwise_mode == 'infectee'):
-                self.A_Q_alpha_Q_pairwise = A_Q_alpha_Q_pairwise_byInfectee
-            elif(self.alpha_pairwise_mode == 'min'):
-                self.A_Q_alpha_Q_pairwise = scipy.sparse.csr_matrix.minimum(A_Q_alpha_Q_pairwise_byInfected, A_Q_alpha_Q_pairwise_byInfectee)
-            elif(self.alpha_pairwise_mode == 'max'):
-                self.A_Q_alpha_Q_pairwise = scipy.sparse.csr_matrix.maximum(A_Q_alpha_Q_pairwise_byInfected, A_Q_alpha_Q_pairwise_byInfectee)
-            elif(self.alpha_pairwise_mode == 'mean'):
-                self.A_Q_alpha_Q_pairwise = (A_Q_alpha_Q_pairwise_byInfected + A_Q_alpha_Q_pairwise_byInfectee)/2
-            elif(self.alpha_pairwise_mode is None):
-                self.A_Q_alpha_Q_pairwise = self.A
+            # Compute the effective pairwise delta values as a function of the infected/infectee pair:
+            if(self.delta_pairwise_mode == 'infected'):
+                self.A_Q_delta_Q_pairwise = A_Q_delta_Q_pairwise_byInfected
+            elif(self.delta_pairwise_mode == 'infectee'):
+                self.A_Q_delta_Q_pairwise = A_Q_delta_Q_pairwise_byInfectee
+            elif(self.delta_pairwise_mode == 'min'):
+                self.A_Q_delta_Q_pairwise = scipy.sparse.csr_matrix.minimum(A_Q_delta_Q_pairwise_byInfected, A_Q_delta_Q_pairwise_byInfectee)
+            elif(self.delta_pairwise_mode == 'max'):
+                self.A_Q_delta_Q_pairwise = scipy.sparse.csr_matrix.maximum(A_Q_delta_Q_pairwise_byInfected, A_Q_delta_Q_pairwise_byInfectee)
+            elif(self.delta_pairwise_mode == 'mean'):
+                self.A_Q_delta_Q_pairwise = (A_Q_delta_Q_pairwise_byInfected + A_Q_delta_Q_pairwise_byInfectee)/2
+            elif(self.delta_pairwise_mode is None):
+                self.A_Q_delta_Q_pairwise = self.A
             else:
-                print("Unrecognized alpha_pairwise_mode value (support for 'infected', 'infectee', 'min', 'max', and 'mean').")
+                print("Unrecognized delta_pairwise_mode value (support for 'infected', 'infectee', 'min', 'max', and 'mean').")
         else:
-            print("Invalid values given for alpha_Q (expected 1xN list/array or NxN 2d array)")
+            print("Invalid values given for delta_Q (expected 1xN list/array or NxN 2d array)")
 
         #----------------------------------------
-        # Pre-calculate the pairwise alpha*beta values:
+        # Pre-calculate the pairwise delta*beta values:
         #----------------------------------------
-        self.A_alphabeta          = scipy.sparse.csr_matrix.multiply(self.A_alpha_pairwise, self.A_beta_pairwise)
-        self.A_Q_alphabeta_Q      = scipy.sparse.csr_matrix.multiply(self.A_Q_alpha_Q_pairwise, self.A_Q_beta_Q_pairwise)
+        self.A_deltabeta          = scipy.sparse.csr_matrix.multiply(self.A_delta_pairwise, self.A_beta_pairwise)
+        self.A_Q_deltabeta_Q      = scipy.sparse.csr_matrix.multiply(self.A_Q_delta_Q_pairwise, self.A_Q_beta_Q_pairwise)
         if(self.A_beta_asym_pairwise is not None):
-            self.A_alphabeta_asym = scipy.sparse.csr_matrix.multiply(self.A_alpha_pairwise, self.A_beta_asym_pairwise)
+            self.A_deltabeta_asym = scipy.sparse.csr_matrix.multiply(self.A_delta_pairwise, self.A_beta_asym_pairwise)
         else:
-            self.A_alphabeta_asym = None
+            self.A_deltabeta_asym = None
     
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -551,7 +581,7 @@ class ExtSEIRSNetworkModel():
         if(t_idx is None):
             return (self.numQ_S[:] + self.numQ_E[:] + self.numQ_pre[:] + self.numQ_sym[:] + self.numQ_asym[:] + self.numQ_R[:])            
         else:
-            return (self.numQ_S[tidx] + self.numQ_E[tidx] + self.numQ_pre[tidx] + self.numQ_sym[tidx] + self.numQ_asym[tidx] + self.numQ_R[tidx])            
+            return (self.numQ_S[t_idx] + self.numQ_E[t_idx] + self.numQ_pre[t_idx] + self.numQ_sym[t_idx] + self.numQ_asym[t_idx] + self.numQ_R[t_idx])            
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -590,24 +620,24 @@ class ExtSEIRSNetworkModel():
 
         self.transmissionTerms_I = numpy.zeros(shape=(self.numNodes,1))      
         if(numpy.any(self.numI_sym[self.tidx]) or numpy.any(self.numI_asym[self.tidx]) or numpy.any(self.numI_pre[self.tidx])):
-            if(self.A_alphabeta_asym is not None):
-                self.transmissionTerms_sym  = numpy.asarray(scipy.sparse.csr_matrix.dot(self.A_alphabeta, self.X==self.I_sym))
-                self.transmissionTerms_asym = numpy.asarray(scipy.sparse.csr_matrix.dot(self.A_alphabeta_asym, ((self.X==self.I_pre)|(self.X==self.I_asym))))
+            if(self.A_deltabeta_asym is not None):
+                self.transmissionTerms_sym  = numpy.asarray(scipy.sparse.csr_matrix.dot(self.A_deltabeta, self.X==self.I_sym))
+                self.transmissionTerms_asym = numpy.asarray(scipy.sparse.csr_matrix.dot(self.A_deltabeta_asym, ((self.X==self.I_pre)|(self.X==self.I_asym))))
                 self.transmissionTerms_I    = self.transmissionTerms_sym+self.transmissionTerms_asym
             else:
-                self.transmissionTerms_I    = numpy.asarray(scipy.sparse.csr_matrix.dot(self.A_alphabeta, ((self.X==self.I_sym)|(self.X==self.I_pre)|(self.X==self.I_asym))))
+                self.transmissionTerms_I    = numpy.asarray(scipy.sparse.csr_matrix.dot(self.A_deltabeta, ((self.X==self.I_sym)|(self.X==self.I_pre)|(self.X==self.I_asym))))
 
         #------------------------------------
 
         self.transmissionTerms_Q = numpy.zeros(shape=(self.numNodes,1))
         if(numpy.any(self.numQ_pre[self.tidx]) or numpy.any(self.numQ_sym[self.tidx]) or numpy.any(self.numQ_asym[self.tidx])):
-            self.transmissionTerms_Q = numpy.asarray(scipy.sparse.csr_matrix.dot(self.A_Q_alphabeta_Q, ((self.X==self.Q_pre)|(self.X==self.Q_sym)|(self.X==self.Q_asym))))
+            self.transmissionTerms_Q = numpy.asarray(scipy.sparse.csr_matrix.dot(self.A_Q_deltabeta_Q, ((self.X==self.Q_pre)|(self.X==self.Q_sym)|(self.X==self.Q_asym))))
 
         #------------------------------------
 
         self.transmissionTerms_IQ = numpy.zeros(shape=(self.numNodes,1))      
         if(numpy.any(self.numQ_S[self.tidx]) and (numpy.any(self.numI_sym[self.tidx]) or numpy.any(self.numI_asym[self.tidx]) or numpy.any(self.numI_pre[self.tidx]))):
-            self.transmissionTerms_IQ = numpy.asarray(scipy.sparse.csr_matrix.dot(self.A_Q_alphabeta_Q, ((self.X==self.I_sym)|(self.X==self.I_pre)|(self.X==self.I_asym))))
+            self.transmissionTerms_IQ = numpy.asarray(scipy.sparse.csr_matrix.dot(self.A_Q_deltabeta_Q, ((self.X==self.I_sym)|(self.X==self.I_pre)|(self.X==self.I_asym))))
 
         #------------------------------------
 
@@ -617,23 +647,23 @@ class ExtSEIRSNetworkModel():
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        propensities_StoE       = ( 
-                                    self.o*(numpy.mean(self.beta)*self.prevalence_ext)
-                                    + (1-self.o)*(
-                                        self.p*((numpy.mean(self.beta)*self.numI_sym[self.tidx] + numpy.mean(self.beta_asym)*(self.numI_pre[self.tidx] + self.numI_asym[self.tidx])
-                                        + self.q*numpy.mean(self.beta_Q)*(self.numQ_pre[self.tidx] + self.numQ_sym[self.tidx] + self.numQ_asym[self.tidx]))/self.N[self.tidx])
-                                        + (1-self.p)*(numpy.divide(self.transmissionTerms_I, self.degree, out=numpy.zeros_like(self.degree), where=self.degree!=0)
-                                                      + numpy.divide(self.transmissionTerms_Q, self.degree_Q, out=numpy.zeros_like(self.degree_Q), where=self.degree_Q!=0)))
+        propensities_StoE       = ( self.alpha *
+                                        (self.o*(self.beta_global*self.prevalence_ext)
+                                        + (1-self.o)*(
+                                            self.p*((self.beta_global*self.numI_sym[self.tidx] + self.beta_asym_global*(self.numI_pre[self.tidx] + self.numI_asym[self.tidx])
+                                            + self.q*self.beta_Q_global*(self.numQ_pre[self.tidx] + self.numQ_sym[self.tidx] + self.numQ_asym[self.tidx]))/self.N[self.tidx])
+                                            + (1-self.p)*(numpy.divide(self.transmissionTerms_I, self.degree, out=numpy.zeros_like(self.degree), where=self.degree!=0)
+                                                          + numpy.divide(self.transmissionTerms_Q, self.degree_Q, out=numpy.zeros_like(self.degree_Q), where=self.degree_Q!=0))))
                                   )*(self.X==self.S)
 
         propensities_QStoQE = numpy.zeros_like(propensities_StoE)
         if(numpy.any(self.X==self.Q_S)):
-            propensities_QStoQE = (
-                                    self.o*(self.q*numpy.mean(self.beta)*self.prevalence_ext)
-                                    + (1-self.o)*(
-                                        self.p*(self.q*(numpy.mean(self.beta)*self.numI_sym[self.tidx] + numpy.mean(self.beta_asym)*(self.numI_pre[self.tidx] + self.numI_asym[self.tidx])
-                                        + numpy.mean(self.beta_Q)*(self.numQ_pre[self.tidx] + self.numQ_sym[self.tidx] + self.numQ_asym[self.tidx]))/self.N[self.tidx])
-                                        + (1-self.p)*(numpy.divide(self.transmissionTerms_IQ+self.transmissionTerms_Q, self.degree_Q, out=numpy.zeros_like(self.degree_Q), where=self.degree_Q!=0)))
+            propensities_QStoQE = ( self.alpha_Q * 
+                                        (self.o*(self.q*self.beta_global*self.prevalence_ext)
+                                        + (1-self.o)*(
+                                            self.p*(self.q*(self.beta_global*self.numI_sym[self.tidx] + self.beta_asym_global*(self.numI_pre[self.tidx] + self.numI_asym[self.tidx])
+                                            + self.beta_Q_global*(self.numQ_pre[self.tidx] + self.numQ_sym[self.tidx] + self.numQ_asym[self.tidx]))/self.N[self.tidx])
+                                            + (1-self.p)*(numpy.divide(self.transmissionTerms_IQ+self.transmissionTerms_Q, self.degree_Q, out=numpy.zeros_like(self.degree_Q), where=self.degree_Q!=0))))
                                    )*(self.X==self.Q_S)
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -789,6 +819,16 @@ class ExtSEIRSNetworkModel():
 
     def set_positive(self, node, positive):
         self.positive[node] = positive
+
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    def introduce_exposures(self, num_new_exposures):
+        exposedNodes = numpy.random.choice(range(self.numNodes), size=num_new_exposures, replace=False)
+        for exposedNode in exposedNodes:
+            if(self.X[exposedNode]==self.S):
+                self.X[exposedNode] = self.E
+            elif(self.X[exposedNode]==self.Q_S):
+                self.X[exposedNode] = self.Q_E
 
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -946,8 +986,8 @@ class ExtSEIRSNetworkModel():
 
             # Save information about infection events when they occur:
             if(transitionType == 'StoE' or transitionType == 'QStoQE'):
-                transitionNode_GNbrs  = self.G[transitionNode].keys()
-                transitionNode_GQNbrs = self.G_Q[transitionNode].keys()
+                transitionNode_GNbrs  = list(self.G[transitionNode].keys())
+                transitionNode_GQNbrs = list(self.G_Q[transitionNode].keys())
                 self.infectionsLog.append({ 't':                            self.t,
                                             'infected_node':                transitionNode,
                                             'infection_type':               transitionType,
@@ -1034,7 +1074,7 @@ class ExtSEIRSNetworkModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Terminate if tmax reached or num infections is 0:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if(self.t >= self.tmax or self.total_num_infected(self.tidx) < 1):
+        if(self.t >= self.tmax or (self.total_num_infected(self.tidx) < 1 and self.total_num_isolated(self.tidx) < 1)):
             self.finalize_data_series()
             return False
 
