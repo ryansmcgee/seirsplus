@@ -9,7 +9,6 @@ Notably, this package includes stochastic implementations of these models on dyn
    * [ SEIRS Dynamics ](#model-seirs)
    * [ Extended SEIRS Model ](#model-extseirs)
       * [ Testing, Tracing, & Isolation ](#model-tti)
-   * [ Deterministic Model ](#model-determ)
    * [ Network Model ](#model-network)
       * [ Network Model with Testing, Contact Tracing, and Quarantining ](#model-network-ttq)
 * [ Code Usage ](#usage)
@@ -88,26 +87,7 @@ In addition to the parameters given above, transitions between quarantine states
 
 
 
-<a name="model-determ"></a>
-### Deterministic Model
 
-The evolution of the SEIRS dynamics described above can be described by the following systems of differential equations. Importantly, this version of the model is deterministic and assumes a uniformly-mixed population. 
-
-#### SEIRS Dynamics
-
-<p align="center">
-  <img src="https://github.com/ryansmcgee/seirsplus/blob/master/images/SEIRS_deterministic_equations.png" width="210"></div>
-</p>
-
-where *S*, *E*, *I*, *R*, and *F* are the numbers of susceptible, exposed, infectious, recovered, and deceased individuals, respectively, and *N* is the total number of individuals in the population (parameters are described above).
-
-#### SEIRS Dynamics with Testing
-
-<p align="center">
-  <img src="https://github.com/ryansmcgee/seirsplus/blob/master/images/SEIRStesting_deterministic_equations.png" width="400"></div>
-</p>
-
-where *S*, *E*, *I*, *D<sub>E</sub>*, *D<sub>I</sub>*, *R*, and *F* are the numbers of susceptible, exposed, infectious, detected exposed, detected infectious, recovered, and deceased individuals, respectively, and *N* is the total number of individuals in the population (parameters are described above).
 
 <a name="model-network"></a>
 ### Network Model
@@ -116,20 +96,18 @@ The standard SEIRS model captures important features of infectious disease dynam
 
 This package includes implementation of the SEIRS dynamics on stochastic dynamical networks. This avails analysis of the realtionship between network structure and effective transmission rates, including the effect of network-based interventions such as social distancing, quarantining, and contact tracing.
 
-<img align="right" src="https://github.com/ryansmcgee/seirsplus/blob/master/images/network_contacts.png" height="250">
+<img align="right" src="https://github.com/ryansmcgee/seirx-dev/blob/master/network_p.png" height="220">
 
-Consider a graph **_G_** representing individuals (nodes) and their interactions (edges). Each individual (node) has a state (*S, E, I, D<sub>E</sub>, D<sub>I</sub>, R, or F*). The set of nodes adjacent (connected by an edge) to an individual defines their set of "close contacts" (highlighted in black).  At a given time, each individual makes contact with a random individual from their set of close contacts with probability *(1-p)β* or with a random individual from anywhere in the network (highlighted in blue) with probability *pβ*. The latter global contacts represent individuals interacting with the population at large (i.e., individuals outside of ones social circle, such as on public transit, at an event, etc.) with some probability. When a susceptible individual interacts with an infectious individual they become exposed. The parameter *p* defines the locality of the network: for *p=0* an individual only interacts with their close contacts, while *p=1* represents a uniformly mixed population. Social distancing interventions may increase the locality of the network (i.e., decrease *p*) and/or decrease local connectivity of the network (i.e., decrease the degree of individuals).
+Consider a graph **_G_** representing individuals (nodes) and their interactions (edges). Each individual (node) has a state (*S, E, I<sub>pre</sub>, I<sub>sym</sub>, I<sub>asym</sub>, H, R, F*, etc). The set of nodes adjacent (connected by an edge) to an individual defines their set of "close contacts" (highlighted in black).  At a given time, each individual makes contact with a random individual from their set of close contacts with probability *(1-p)* or with a random individual from anywhere in the network (highlighted in teal) with probability *p*. The latter global contacts represent individuals interacting with the population at large (i.e., individuals outside of ones' social circle, such as on public transit, at an event, etc.) with some probability. The parameter *p* defines the locality of the network: for *p=0* an individual only interacts with their close contacts, while *p=1* represents a uniformly mixed population. Social distancing interventions may increase the locality of the network (i.e., decrease *p*) and/or decrease local connectivity of the network (i.e., decrease the degree of individuals).
 
-Each node *i* has a state *X<sub>i</sub>* that updates according to the following probability transition rates: 
+When a susceptible individual interacts with an infectious individual they may become exposed. The probability of transmission from an infectious individual *i* to a susceptible individual *j* depends in general on the transmissibility of the infectious individual and the susceptibility of the susceptible individual (the product of these parameters weight the interaction edges).
 
-<p align="center">
-  <img src="https://github.com/ryansmcgee/seirsplus/blob/master/images/SEIRSnetwork_transitions.png" width="500"></div>
-</p>
 
-where *δ<sub>Xi=A</sub> = 1* if the state of *X<sub>i</sub>* is *A*, or *0* if not, and where *C<sub>G</sub>(i)* denotes the set of close contacts of node *i*. For large populations and *p=1*, this stochastic model approaches the same dynamics as the deterministic SEIRS model.
+#### Quarantine Contacts
 
-This implementation builds on the work of Dottori et al. (2015).
-* Dottori, M. and Fabricius, G., 2015. SIR model on a dynamical network and the endemic state of an infectious disease. Physica A: Statistical Mechanics and its Applications, 434, pp.25-35.
+<img align="right" src="https://github.com/ryansmcgee/seirx-dev/blob/master/network_qp.png" height="220">
+
+Now we also consider another graph **_G<sub>Q</sub>_** which represents the interactions that each individual has while in a quarantine state. The quarantine has the effect of dropping some fraction of the edges connecting the quarantined individual to others (according to a rule of the user's choice when generating the graph *G<sub>Q</sub>*). The edges of *G<sub>Q</sub>* (highlighted in purple) for each individual are then a subset of the normal edges of *G* for that individual. The set of nodes that are adjacent to a quarantined individual define their set of "quarantine contacts" (highlighted in purple). At a given time, a quarantined individual comes into contact with an individual in their set of quarantine contacts with probability *(1-p)* or comes into contact with a random individual from anywhere in the network with probability *p*. The parameter *q* (down)weights the intensity of interactions with the population at large while in quarantine relative to baseline. The transmissibility, susceptibility, and other parameters may be different for individuals in quarantine. 
 
 <a name="model-network-ttq"></a>
 #### Network Model with Testing, Contact Tracing, and Quarantining
