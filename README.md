@@ -49,7 +49,7 @@ This model extends the classic SEIRS model of infectious disease to represent pr
 A susceptible (*S*) member of the population becomes infected (exposed) when making a transmissive contact with an infectious individual. Newly exposed (*E*) individuals first experience a latent period during which time they are not contagious (e.g., while a virus is replicating, but before shedding). Infected individuals then progress to a pre-symptomatic infectious state (*I<sub>pre</sub>*), in which they are contagious but not yet presenting symptoms. Some infectious individuals go on to develop symptoms (*I<sub>sym</sub>*), while a portion of the population never develops symptoms despite being contagious (*I<sub>asym</sub>*). A subset of symptomatic individuals progress to a severe clinical state and must be hospitalized (*I<sub>H</sub>*), and some fraction severe cases are fatal (*F*). At the conclusion of the infectious period, infected individuals enter the recovered state (*R*) and are no longer contagious or susceptible to infection. As in a SEIR*S* model, recovered individuals may become resusceptible some time after recovering (although re-susceptibility can be excluded if not applicable or desired).
 
 <p align="center">
-  <img src="https://github.com/ryansmcgee/seirx-dev/blob/master/ExtSEIRS_compartments.png" width="700"></div>
+  <img src="https://https://github.com/ryansmcgee/seirsplus/tree/master/images/ExtSEIRS_compartments.png" width="700"></div>
 </p>
 
 The rates of transition between the states are governed by the parameters:
@@ -73,7 +73,7 @@ Note that the extended model reduces to the basic SEIRS model for *a = 0*, *h = 
 The effect of isolation-based interventions (e.g., isolating individuals in response to testing or contact tracing) are modeled by introducing compartments representing quarantined individuals. An individual may be quarantined in any disease state, and every disease state has a corresponding quarantine compartment (with the exception of the hospitalized state, which is considered a quarantine state for transmission and other purposes). Quarantined individuals follow the same progression through the disease states, but the rates of transition or other parameters may be different. There are multiple methods by which individuals can be moved into or out of a quarantine state in this framework.
 
 <p align="center">
-  <img src="https://github.com/ryansmcgee/seirx-dev/blob/master/ExtSEIRS_compartments_quarantine.png" width="700"></div>
+  <img src="https://https://github.com/ryansmcgee/seirsplus/tree/master/images/ExtSEIRS_compartments_quarantine.png" width="700"></div>
 </p>
 
 In addition to the parameters given above, transitions between quarantine states are governed by the parameters:
@@ -95,7 +95,7 @@ The standard SEIRS model captures important features of infectious disease dynam
 
 This package includes implementation of the SEIRS dynamics on stochastic dynamical networks. This avails analysis of the realtionship between network structure and effective transmission rates, including the effect of network-based interventions such as social distancing, quarantining, and contact tracing.
 
-<img align="right" src="https://github.com/ryansmcgee/seirx-dev/blob/master/network_p.png" height="220">
+<img align="right" src="https://github.com/ryansmcgee/seirsplus/tree/master/images/network_p.png" height="220">
 
 Consider a graph **_G_** representing individuals (nodes) and their interactions (edges). Each individual (node) has a state (*S, E, I<sub>pre</sub>, I<sub>sym</sub>, I<sub>asym</sub>, H, R, F*, etc). The set of nodes adjacent (connected by an edge) to an individual defines their set of "close contacts" (highlighted in black).  At a given time, each individual makes contact with a random individual from their set of close contacts with probability *(1-p)* or with a random individual from anywhere in the network (highlighted in teal) with probability *p*. The latter global contacts represent individuals interacting with the population at large (i.e., individuals outside of ones' social circle, such as on public transit, at an event, etc.) with some probability. The parameter *p* defines the locality of the network: for *p=0* an individual only interacts with their close contacts, while *p=1* represents a uniformly mixed population. Social distancing interventions may increase the locality of the network (i.e., decrease *p*) and/or decrease local connectivity of the network (i.e., decrease the degree of individuals).
 
@@ -104,7 +104,7 @@ When a susceptible individual interacts with an infectious individual they may b
 
 #### Quarantine Contacts
 
-<img align="right" src="https://github.com/ryansmcgee/seirx-dev/blob/master/network_qp.png" height="220">
+<img align="right" src="https://github.com/ryansmcgee/seirsplus/tree/master/images/network_qp.png" height="220">
 
 Now we also consider another graph **_G<sub>Q</sub>_** which represents the interactions that each individual has while in a quarantine state. The quarantine has the effect of dropping some fraction of the edges connecting the quarantined individual to others (according to a rule of the user's choice when generating the graph *G<sub>Q</sub>*). The edges of *G<sub>Q</sub>* (highlighted in purple) for each individual are then a subset of the normal edges of *G* for that individual. The set of nodes that are adjacent to a quarantined individual define their set of "quarantine contacts" (highlighted in purple). At a given time, a quarantined individual comes into contact with an individual in their set of quarantine contacts with probability *(1-p)* or comes into contact with a random individual from anywhere in the network with probability *p*. The parameter *q* (down)weights the intensity of interactions with the population at large while in quarantine relative to baseline. The transmissibility, susceptibility, and other parameters may be different for individuals in quarantine. 
 
@@ -359,37 +359,6 @@ Epidemic scenarios of interest often involve interaction networks that change in
 
 **_Note:_** *Simulation time increases with network size. Small networks simulate quickly, but have more stochastic volatility. Networks with ~10,000 are large enough to produce per-capita population dynamics that are generally consistent with those of larger networks, but small enough to simulate quickly. We recommend using networks with ~10,000 nodes for prototyping parameters and scenarios, which can then be run on larger networks if more precision is required.*
 
-#### Custom Exponential Graph
-
-Human interaction networks often resemble scale-free power law networks with exponential degree distributions.
-This package includes a ```custom_exponential_graph()``` convenience funciton that generates power-law-like graphs that have degree distributions with two exponential tails. The method of generating these graphs also makes it easy to remove edges from a reference graph and decrease the degree of the network, which is useful for generating networks representing social distancing and quarantine conditions.
-
-Common algorithms for generating power-law graphs, such as the Barabasi-Albert preferential attachment algorithm, produce graphs that have a minimum degree; that is, no node has fewer than *m* edges for some value of *m*, which is unrealistic for interaction networks. This ```custom_exponential_graph()``` function simply produces graphs with degree distributions that have a peak near their mean and exponential tails in the direction of both high and low degrees. (No claims about the realism or rigor of these graphs are made.)
-
-<img align="right" src="https://github.com/ryansmcgee/seirsplus/blob/master/images/degreeDistn_compareToBAGraph1.png" height="250">
-
-This function generates graphs using the following algorithm:
-* Start with a Barabasi-Albert preferential attachment power-law graph (or any graph that is optionally provided by the user).
-* For each node:
-    * Count the number of neighbors *n* of the node 
-    * Draw a random number *r* from an exponential distribution with some mean=```scale```. If *r>n*, set *r=n*. 
-    * Randomly select *r* of this node’s neighbors to keep, delete the edges to all other neighbors. 
-When starting from a Barabasi-Albert (BA) graph, this generates a new graphs that have a peak at their mean and approximately exponential tails in both directions, as shown to the right.
-
-<img align="right" src="https://github.com/ryansmcgee/seirsplus/blob/master/images/degreeDistn_compareToBAGraph4.png" height="250">
-
-Since this algorithm starts with a graph with defined connections and makes a new graph by breaking some number of connections, it also makes it easy to take an existing graph and make a subgraph of it that also has exponential-ish tails and a left-shifted mean. This can be used for generating social distancing and quarantine subgraphs. The amount of edge breaking/degree reduction is modulated by the ```scale``` parameter. To the right are some examples of graphs with progressively lower mean degree generated using the same reference Barabasi-Albert graph, which therefore are all subsets of a common reference set of edges.
-
-The ```custom_exponential_graph()``` function has the following arguments
-
-base_graph=None, scale=100, min_num_edges=0, m=9, n=None
-Argument | Description | Data Type | Default Value
------|-----|-----|-----
-```base_graph``` | Graph to use as the starting point for the algorithm. If ```None```, generate a Barabasi-Albert graph to use as the starting point using arguments ```n``` and ```m``` as parameters | ```networkx``` ```Graph``` object | ```None```
-```scale``` | Mean of the exponential distribution used to draw ```base_graph``` to keep. Large values result in graphs that approximate the original ```base_graph```, small values result in sparser subgraphs of ```base_graph```  | numeric | 100
-```min_num_edges``` | Minimum number of edges that all nodes must have in the generated graph | int | 0
-```n``` | *n* parameter for teh Barabasi-Albert algorithm (number of nodes to add) | int | ```None``` (value required when no ```base_graph``` is given)
-```m``` | *m* parameter for the Barabasi-Albert algorithm (number of edges added with each added node) | int | 9
 
 <a name="usage-checkpoints"></a>
 ### Changing parameters during a simulation
