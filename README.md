@@ -1,6 +1,6 @@
 # SEIRS+ Model Framework
 
-<span style="background-color: #FFFF00">**_UPDATE 7 Aug 2020:_** *A new version of the `seirsplus` package featuring extended models, simulations, and other new features is being prepared for release in the coming days. In conjunction with this release, this readme is being transitioned to a more thorough wiki. Please bear with us during these updates, and check back shortly for more information.*</span>
+<span style="background-color: #FFFF00">UPDATE 7 Aug 2020: A new version of the `seirsplus` package featuring extended models, simulations, and other new features is being prepared for release in the coming days. In conjunction with this release, this readme is being transitioned to a more thorough wiki. Please bear with us during these updates, and check back shortly for more information.</span>
 
 This package implements generalized SEIRS infectious disease dynamics models with extensions that model the effect of factors including population structure, social distancing, testing, contact tracing, and quarantining detected cases. 
 
