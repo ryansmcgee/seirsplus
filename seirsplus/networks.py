@@ -5,12 +5,8 @@ import networkx
 import FARZ
 from extended_models import *
 
-
 import matplotlib.pyplot as pyplot
-# import seaborn
 
-# seaborn.set_style('ticks')
-# seaborn.despine()
 
 
 
@@ -582,11 +578,6 @@ def generate_demographic_contact_network(N, demographic_data, layer_generator='L
     return graphs, individualAgeBracketLabels, households
 
 
-
-
-    
-
-
 def household_country_data(country):
 
     if(country=='US'):
@@ -618,12 +609,8 @@ def household_country_data(country):
 
     return household_data
 
-
-
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

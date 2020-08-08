@@ -5,6 +5,11 @@ import numpy
 import time
 
 
+###################################################
+#                                                 #
+#  Testing, Tracing, & Isolation Simulation Loop  #
+#                                                 #
+###################################################
 
 def run_tti_sim(model, T, 
                 intervention_start_pct_infected=0, average_introductions_per_day=0,
