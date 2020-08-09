@@ -11,7 +11,7 @@ This package implements models of generalized SEIRS infectious disease dynamics 
 
 ## Documentation
 
-#### Thorough documentation of this package's models, code, use cases, examples, and more can be found on [the wiki](https://github.com/ryansmcgee/seirsplus/wiki/)
+#### Full documentation of this package's models, code, use cases, examples, and more can be found on [the wiki](https://github.com/ryansmcgee/seirsplus/wiki/)
 
 [**Basic SEIRS Model**](https://github.com/ryansmcgee/seirsplus/wiki/SEIRS-Model-Description) | [**Extended SEIRS Model**](https://github.com/ryansmcgee/seirsplus/wiki/Extended-SEIRS-Model-Description)
 :-----:|:-----:
