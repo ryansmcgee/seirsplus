@@ -9,7 +9,7 @@ This package implements models of generalized SEIRS infectious disease dynamics 
     * The versions of these classes from before 9 Aug 2020 are now located in the `legacy_models.py` module.
 * Launch of new [wiki site](https://github.com/ryansmcgee/seirsplus/wiki) for thorough documentation of models and package features
 
-## Documentation
+## Overview
 
 #### Full documentation of this package's models, code, use cases, examples, and more can be found on [the wiki](https://github.com/ryansmcgee/seirsplus/wiki/)
 
