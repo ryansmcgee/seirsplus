@@ -3,21 +3,21 @@
 This package implements models of generalized SEIRS infectious disease dynamics with extensions that allow us to study the effect of social contact network structures, heterogeneities, stochasticity, and interventions, such as social distancing, testing, contact tracing, and isolation. 
 
 #### *Latest Release: v1.0 (9 Aug 2020)*
-* Full rollout of [Extended SEIRS Model](Extended-SEIRS-model-description), [TTI simulation loop](TTI-Simulation-loop), and [network generators](network-generation) for [community](network-generation#demographic-community-network) and [workplace](network-generation#workplace-network) populations.
+* Full rollout of [Extended SEIRS Model](https://github.com/ryansmcgee/seirsplus/wiki/Extended-SEIRS-model-description), [TTI simulation loop](https://github.com/ryansmcgee/seirsplus/wiki/TTI-Simulation-loop), and [network generators](https://github.com/ryansmcgee/seirsplus/wiki/network-generation) for [community](https://github.com/ryansmcgee/seirsplus/wiki/network-generation#demographic-community-network) and [workplace](https://github.com/ryansmcgee/seirsplus/wiki/network-generation#workplace-network) populations.
 * Example notebooks with in-depth walkthroughs of sophisticated [Community TTT](https://github.com/ryansmcgee/seirsplus/blob/master/examples/Extended_SEIRS_Community_TTI_Demo.ipynb) and [Workplace TTI](https://github.com/ryansmcgee/seirsplus/blob/master/examples/Extended_SEIRS_Workplace_TTI_Demo.ipynb) simulations.
-* The [`SEIRSModel`](SEIRSModel-class) and [`SEIRSNetworkModel`](SEIRSNetworkModel-class) classes have been refactored to be in line with [Extended SEIRS Model](Extended-SEIRS-model-description) conventions. The dynamics and core implementations remain the same, but some variable names have changed, etc.
+* The [`SEIRSModel`](https://github.com/ryansmcgee/seirsplus/wiki/SEIRSModel-class) and [`SEIRSNetworkModel`](https://github.com/ryansmcgee/seirsplus/wiki/SEIRSNetworkModel-class) classes have been refactored to be in line with [Extended SEIRS Model](https://github.com/ryansmcgee/seirsplus/wiki/Extended-SEIRS-model-description) conventions. The dynamics and core implementations remain the same, but some variable names have changed, etc.
     * The versions of these classes from before 9 Aug 2020 are now located in the `legacy_models.py` module.
 * Launch of new [wiki site](https://github.com/ryansmcgee/seirsplus/wiki) for thorough documentation of models and package features
 
 ## Documentation
 
-** Thorough documentation of this package's models, code, use cases, examples, and more can be found on [the wiki](https://github.com/ryansmcgee/seirsplus/wiki)**
+#### Thorough documentation of this package's models, code, use cases, examples, and more can be found on [the wiki](https://github.com/ryansmcgee/seirsplus/wiki/)
 
-[**Basic SEIRS Model**]() | [**Extended SEIRS Model**](Extended-SEIRS-Model-Description)
+[**Basic SEIRS Model**](https://github.com/ryansmcgee/seirsplus/wiki/SEIRS-Model-Description) | [**Extended SEIRS Model**](https://github.com/ryansmcgee/seirsplus/wiki/Extended-SEIRS-Model-Description)
 :-----:|:-----:
 <img src="https://github.com/ryansmcgee/seirsplus/blob/master/images/BasicSEIRS_compartments_padded.png" width="400"> | <img src="https://github.com/ryansmcgee/seirsplus/blob/master/images/ExtSEIRS_compartments.png" width="400">
-[Model Description](SEIRS-Model-Description) | [Model Description](Extended-SEIRS-Model-Description)
-[`SEIRSNetworkModel` docs](SEIRSModel-class)<br>[`SEIRSModel` docs](SEIRSNetworkModel-class) | [`ExtSEIRSNetworkModel` docs](ExtSEIRSNetworkModel-class)
+[Model Description](https://github.com/ryansmcgee/seirsplus/wiki/SEIRS-Model-Description) | [Model Description](https://github.com/ryansmcgee/seirsplus/wiki/Extended-SEIRS-Model-Description)
+[`SEIRSNetworkModel` docs](https://github.com/ryansmcgee/seirsplus/wiki/SEIRSModel-class)<br>[`SEIRSModel` docs](https://github.com/ryansmcgee/seirsplus/wiki/SEIRSNetworkModel-class) | [`ExtSEIRSNetworkModel` docs](https://github.com/ryansmcgee/seirsplus/wiki/ExtSEIRSNetworkModel-class)
 [Basic SEIRS Mean-field Model Demo](https://github.com/ryansmcgee/seirsplus/blob/master/examples/Basic_SEIRS_Meanfield_Model_Demo.ipynb)<br>[Basic SEIRS Network Model Demo](https://github.com/ryansmcgee/seirsplus/blob/master/examples/Basic_SEIRS_Network_Model_Demo.ipynb) | [Extended SEIRS Community TTI Demo](https://github.com/ryansmcgee/seirsplus/blob/master/examples/Extended_SEIRS_Community_TTI_Demo.ipynb)<br>[Extended SEIRS Workplace TTI Demo](https://github.com/ryansmcgee/seirsplus/blob/master/examples/Extended_SEIRS_Workplace_TTI_Demo.ipynb)
 
 #
@@ -53,9 +53,9 @@ The effect of isolation-based interventions (e.g., isolating individuals in resp
 
 Standard compartment models capture important features of infectious disease dynamics, but they are deterministic mean-field models that assume uniform mixing of the population (i.e., every individual in the population is equally likely to interact with every other individual). However, it is often important to consider stochasticity, heterogeneity, and the structure of contact networks when studying disease transmission, and many strategies for mitigating spread can be thought of as perturbing the contact network (e.g., social distancing) or making use of it (e.g., contact tracing).
 
-This package includes implementation of SEIRS models on stochastic dynamical networks. Individuals are represented as nodes in a network, and parameters, contacts, and interventions can be specified on a targeted individual basis. The network model enables rigorous analysis of transmission patterns and network-based interventions with respect to the properties of realistic contact networks. These SEIRS models can be simulated on any network. Network generation is largely left to the user, but some tools for [Network Generation](network-generation) are included in this package. 
+This package includes implementation of SEIRS models on stochastic dynamical networks. Individuals are represented as nodes in a network, and parameters, contacts, and interventions can be specified on a targeted individual basis. The network model enables rigorous analysis of transmission patterns and network-based interventions with respect to the properties of realistic contact networks. These SEIRS models can be simulated on any network. Network generation is largely left to the user, but some tools for [Network Generation](https://github.com/ryansmcgee/seirsplus/wiki/network-generation) are included in this package. 
 
-Unlike mean-field compartment models, which do not model individual members of the population, the network model explicitly represents individuals as discrete nodes. All model [parameters](#parameters) can be assigned to each node on an individual basis. Therefore, the network models support arbitrary parameter heterogeneity at the user's discretion. In addition, the specification of the contact network allows for heterogeneity in interaction patterns to be explicitly modeled as well. 
+Unlike mean-field compartment models, which do not model individual members of the population, the network model explicitly represents individuals as discrete nodes. All model parameters can be assigned to each node on an individual basis. Therefore, the network models support arbitrary parameter heterogeneity at the user's discretion. In addition, the specification of the contact network allows for heterogeneity in interaction patterns to be explicitly modeled as well. 
 
 
 <a name="usage"></a>
@@ -128,9 +128,9 @@ from utilities import *
 
 Complete documentation for all package classes and functions can be found throughout this wiki, including in-depth descriptions of concept, parameters, and how to initialize, run, and interface with the models. Some pages of note:
 
- * [`SEIRSModel`](SEIRSModel-class)
- * [`SEIRSNetworkModel`](SEIRSNetworkModel-class)
- * [`ExtSEIRSNetworkModel`](ExtSEIRSNetworkModel-class)
- * [Network Generation](Network-Generation)
- * [TTI Simulation Loop](TTI-Simulation-Loop)
+ * [`SEIRSModel`](https://github.com/ryansmcgee/seirsplus/wiki/SEIRSModel-class)
+ * [`SEIRSNetworkModel`](https://github.com/ryansmcgee/seirsplus/wiki/SEIRSNetworkModel-class)
+ * [`ExtSEIRSNetworkModel`](https://github.com/ryansmcgee/seirsplus/wiki/ExtSEIRSNetworkModel-class)
+ * [Network Generation](https://github.com/ryansmcgee/seirsplus/wiki/Network-Generation)
+ * [TTI Simulation Loop](https://github.com/ryansmcgee/seirsplus/wiki/TTI-Simulation-Loop)
 
