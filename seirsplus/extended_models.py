@@ -83,8 +83,9 @@ class ExtSEIRSNetworkModel():
                     o=0, prevalence_ext=0,
                     transition_mode='exponential_rates', node_groups=None, store_Xseries=False, seed=None):
 
-        if(seed):
+        if(seed is not None):
             numpy.random.seed(seed)
+            self.seed = seed
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Model Parameters:
@@ -926,7 +927,22 @@ class ExtSEIRSNetworkModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def run_iteration(self):
+        self._run_iter()
+        if(self.t >= self.tmax or (self.total_num_infected(self.tidx) < 1 and self.total_num_isolated(self.tidx) < 1)):
+            self.finalize_data_series()
+            return False
 
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        return True
+
+    def run_iteration_full_time(self):
+        self._run_iter()
+        if(self.t >= self.tmax):
+            self.finalize_data_series()
+            return False
+        return True
+
+    def _run_iter(self):
         if(self.tidx >= len(self.tseries)-1):
             # Room has run out in the timeseries storage arrays; double the size of these arrays:
             self.increase_data_series_length()
@@ -1068,16 +1084,7 @@ class ExtSEIRSNetworkModel():
                 self.nodeGroupData[groupName]['numTested'][self.tidx]   = numpy.count_nonzero(self.nodeGroupData[groupName]['mask']*self.tested)
                 self.nodeGroupData[groupName]['numPositive'][self.tidx] = numpy.count_nonzero(self.nodeGroupData[groupName]['mask']*self.positive)
 
-        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        # Terminate if tmax reached or num infections is 0:
-        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if(self.t >= self.tmax or (self.total_num_infected(self.tidx) < 1 and self.total_num_isolated(self.tidx) < 1)):
-            self.finalize_data_series()
-            return False
 
-        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-        return True
 
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

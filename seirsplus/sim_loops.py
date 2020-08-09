@@ -1,7 +1,7 @@
 from __future__ import division
 import pickle
 import numpy
-
+import random
 import time
 
 
@@ -312,16 +312,57 @@ def run_manual_random_testing_sim(model, T,
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+def get_temporal_false_negative_rates(model):
+    """
+    Convenience function for returning best false negative rates to save copy/paste
+    """
+    temporal_falseneg_rates = {
+                                model.E:        {0: 1.00, 1: 1.00, 2: 1.00, 3: 1.00},
+                                model.I_pre:    {0: 0.24, 1: 0.24, 2: 0.24},
+                                model.I_sym:    {0: 0.24, 1: 0.18, 2: 0.17, 3: 0.18, 4: 0.20, 5: 0.23, 6: 0.26, 7: 0.30, 8: 0.34, 9: 0.38, 10: 0.43, 11: 0.48, 12: 0.52, 13: 0.57, 14: 0.61, 15: 0.65, 16: 0.69, 17: 0.76, 18: 0.79, 19: 0.82, 20: 0.85, 21: 0.88, 22: 0.90, 23: 0.92, 24: 0.93, 25: 0.95, 26: 0.96, 27: 0.97, 28: 0.97, 29: 0.98, 30: 0.98, 31: 0.99},
+                                model.I_asym:   {0: 0.24, 1: 0.18, 2: 0.17, 3: 0.18, 4: 0.20, 5: 0.23, 6: 0.26, 7: 0.30, 8: 0.34, 9: 0.38, 10: 0.43, 11: 0.48, 12: 0.52, 13: 0.57, 14: 0.61, 15: 0.65, 16: 0.69, 17: 0.76, 18: 0.79, 19: 0.82, 20: 0.85, 21: 0.88, 22: 0.90, 23: 0.92, 24: 0.93, 25: 0.95, 26: 0.96, 27: 0.97, 28: 0.97, 29: 0.98, 30: 0.98, 31: 0.99},
+                                model.Q_E:      {0: 1.00, 1: 1.00, 2: 1.00, 3: 1.00},
+                                model.Q_pre:    {0: 0.24, 1: 0.24, 2: 0.24},
+                                model.Q_sym:    {0: 0.24, 1: 0.18, 2: 0.17, 3: 0.18, 4: 0.20, 5: 0.23, 6: 0.26, 7: 0.30, 8: 0.34, 9: 0.38, 10: 0.43, 11: 0.48, 12: 0.52, 13: 0.57, 14: 0.61, 15: 0.65, 16: 0.69, 17: 0.76, 18: 0.79, 19: 0.82, 20: 0.85, 21: 0.88, 22: 0.90, 23: 0.92, 24: 0.93, 25: 0.95, 26: 0.96, 27: 0.97, 28: 0.97, 29: 0.98, 30: 0.98, 31: 0.99},
+                                model.Q_asym:   {0: 0.24, 1: 0.18, 2: 0.17, 3: 0.18, 4: 0.20, 5: 0.23, 6: 0.26, 7: 0.30, 8: 0.34, 9: 0.38, 10: 0.43, 11: 0.48, 12: 0.52, 13: 0.57, 14: 0.61, 15: 0.65, 16: 0.69, 17: 0.76, 18: 0.79, 19: 0.82, 20: 0.85, 21: 0.88, 22: 0.90, 23: 0.92, 24: 0.93, 25: 0.95, 26: 0.96, 27: 0.97, 28: 0.97, 29: 0.98, 30: 0.98, 31: 0.99},
+                              }
+    return(temporal_falseneg_rates)
 
+def isolate_nodes(model, isolationGroup):
+    # Function to help isolate nodes
+    for isolationNode in isolationGroup:
+        model.set_isolation(isolationNode, True)
+
+def set_continuous_testing_days(model, continuous_days_between_tests):
+    """
+    Sets continuous testing days, return a list of integers of days for individuals to be
+    tested on
+    """
+    # Make sure the days between tests makes sense
+    if continuous_days_between_tests < 1:
+        raise ValueError('Need to choose a number of days between individuals tests to use continuous testing mode')
+    if not (isinstance(continuous_days_between_tests, int) or continuous_days_between_tests.is_integer()):
+        raise ValueError('Continuous days between tests must be an integer')
+
+    # Assign each individual to a group
+    individuals_per_group = int(model.numNodes/continuous_days_between_tests)
+    remainder = int(model.numNodes % continuous_days_between_tests)
+    groups = list(numpy.arange(1, continuous_days_between_tests+1)) * individuals_per_group
+    remainder_assignment = list(numpy.arange(1, continuous_days_between_tests+1))[0:remainder]
+    testing_days = groups + remainder_assignment
+    random.shuffle(testing_days)
+    return(testing_days)
 
 def run_rtw_testing_sim(model, T,
                         intervention_start_pct_infected=0,
-                        test_falseneg_rate='temporal', testing_cadence='everyday', pct_tested_per_day=1.0,
+                        test_falseneg_rate='temporal', testing_cadence='none', pct_tested_per_day=1.0,
                         testing_compliance_rate=1.0, symptomatic_seektest_compliance_rate=0.0,
                         isolation_lag=1, positive_isolation_unit='individual', # 'team', 'workplace'
-                        positive_isolation_compliance_rate=0.8, symptomatic_selfiso_compliance_rate=0.3,
-                        teams=None, average_introductions_per_day=1/7,
-                        print_interval=10, timeOfLastPrint=-1, verbose='t'):
+                        positive_isolation_compliance_rate=1.0, symptomatic_selfiso_compliance_rate=0.3,
+                        teams=None, average_introductions_per_day=0,
+                        print_interval=10, timeOfLastPrint=-1, verbose='t', sensitivity_offset = 0,
+                        test_logistics='cadence', continuous_days_between_tests=0,
+                        escalate_on_positive=False, escalate_days_between_tests=0, full_time=False):
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -335,21 +376,13 @@ def run_rtw_testing_sim(model, T,
                                 'semiweekly':   [0, 3, 7, 10, 14, 17, 21, 24],
                                 'weekly':       [0, 7, 14, 21],
                                 'biweekly':     [0, 14],
-                                'monthly':      [0]
+                                'monthly':      [0],
+                                'none': []
                             }
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    temporal_falseneg_rates = get_temporal_false_negative_rates(model)
 
-    temporal_falseneg_rates = {
-                                model.E:        {0: 1.00, 1: 1.00, 2: 1.00, 3: 1.00},
-                                model.I_pre:    {0: 0.24, 1: 0.24, 2: 0.24},
-                                model.I_sym:    {0: 0.24, 1: 0.18, 2: 0.17, 3: 0.18, 4: 0.20, 5: 0.23, 6: 0.26, 7: 0.30, 8: 0.34, 9: 0.38, 10: 0.43, 11: 0.48, 12: 0.52, 13: 0.57, 14: 0.61, 15: 0.65, 16: 0.69, 17: 0.76, 18: 0.79, 19: 0.82, 20: 0.85, 21: 0.88, 22: 0.90, 23: 0.92, 24: 0.93, 25: 0.95, 26: 0.96, 27: 0.97, 28: 0.97, 29: 0.98, 30: 0.98, 31: 0.99},
-                                model.I_asym:   {0: 0.24, 1: 0.18, 2: 0.17, 3: 0.18, 4: 0.20, 5: 0.23, 6: 0.26, 7: 0.30, 8: 0.34, 9: 0.38, 10: 0.43, 11: 0.48, 12: 0.52, 13: 0.57, 14: 0.61, 15: 0.65, 16: 0.69, 17: 0.76, 18: 0.79, 19: 0.82, 20: 0.85, 21: 0.88, 22: 0.90, 23: 0.92, 24: 0.93, 25: 0.95, 26: 0.96, 27: 0.97, 28: 0.97, 29: 0.98, 30: 0.98, 31: 0.99},
-                                model.Q_E:      {0: 1.00, 1: 1.00, 2: 1.00, 3: 1.00},
-                                model.Q_pre:    {0: 0.24, 1: 0.24, 2: 0.24},
-                                model.Q_sym:    {0: 0.24, 1: 0.18, 2: 0.17, 3: 0.18, 4: 0.20, 5: 0.23, 6: 0.26, 7: 0.30, 8: 0.34, 9: 0.38, 10: 0.43, 11: 0.48, 12: 0.52, 13: 0.57, 14: 0.61, 15: 0.65, 16: 0.69, 17: 0.76, 18: 0.79, 19: 0.82, 20: 0.85, 21: 0.88, 22: 0.90, 23: 0.92, 24: 0.93, 25: 0.95, 26: 0.96, 27: 0.97, 28: 0.97, 29: 0.98, 30: 0.98, 31: 0.99},
-                                model.Q_asym:   {0: 0.24, 1: 0.18, 2: 0.17, 3: 0.18, 4: 0.20, 5: 0.23, 6: 0.26, 7: 0.30, 8: 0.34, 9: 0.38, 10: 0.43, 11: 0.48, 12: 0.52, 13: 0.57, 14: 0.61, 15: 0.65, 16: 0.69, 17: 0.76, 18: 0.79, 19: 0.82, 20: 0.85, 21: 0.88, 22: 0.90, 23: 0.92, 24: 0.93, 25: 0.95, 26: 0.96, 27: 0.97, 28: 0.97, 29: 0.98, 30: 0.98, 31: 0.99},
-                              }
 
     #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # Custom simulation loop:
@@ -363,19 +396,31 @@ def run_rtw_testing_sim(model, T,
 
     testingDays      = cadence_testing_days[testing_cadence]
     cadenceDayNumber = 0
-
+    total_tests = 0
     testing_compliance              = (numpy.random.rand(model.numNodes) < testing_compliance_rate)
     symptomatic_seektest_compliance = (numpy.random.rand(model.numNodes) < symptomatic_seektest_compliance_rate)
     symptomatic_selfiso_compliance  = (numpy.random.rand(model.numNodes) < symptomatic_selfiso_compliance_rate)
     positive_isolation_compliance   = (numpy.random.rand(model.numNodes) < positive_isolation_compliance_rate)
+    ## Set up independent days/groups for continuous testing
+    positive_found = False
+    escalation_type = 'None'
+    positive_found_on = 0
+    if escalate_on_positive:
+        if test_logistics != 'continuous':
+            raise ValueError('escalation testing only implemented for ')
+
+    if test_logistics == 'continuous':
+        continuous_testing_days = set_continuous_testing_days(model, continuous_days_between_tests)
 
     isolationQueue = [[] for i in range(isolation_lag)]
 
     model.tmax  = T
     running     = True
     while running:
-
-        running = model.run_iteration()
+        if full_time:
+            running = model.run_iteration_full_time()
+        else:
+            running = model.run_iteration()
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Introduce exogenous exposures randomly at designated intervals:
@@ -397,7 +442,6 @@ def run_rtw_testing_sim(model, T,
 
         if(int(model.t)!=int(timeOfLastIntervention)):
 
-            cadenceDayNumber = int(model.t % 28)
 
             timeOfLastIntervention = model.t
 
@@ -425,6 +469,8 @@ def run_rtw_testing_sim(model, T,
                 for symptomaticNode in symptomaticNodes:
                     if(symptomatic_selfiso_compliance[symptomaticNode]):
                         if(model.X[symptomaticNode] == model.I_sym):
+                            if escalation_type == 'None':
+                                escalation_type = 'Self Isolation'
                             model.set_isolation(symptomaticNode, True)
                             numSelfIsolated_symptoms += 1
 
@@ -439,23 +485,28 @@ def run_rtw_testing_sim(model, T,
                 # Test the designated percentage of the workplace population
                 # on cadence testing days
                 #----------------------------------------
+                if test_logistics == 'cadence':
+                    testing_strategy_selection = []
+                    cadenceDayNumber = int(model.t % 28)
+                    if(cadenceDayNumber in testingDays):
 
-                randomSelection = []
+                        testingPool = numpy.argwhere((testing_compliance==True)
+                                                     & (nodePositiveStatuses==False)
+                                                     & (nodeStates != model.R)
+                                                     & (nodeStates != model.Q_R)
+                                                     & (nodeStates != model.H)
+                                                     & (nodeStates != model.F)
+                                                    ).flatten()
 
-                if(cadenceDayNumber in testingDays):
+                        numRandomTests = int(model.numNodes * pct_tested_per_day)
 
-                    testingPool = numpy.argwhere((testing_compliance==True)
-                                                 & (nodePositiveStatuses==False)
-                                                 & (nodeStates != model.R)
-                                                 & (nodeStates != model.Q_R)
-                                                 & (nodeStates != model.H)
-                                                 & (nodeStates != model.F)
-                                                ).flatten()
+                        if(len(testingPool) > 0):
+                            testing_strategy_selection = testingPool[numpy.random.choice(len(testingPool), min(len(testingPool), numRandomTests), replace=False)]
 
-                    numRandomTests = int(model.numNodes * pct_tested_per_day)
 
-                    if(len(testingPool) > 0):
-                        randomSelection = testingPool[numpy.random.choice(len(testingPool), min(len(testingPool), numRandomTests), replace=False)]
+                if test_logistics == 'continuous':
+                    testing_date = int(model.t % continuous_days_between_tests)
+                    testing_strategy_selection = numpy.argwhere(numpy.array(continuous_testing_days) == testing_date).flatten()
 
                 #----------------------------------------
                 # Allow symptomatic individuals to self-seek tests
@@ -470,13 +521,13 @@ def run_rtw_testing_sim(model, T,
                                              & ((nodeStates==model.I_sym)|(nodeStates==model.Q_sym))
                                             ).flatten()
 
-                seekingSelection = [seekNode for seekNode in seekingPool if seekNode not in randomSelection]
+                seekingSelection = [seekNode for seekNode in seekingPool if seekNode not in testing_strategy_selection]
 
 
                 #----------------------------------------
                 # Perform the tests on the selected individuals:
                 #----------------------------------------
-                selectedToTest = numpy.concatenate((seekingSelection, randomSelection)).astype(int)
+                selectedToTest = numpy.concatenate((seekingSelection, testing_strategy_selection)).astype(int)
 
                 numTested              = 0
                 numTested_random       = 0
@@ -488,7 +539,7 @@ def run_rtw_testing_sim(model, T,
                 numIsolated_positiveCoworker = 0
 
                 newIsolationGroup = []
-
+                total_tests += len(selectedToTest)
                 for i, testNode in enumerate(selectedToTest):
 
                     model.set_tested(testNode, True)
@@ -518,10 +569,12 @@ def run_rtw_testing_sim(model, T,
                         else:
                             falseneg_prob = test_falseneg_rate
 
-                        if(numpy.random.rand() < (1-falseneg_prob)):
+                        if(numpy.random.rand() < (1-falseneg_prob - sensitivity_offset)):
                             # +++++++++++++++++++++++++++++++++++++++++++++
                             # The tested node has returned a positive test
                             # +++++++++++++++++++++++++++++++++++++++++++++
+                            if escalation_type == 'None':
+                                escalation_type = 'Random Screening'
                             numPositive += 1
                             if(i < len(seekingSelection)):
                                 numPositive_selfseek  += 1
@@ -568,7 +621,13 @@ def run_rtw_testing_sim(model, T,
                 #----------------------------------------
 
                 isolationGroup = isolationQueue.pop(0)
+                if len(isolationGroup) > 0:
 
+                    if escalate_on_positive and not positive_found:
+                        continuous_testing_days = set_continuous_testing_days(model, escalate_days_between_tests)
+                        continuous_days_between_tests = escalate_days_between_tests
+                        positive_found_on = model.t
+                    positive_found = True
                 numIsolated = 0
                 for isolationNode in isolationGroup:
                     model.set_isolation(isolationNode, True)
@@ -582,7 +641,7 @@ def run_rtw_testing_sim(model, T,
 
     interventionInterval = (interventionStartTime, model.t)
 
-    return interventionInterval
+    return interventionInterval, positive_found_on, escalation_type, total_tests
 
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
