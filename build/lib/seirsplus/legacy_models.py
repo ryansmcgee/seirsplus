@@ -150,7 +150,7 @@ class SEIRSModel():
         solution        = scipy.integrate.solve_ivp(lambda t, X: SEIRSModel.system_dfes(t, X, self.beta, self.sigma, self.gamma, self.xi, self.mu_I, self.mu_0, self.nu,
                                                                                             self.beta_D, self.sigma_D, self.gamma_D, self.mu_D, self.theta_E, self.theta_I, self.psi_E, self.psi_I, self.q
                                                                                         ), 
-                                                        t_span=[self.t, self.tmax], y0=init_cond, t_eval=t_eval
+                                                        t_span=t_span, y0=init_cond, t_eval=t_eval
                                                    )
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
