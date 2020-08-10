@@ -5,11 +5,6 @@ import numpy
 import time
 
 
-###################################################
-#                                                 #
-#  Testing, Tracing, & Isolation Simulation Loop  #
-#                                                 #
-###################################################
 
 def run_tti_sim(model, T, 
                 intervention_start_pct_infected=0, average_introductions_per_day=0,
@@ -21,7 +16,8 @@ def run_tti_sim(model, T,
                 isolation_compliance_symptomatic_individual=[None], isolation_compliance_symptomatic_groupmate=[None], 
                 isolation_compliance_positive_individual=[None], isolation_compliance_positive_groupmate=[None],
                 isolation_compliance_positive_contact=[None], isolation_compliance_positive_contactgroupmate=[None],
-                isolation_lag_symptomatic=1, isolation_lag_positive=1, isolation_lag_contact=0, isolation_groups=None
+                isolation_lag_symptomatic=1, isolation_lag_positive=1, isolation_lag_contact=0, isolation_groups=None,
+                cadence_testing_days=None, temporal_falseneg_rates=None
                 ):
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -30,27 +26,29 @@ def run_tti_sim(model, T,
     # (0:Mon, 1:Tue, 2:Wed, 3:Thu, 4:Fri, 5:Sat, 6:Sun, 7:Mon, 8:Tues, ...)
     # For each cadence, testing is done on the day numbers included in the associated list.
 
-    cadence_testing_days    = {
-                                'everyday':     [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27],
-                                'workday':      [0, 1, 2, 3, 4, 7, 8, 9, 10, 11, 14, 15, 16, 17, 18, 21, 22, 23, 24, 25],
-                                'semiweekly':   [0, 3, 7, 10, 14, 17, 21, 24],
-                                'weekly':       [0, 7, 14, 21],
-                                'biweekly':     [0, 14],
-                                'monthly':      [0]
-                            }
+    if(cadence_testing_days is None):
+        cadence_testing_days = {
+                                    'everyday':     [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27],
+                                    'workday':      [0, 1, 2, 3, 4, 7, 8, 9, 10, 11, 14, 15, 16, 17, 18, 21, 22, 23, 24, 25],
+                                    'semiweekly':   [0, 3, 7, 10, 14, 17, 21, 24],
+                                    'weekly':       [0, 7, 14, 21],
+                                    'biweekly':     [0, 14],
+                                    'monthly':      [0]
+                                }
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    temporal_falseneg_rates = { 
-                                model.E:        {0: 1.00, 1: 1.00, 2: 1.00, 3: 1.00},
-                                model.I_pre:    {0: 0.25, 1: 0.25, 2: 0.22},
-                                model.I_sym:    {0: 0.19, 1: 0.16, 2: 0.16, 3: 0.17, 4: 0.19, 5: 0.22, 6: 0.26, 7: 0.29, 8: 0.34, 9: 0.38, 10: 0.43, 11: 0.48, 12: 0.52, 13: 0.57, 14: 0.62, 15: 0.66, 16: 0.70, 17: 0.76, 18: 0.79, 19: 0.82, 20: 0.85, 21: 0.88, 22: 0.90, 23: 0.92, 24: 0.93, 25: 0.95, 26: 0.96, 27: 0.97, 28: 0.97, 29: 0.98, 30: 0.98, 31: 0.99},
-                                model.I_asym:   {0: 0.19, 1: 0.16, 2: 0.16, 3: 0.17, 4: 0.19, 5: 0.22, 6: 0.26, 7: 0.29, 8: 0.34, 9: 0.38, 10: 0.43, 11: 0.48, 12: 0.52, 13: 0.57, 14: 0.62, 15: 0.66, 16: 0.70, 17: 0.76, 18: 0.79, 19: 0.82, 20: 0.85, 21: 0.88, 22: 0.90, 23: 0.92, 24: 0.93, 25: 0.95, 26: 0.96, 27: 0.97, 28: 0.97, 29: 0.98, 30: 0.98, 31: 0.99},
-                                model.Q_E:      {0: 1.00, 1: 1.00, 2: 1.00, 3: 1.00},
-                                model.Q_pre:    {0: 0.25, 1: 0.25, 2: 0.22},
-                                model.Q_sym:    {0: 0.19, 1: 0.16, 2: 0.16, 3: 0.17, 4: 0.19, 5: 0.22, 6: 0.26, 7: 0.29, 8: 0.34, 9: 0.38, 10: 0.43, 11: 0.48, 12: 0.52, 13: 0.57, 14: 0.62, 15: 0.66, 16: 0.70, 17: 0.76, 18: 0.79, 19: 0.82, 20: 0.85, 21: 0.88, 22: 0.90, 23: 0.92, 24: 0.93, 25: 0.95, 26: 0.96, 27: 0.97, 28: 0.97, 29: 0.98, 30: 0.98, 31: 0.99},
-                                model.Q_asym:   {0: 0.19, 1: 0.16, 2: 0.16, 3: 0.17, 4: 0.19, 5: 0.22, 6: 0.26, 7: 0.29, 8: 0.34, 9: 0.38, 10: 0.43, 11: 0.48, 12: 0.52, 13: 0.57, 14: 0.62, 15: 0.66, 16: 0.70, 17: 0.76, 18: 0.79, 19: 0.82, 20: 0.85, 21: 0.88, 22: 0.90, 23: 0.92, 24: 0.93, 25: 0.95, 26: 0.96, 27: 0.97, 28: 0.97, 29: 0.98, 30: 0.98, 31: 0.99},
-                              }
+    if(temporal_falseneg_rates is None):
+        temporal_falseneg_rates = { 
+                                    model.E:        {0: 1.00, 1: 1.00, 2: 1.00, 3: 1.00},
+                                    model.I_pre:    {0: 0.25, 1: 0.25, 2: 0.22},
+                                    model.I_sym:    {0: 0.19, 1: 0.16, 2: 0.16, 3: 0.17, 4: 0.19, 5: 0.22, 6: 0.26, 7: 0.29, 8: 0.34, 9: 0.38, 10: 0.43, 11: 0.48, 12: 0.52, 13: 0.57, 14: 0.62, 15: 0.66, 16: 0.70, 17: 0.76, 18: 0.79, 19: 0.82, 20: 0.85, 21: 0.88, 22: 0.90, 23: 0.92, 24: 0.93, 25: 0.95, 26: 0.96, 27: 0.97, 28: 0.97, 29: 0.98, 30: 0.98, 31: 0.99},
+                                    model.I_asym:   {0: 0.19, 1: 0.16, 2: 0.16, 3: 0.17, 4: 0.19, 5: 0.22, 6: 0.26, 7: 0.29, 8: 0.34, 9: 0.38, 10: 0.43, 11: 0.48, 12: 0.52, 13: 0.57, 14: 0.62, 15: 0.66, 16: 0.70, 17: 0.76, 18: 0.79, 19: 0.82, 20: 0.85, 21: 0.88, 22: 0.90, 23: 0.92, 24: 0.93, 25: 0.95, 26: 0.96, 27: 0.97, 28: 0.97, 29: 0.98, 30: 0.98, 31: 0.99},
+                                    model.Q_E:      {0: 1.00, 1: 1.00, 2: 1.00, 3: 1.00},
+                                    model.Q_pre:    {0: 0.25, 1: 0.25, 2: 0.22},
+                                    model.Q_sym:    {0: 0.19, 1: 0.16, 2: 0.16, 3: 0.17, 4: 0.19, 5: 0.22, 6: 0.26, 7: 0.29, 8: 0.34, 9: 0.38, 10: 0.43, 11: 0.48, 12: 0.52, 13: 0.57, 14: 0.62, 15: 0.66, 16: 0.70, 17: 0.76, 18: 0.79, 19: 0.82, 20: 0.85, 21: 0.88, 22: 0.90, 23: 0.92, 24: 0.93, 25: 0.95, 26: 0.96, 27: 0.97, 28: 0.97, 29: 0.98, 30: 0.98, 31: 0.99},
+                                    model.Q_asym:   {0: 0.19, 1: 0.16, 2: 0.16, 3: 0.17, 4: 0.19, 5: 0.22, 6: 0.26, 7: 0.29, 8: 0.34, 9: 0.38, 10: 0.43, 11: 0.48, 12: 0.52, 13: 0.57, 14: 0.62, 15: 0.66, 16: 0.70, 17: 0.76, 18: 0.79, 19: 0.82, 20: 0.85, 21: 0.88, 22: 0.90, 23: 0.92, 24: 0.93, 25: 0.95, 26: 0.96, 27: 0.97, 28: 0.97, 29: 0.98, 30: 0.98, 31: 0.99},
+                                  }
 
     #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     # Custom simulation loop:
@@ -81,7 +79,7 @@ def run_tti_sim(model, T,
         running = model.run_iteration()
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        # Introduce exogenous exposures randomly at designated intervals:
+        # Introduce exogenous exposures randomly:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         if(int(model.t)!=int(timeOfLastIntroduction)):
 
@@ -122,7 +120,7 @@ def run_tti_sim(model, T,
 
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-                tracingPool = tracingPoolQueue.pop(0)
+                # tracingPoolQueue[0] = tracingPoolQueue[0]Queue.pop(0)
 
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 
@@ -162,7 +160,7 @@ def run_tti_sim(model, T,
                 numSelfIsolated_positiveContactGroupmate = 0
 
                 if(any(isolation_compliance_positive_contact) or any(isolation_compliance_positive_contactgroupmate)):
-                    for contactNode in tracingPool:
+                    for contactNode in tracingPoolQueue[0]:
                         if(isolation_compliance_positive_contact[contactNode]):
                             newIsolationGroup_contact.append(contactNode)
                             numSelfIsolated_positiveContact += 1 
@@ -222,6 +220,8 @@ def run_tti_sim(model, T,
                     # Apply a designated portion of this day's tests 
                     # to individuals identified by CONTACT TRACING:
                     #----------------------------------------
+
+                    tracingPool = tracingPoolQueue.pop(0)
 
                     if(any(testing_compliance_traced)):
 
@@ -376,9 +376,9 @@ def run_tti_sim(model, T,
                 print("\t"+str(numTested_random)      +"\ttested randomly         [+ "+str(numPositive_random)+" positive (%.2f %%) +]" % (numPositive_random/numTested_random*100 if numTested_random>0 else 0))            
                 print("\t"+str(numTested)             +"\ttested TOTAL            [+ "+str(numPositive)+" positive (%.2f %%) +]" % (numPositive/numTested*100 if numTested>0 else 0))           
 
-                print("\t"+str(numSelfIsolated_symptoms)        +"\twill isolate due to symptoms         ("+str(numSelfIsolated_symptomaticGroupmate)+" as groupmates of symptomatic)")
-                print("\t"+str(numPositive)                     +"\twill isolate due to positive test    ("+str(numIsolated_positiveGroupmate)+" as groupmates of positive)")
-                print("\t"+str(numSelfIsolated_positiveContact) +"\twill isolate due to positive contact ("+str(numSelfIsolated_positiveContactGroupmate)+" as groupmates of contact)")
+                print("\t"+str(numSelfIsolated_symptoms)        +" will isolate due to symptoms         ("+str(numSelfIsolated_symptomaticGroupmate)+" as groupmates of symptomatic)")
+                print("\t"+str(numPositive)                     +" will isolate due to positive test    ("+str(numIsolated_positiveGroupmate)+" as groupmates of positive)")
+                print("\t"+str(numSelfIsolated_positiveContact) +" will isolate due to positive contact ("+str(numSelfIsolated_positiveContactGroupmate)+" as groupmates of contact)")
 
                 #----------------------------------------
                 # Update the status of nodes who are to be isolated:
