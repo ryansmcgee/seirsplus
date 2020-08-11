@@ -17,7 +17,7 @@ def run_tti_sim(model, T,
                 isolation_compliance_positive_individual=[None], isolation_compliance_positive_groupmate=[None],
                 isolation_compliance_positive_contact=[None], isolation_compliance_positive_contactgroupmate=[None],
                 isolation_lag_symptomatic=1, isolation_lag_positive=1, isolation_lag_contact=0, isolation_groups=None,
-                cadence_testing_days=None, temporal_falseneg_rates=None
+                cadence_testing_days=None, cadence_cycle_length=28, temporal_falseneg_rates=None
                 ):
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -27,7 +27,7 @@ def run_tti_sim(model, T,
     # For each cadence, testing is done on the day numbers included in the associated list.
 
     if(cadence_testing_days is None):
-        cadence_testing_days = {
+        cadence_testing_days    = {
                                     'everyday':     [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27],
                                     'workday':      [0, 1, 2, 3, 4, 7, 8, 9, 10, 11, 14, 15, 16, 17, 18, 21, 22, 23, 24, 25],
                                     'semiweekly':   [0, 3, 7, 10, 14, 17, 21, 24],
@@ -98,7 +98,7 @@ def run_tti_sim(model, T,
 
         if(int(model.t)!=int(timeOfLastIntervention)):
         
-            cadenceDayNumber = int(model.t % 28)
+            cadenceDayNumber = int(model.t % cadence_cycle_length)
 
             timeOfLastIntervention = model.t
 
