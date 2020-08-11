@@ -33,7 +33,8 @@ def run_tti_sim(model, T,
                                     'semiweekly':   [0, 3, 7, 10, 14, 17, 21, 24],
                                     'weekly':       [0, 7, 14, 21],
                                     'biweekly':     [0, 14],
-                                    'monthly':      [0]
+                                    'monthly':      [0],
+                                    'cycle_start':  [0]
                                 }
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
