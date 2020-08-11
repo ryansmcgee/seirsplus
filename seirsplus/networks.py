@@ -70,9 +70,11 @@ def generate_workplace_contact_network(num_cohorts=1, num_nodes_per_cohort=100, 
         for i in list(range(cohortNetwork.number_of_nodes())):
             i_intraCohortDegree = cohortNetwork.degree[i]
             i_interCohortDegree = int( ((1/(1-pct_contacts_intercohort))*i_intraCohortDegree)-i_intraCohortDegree )
-            for d in list(range(i_interCohortDegree)):
-                j = numpy.random.choice(list(range(0, cohortStartIdx))+list(range(cohortFinalIdx+1, N)))
-                workplaceNetwork.add_edge(i, j)
+            # Add intercohort edges:
+            if(len(cohortNetworks) > 1):
+                for d in list(range(i_interCohortDegree)):
+                    j = numpy.random.choice(list(range(0, cohortStartIdx))+list(range(cohortFinalIdx+1, N)))
+                    workplaceNetwork.add_edge(i, j)
 
     return workplaceNetwork, cohorts_indices, teams_indices
 
