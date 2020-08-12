@@ -835,8 +835,10 @@ class SEIRSNetworkModel():
         # Degree-based transmission scaling parameters:
         #----------------------------------------
         self.delta_pairwise_mode = self.parameters['delta_pairwise_mode']
-        self.delta               = numpy.log(self.degree)/numpy.log(numpy.mean(self.degree))     if self.parameters['delta'] is None   else numpy.array(self.parameters['delta'])   if isinstance(self.parameters['delta'], (list, numpy.ndarray))   else numpy.full(fill_value=self.parameters['delta'], shape=(self.numNodes,1))
-        self.delta_Q             = numpy.log(self.degree_Q)/numpy.log(numpy.mean(self.degree_Q)) if self.parameters['delta_Q'] is None else numpy.array(self.parameters['delta_Q']) if isinstance(self.parameters['delta_Q'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['delta_Q'], shape=(self.numNodes,1))
+        self.delta               = numpy.divide( numpy.log(self.degree), numpy.log(numpy.mean(self.degree)), where=self.degree!=0 )       if self.parameters['delta'] is None   else numpy.array(self.parameters['delta'])   if isinstance(self.parameters['delta'], (list, numpy.ndarray))   else numpy.full(fill_value=self.parameters['delta'], shape=(self.numNodes,1))
+        self.delta_Q             = numpy.divide( numpy.log(self.degree_Q), numpy.log(numpy.mean(self.degree_Q)), where=self.degree_Q!=0 ) if self.parameters['delta_Q'] is None else numpy.array(self.parameters['delta_Q']) if isinstance(self.parameters['delta_Q'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['delta_Q'], shape=(self.numNodes,1))
+
+    
         #----------------------------------------
         if(self.delta.ndim == 2 and self.delta.shape[0] == self.numNodes and self.delta.shape[1] == self.numNodes):
             self.A_delta_pairwise = self.delta
@@ -2110,8 +2112,8 @@ class ExtSEIRSNetworkModel():
         # Degree-based transmission scaling parameters:
         #----------------------------------------
         self.delta_pairwise_mode = self.parameters['delta_pairwise_mode']
-        self.delta               = numpy.log(self.degree)/numpy.log(numpy.mean(self.degree))     if self.parameters['delta'] is None   else numpy.array(self.parameters['delta'])   if isinstance(self.parameters['delta'], (list, numpy.ndarray))   else numpy.full(fill_value=self.parameters['delta'], shape=(self.numNodes,1))
-        self.delta_Q             = numpy.log(self.degree_Q)/numpy.log(numpy.mean(self.degree_Q)) if self.parameters['delta_Q'] is None else numpy.array(self.parameters['delta_Q']) if isinstance(self.parameters['delta_Q'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['delta_Q'], shape=(self.numNodes,1))
+        self.delta               = numpy.divide( numpy.log(self.degree), numpy.log(numpy.mean(self.degree)), where=self.degree!=0 )       if self.parameters['delta'] is None   else numpy.array(self.parameters['delta'])   if isinstance(self.parameters['delta'], (list, numpy.ndarray))   else numpy.full(fill_value=self.parameters['delta'], shape=(self.numNodes,1))
+        self.delta_Q             = numpy.divide( numpy.log(self.degree_Q), numpy.log(numpy.mean(self.degree_Q)), where=self.degree_Q!=0 ) if self.parameters['delta_Q'] is None else numpy.array(self.parameters['delta_Q']) if isinstance(self.parameters['delta_Q'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['delta_Q'], shape=(self.numNodes,1))
         #----------------------------------------
         if(self.delta.ndim == 2 and self.delta.shape[0] == self.numNodes and self.delta.shape[1] == self.numNodes):
             self.A_delta_pairwise = self.delta
