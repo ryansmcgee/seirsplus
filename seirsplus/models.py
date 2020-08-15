@@ -241,11 +241,35 @@ class SEIRSModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    def total_num_infections(self, t_idx=None):
+    def total_num_susceptible(self, t_idx=None):
+        if(t_idx is None):
+            return (self.numS[:] + self.numQ_S[:])            
+        else:
+            return (self.numS[t_idx] + self.numQ_S[t_idx])
+
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    def total_num_infected(self, t_idx=None):
         if(t_idx is None):
             return (self.numE[:] + self.numI[:] + self.numQ_E[:] + self.numQ_I[:])  
         else:
-            return (self.numE[t_idx] + self.numI[t_idx] + self.numQ_E[t_idx] + self.numQ_I[t_idx])   
+            return (self.numE[t_idx] + self.numI[t_idx] + self.numQ_E[t_idx] + self.numQ_I[t_idx])  
+
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    def total_num_isolated(self, t_idx=None):
+        if(t_idx is None):
+            return (self.numQ_E[:] + self.numQ_I[:])
+        else:
+            return (self.numQ_E[t_idx] + self.numQ_I[t_idx])
+
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    def total_num_recovered(self, t_idx=None):
+        if(t_idx is None):
+            return (self.numR[:])            
+        else:
+            return (self.numR[t_idx]) 
 
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
