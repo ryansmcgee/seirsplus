@@ -59,3 +59,17 @@ def results_summary(model):
     print("total percent infected: %0.2f%%" % ((model.total_num_infected()[-1]+model.total_num_recovered()[-1])/model.numNodes * 100) )
     print("total percent fatality: %0.2f%%" % (model.numF[-1]/model.numNodes * 100) )
     print("peak  pct hospitalized: %0.2f%%" % (numpy.max(model.numH)/model.numNodes * 100) )
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -243,9 +243,9 @@ class SEIRSModel():
 
     def total_num_susceptible(self, t_idx=None):
         if(t_idx is None):
-            return (self.numS[:] + self.numQ_S[:])            
+            return (self.numS[:])            
         else:
-            return (self.numS[t_idx] + self.numQ_S[t_idx])
+            return (self.numS[t_idx])
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
