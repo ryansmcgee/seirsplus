@@ -264,10 +264,11 @@ def run_tti_sim(model, T,
                         else:
                             testingPool_degreeWeights = numpy.power(testingPool_degrees,random_testing_degree_bias)/numpy.sum(numpy.power(testingPool_degrees,random_testing_degree_bias))
 
-                        if(len(testingPool) > 0):
+                        poolSize = len(testingPool)
+                        if(poolSize > 0):
                             if 'last_tested' in test_priority:
                                 # sort the pool according to the time they were last tested, breaking ties randomly
-                                randomSelection = sort(testingPool,key = lambda i: model.testedTime[i], cmp = lambda x,y: x-y if x-y else random.randint(0, 1) * 2 - 1  )[:numRandomTests]
+                                randomSelection = sorted(testingPool,key = lambda i: (model.testedTime[i], random.randint(0,poolSize*poolSize)))[:numRandomTests]
                             else:
                                 randomSelection = testingPool[numpy.random.choice(len(testingPool), numRandomTests, p=testingPool_degreeWeights, replace=False)]
 
