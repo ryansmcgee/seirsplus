@@ -1,5 +1,4 @@
 # ignore temporary swap files
 *.swp
 
-examples/Testing*.ipynb # ignore notebooks used for testing features
 .DS_Store
