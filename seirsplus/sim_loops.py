@@ -25,6 +25,7 @@ def run_tti_sim(model, T,
                 # history is a  dictonary that, if provided, will be updated with history and summary information for logging
                 stopping_policy=None,
                 # stopping_policy: function that takes as input the model  and current history and decides whether to stop execution
+                #                  returns True to stop, False to continue running
                 verbose = True, # suppress printing if verbose is false - useful for running many simulations in parallel
                 ):
 
@@ -118,7 +119,7 @@ def run_tti_sim(model, T,
 
 
         if running and stopping_policy:
-            running = stopping_policy(model,history)
+            running = not stopping_policy(model,history)
             if not running:
                 self.finalize_data_series()
 
