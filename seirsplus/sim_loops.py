@@ -89,8 +89,8 @@ def run_tti_sim(model, T,
 
     def log(d):
         # log values in dictionary d into history dict
-        nonlocal history
-        nonlocal model
+        #nonlocal history # uncomment for Python 3.x
+        #nonlocal model   # uncomment for Python 3.x
         if not history: return
         if model.t in history:
             history[model.t].update(d)
@@ -106,23 +106,22 @@ def run_tti_sim(model, T,
 
         running = model.run_iteration()
 
-        if history: # log current state of the model
+        if not (history is None): # log current state of the model
             d = {}
-
-
-        statistics = ["numS","numE","numI_pre","numI_sym","numI_asym","numH","numR","numF","numQ_S","numQ_E","numQ_pre","numQ_sym","numQ_asym","numQ_R"]
-        for att in statistics:
-                d[att] = getattr(model,att)[model.tidx]
-                if (model.nodeGroupData):
-                    for groupName, groupData  in enumerate(model.nodeGroupData):
-                        d[groupName+"/"+att] = groupData[att][model.tidx]
-        log(d)
+            statistics = ["numS","numE","numI_pre","numI_sym","numI_asym","numH","numR","numF","numQ_S","numQ_E","numQ_pre","numQ_sym","numQ_asym","numQ_R"]
+            for att in statistics:
+                    d[att] = getattr(model,att)[model.tidx]
+                    if (model.nodeGroupData):
+                        for groupName  in model.nodeGroupData:
+                            groupData = model.nodeGroupData[groupName]
+                            d[groupName+"/"+att] = groupData[att][model.tidx]
+            log(d)
 
 
         if running and stopping_policy:
             running = not stopping_policy(model,history)
             if not running:
-                self.finalize_data_series()
+                model.finalize_data_series()
 
 
 
