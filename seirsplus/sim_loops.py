@@ -459,7 +459,7 @@ def run_tti_sim(model, T,
                      "numPositive_tracing" : numPositive_tracing,
                      "numTested" : numTested,
                      "numSelfIsolated_symptoms":  numSelfIsolated_symptoms,
-                    "numSelfIsolated_symptomaticGroupmate": numSelfIsolated_symptomaticGroupmate
+                    "numSelfIsolated_symptomaticGroupmate": numSelfIsolated_symptomaticGroupmate,
                     "numPositive" : numPositive,
                      "numIsolated_positiveGroupmate" : numIsolated_positiveGroupmate,
                      "numSelfIsolated_positiveContact" : numSelfIsolated_positiveContact,
