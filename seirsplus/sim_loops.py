@@ -21,7 +21,6 @@ def run_tti_sim(model, T,
                 test_priority = 'random',
                 # test_priority: how to to choose which nodes to test:
                 # 'random' - use test budget for random fraction of eligible population, 'last_tested' - sort according to the time passed since testing (breaking ties randomly)
-                # A suffix of "degree_oblivious" means that we ignore degrees (i.e., assume we don't know social networks for testing policy)
                 history = None,
                 # history is a  dictonary that, if provided, will be updated with history and summary information for logging
                 stopping_policy=None,
@@ -301,10 +300,7 @@ def run_tti_sim(model, T,
                         numRandomTests = max(min(tests_per_day-len(tracingSelection)-len(symptomaticSelection), len(testingPool)), 0)
                         
                         testingPool_degrees       = model.degree.flatten()[testingPool]
-                        if "degree_oblivious" in test_priority:
-                            testingPool_degreeWeights = numpy.ones(len(testingPool))
-                        else:
-                            testingPool_degreeWeights = numpy.power(testingPool_degrees,random_testing_degree_bias)/numpy.sum(numpy.power(testingPool_degrees,random_testing_degree_bias))
+                        testingPool_degreeWeights = numpy.power(testingPool_degrees,random_testing_degree_bias)/numpy.sum(numpy.power(testingPool_degrees,random_testing_degree_bias))
 
                         poolSize = len(testingPool)
                         if(poolSize > 0):
