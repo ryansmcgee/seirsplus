@@ -24,8 +24,7 @@ def run_tti_sim(model, T,
                 history = None,
                 # history is a  dictonary that, if provided, will be updated with history and summary information for logging
                 stopping_policy=None,
-                # stopping_policy: function that takes as input the model  and decides whether to stop execution
-                # it also takes as a additional two inputs the history and summary  to record data on why execution was stopped
+                # stopping_policy: function that takes as input the model  and current history and decides whether to stop execution
                 verbose = True, # suppress printing if verbose is false - useful for running many simulations in parallel
                 ):
 
@@ -107,7 +106,10 @@ def run_tti_sim(model, T,
 
         if history: # log current state of the model
             d = {}
-            for att in ["numS","numE","numI","numR","numF","numQ_E","numQ_I"]:
+
+
+        statistics = ["numS","numE","numI_pre","numI_sym","numI_asym","numH","numR","numF","numQ_S","numQ_E","numQ_pre","numQ_sym","numQ_asym","numQ_R"]
+        for att in statistics:
                 d[att] = getattr(model,att)[model.tidx]
                 if (model.nodeGroupData):
                     for groupName, groupData  in enumerate(model.nodeGroupData):
@@ -116,7 +118,7 @@ def run_tti_sim(model, T,
 
 
         if running and stopping_policy:
-            running = stopping_policy(model)
+            running = stopping_policy(model,history)
             if not running:
                 self.finalize_data_series()
 
