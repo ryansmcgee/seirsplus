@@ -91,7 +91,7 @@ def run_tti_sim(model, T,
         # log values in dictionary d into history dict
         #nonlocal history # uncomment for Python 3.x
         #nonlocal model   # uncomment for Python 3.x
-        if not history: return
+        if history is None: return #o/w assume it's a dictionary
         if model.t in history:
             history[model.t].update(d)
         else:
