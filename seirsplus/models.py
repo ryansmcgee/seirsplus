@@ -1880,6 +1880,7 @@ class ExtSEIRSNetworkModel():
         # Initialize other node metadata:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         self.tested      = numpy.array([False]*self.numNodes).reshape((self.numNodes,1))
+        self.testedTime = numpy.array([-1] * self.numNodes).reshape((self.numNodes, 1)) # the time that the node was last tested: negative means it was not tested
         self.positive    = numpy.array([False]*self.numNodes).reshape((self.numNodes,1))
         self.numTested   = numpy.zeros(6*self.numNodes) 
         self.numPositive = numpy.zeros(6*self.numNodes) 
@@ -2470,6 +2471,8 @@ class ExtSEIRSNetworkModel():
 
     def set_tested(self, node, tested):
         self.tested[node] = tested
+        if tested:
+            self.testedTime[node] = self.t # set time that the node was tested to current time
         self.testedInCurrentState[node] = tested
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
