@@ -1934,6 +1934,21 @@ class ExtSEIRSNetworkModel():
          
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    # Two helper functions to get the node list and mask for a group
+    # If groupName is `all` then returns this for all vertices,
+    # even if nodeGroups were not set.
+    def get_nodes(self,groupName='all'):
+        if groupName=='all':
+            return range(self.numNodes)
+        return self.nodeGroupData[groupName]['nodes']
+
+    def get_mask(self,groupName='all'):
+        if groupName=='all':
+            return numpy.ones(shape=(self.numNodes,1))
+        return self.nodeGroupData[groupName]['mask']
+
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def update_parameters(self):
 
@@ -2483,12 +2498,17 @@ class ExtSEIRSNetworkModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def introduce_exposures(self, num_new_exposures):
-        exposedNodes = numpy.random.choice(range(self.numNodes), size=num_new_exposures, replace=False)
-        for exposedNode in exposedNodes:
-            if(self.X[exposedNode]==self.S):
-                self.X[exposedNode] = self.E
-            elif(self.X[exposedNode]==self.Q_S):
-                self.X[exposedNode] = self.Q_E
+        # If num_new_exposure is dictionary of the form {"group_1": num_1, "group_2": num_2 , ... }
+        # then introduce num_i exposures to group_i
+        if not isinstance(num_new_exposures,dict):
+            num_new_exposures = {"all": num_new_exposures }
+        for group,num in num_new_exposures.items():
+            exposedNodes = numpy.random.choice(self.get_nodes(group), size=num, replace=False)
+            for exposedNode in exposedNodes:
+                if(self.X[exposedNode]==self.S):
+                    self.X[exposedNode] = self.E
+                elif(self.X[exposedNode]==self.Q_S):
+                    self.X[exposedNode] = self.Q_E
 
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

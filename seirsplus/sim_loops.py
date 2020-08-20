@@ -21,6 +21,7 @@ def run_tti_sim(model, T,
                 test_priority = 'random',
                 # test_priority: how to to choose which nodes to test:
                 # 'random' - use test budget for random fraction of eligible population, 'last_tested' - sort according to the time passed since testing (breaking ties randomly)
+                # if test_priority is callable then use as a key to sort nodes (lower value is higher priority)
                 history = None,
                 # history is a  dictonary that, if provided, will be updated with history and summary information for logging
                 # OrderedDict is optional but may be better for efficiency in some stopping policies
@@ -132,7 +133,12 @@ def run_tti_sim(model, T,
 
             timeOfLastIntroduction = model.t
 
-            numNewExposures = numpy.random.poisson(lam=average_introductions_per_day)
+            if isinstance(average_introductions_per_day,dict):
+                numNewExposures = {}
+                for group,num in average_introductions_per_day.items():
+                    numNewExposures[group] = numpy.random.poisson(lam=num)
+            else:
+                numNewExposures = numpy.random.poisson(lam=average_introductions_per_day)
             
             model.introduce_exposures(num_new_exposures=numNewExposures)
             log({"numNewExposures": numNewExposures})
@@ -307,7 +313,9 @@ def run_tti_sim(model, T,
 
                         poolSize = len(testingPool)
                         if(poolSize > 0):
-                            if 'last_tested' in test_priority:
+                            if callable(test_priority):
+                                randomSelection = sorted(testingPool, key=test_priority)[:numRandomTests]
+                            elif test_priority == 'last_tested':
                                 # sort the pool according to the time they were last tested, breaking ties randomly
                                 randomSelection = sorted(testingPool,key = lambda i: (model.testedTime[i], random.randint(0,poolSize*poolSize)))[:numRandomTests]
                             else:
