@@ -3,7 +3,7 @@ import pickle
 import numpy
 
 import time
-
+import random
 
 
 def run_tti_sim(model, T, 
@@ -17,7 +17,10 @@ def run_tti_sim(model, T,
                 isolation_compliance_positive_individual=[None], isolation_compliance_positive_groupmate=[None],
                 isolation_compliance_positive_contact=[None], isolation_compliance_positive_contactgroupmate=[None],
                 isolation_lag_symptomatic=1, isolation_lag_positive=1, isolation_lag_contact=0, isolation_groups=None,
-                cadence_testing_days=None, cadence_cycle_length=28, temporal_falseneg_rates=None
+                cadence_testing_days=None, cadence_cycle_length=28, temporal_falseneg_rates=None,
+                test_priority = 'random'
+                # test_priority: how to to choose which nodes to test:
+                # 'random' - use test budget for random fraction of eligible population, 'last_tested' - sort according to the time passed since testing (breaking ties randomly)
                 ):
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -257,8 +260,13 @@ def run_tti_sim(model, T,
                         testingPool_degrees       = model.degree.flatten()[testingPool]
                         testingPool_degreeWeights = numpy.power(testingPool_degrees,random_testing_degree_bias)/numpy.sum(numpy.power(testingPool_degrees,random_testing_degree_bias))
 
-                        if(len(testingPool) > 0):
-                            randomSelection = testingPool[numpy.random.choice(len(testingPool), numRandomTests, p=testingPool_degreeWeights, replace=False)]
+                        poolSize = len(testingPool)
+                        if(poolSize > 0):
+                            if 'last_tested' in test_priority:
+                                # sort the pool according to the time they were last tested, breaking ties randomly
+                                randomSelection = sorted(testingPool,key = lambda i: (model.testedTime[i], random.randint(0,poolSize*poolSize)))[:numRandomTests]
+                            else:
+                                randomSelection = testingPool[numpy.random.choice(len(testingPool), numRandomTests, p=testingPool_degreeWeights, replace=False)]
 
                 
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
