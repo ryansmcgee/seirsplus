@@ -23,8 +23,8 @@ def run_tti_sim(model, T,
                 # 'random' - use test budget for random fraction of eligible population, 'last_tested' - sort according to the time passed since testing (breaking ties randomly)
                 # if test_priority is callable then use as a key to sort nodes (lower value is higher priority)
                 history = None,
-                # history is a  dictonary that, if provided, will be updated with history and summary information for logging
-                # OrderedDict is optional but may be better for efficiency in some stopping policies
+                # history is a  dictionary that, if provided, will be updated with history and summary information for logging
+                # it preferably should be OrderedDict if we want to preserve ordering of logs
                 stopping_policy=None,
                 # stopping_policy: function that takes as input the model  and current history and decides whether to stop execution
                 #                  returns True to stop, False to continue running
