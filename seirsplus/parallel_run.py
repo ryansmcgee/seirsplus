@@ -1,7 +1,6 @@
 ## Support to run
 
 import sys
-import os
 
 import os
 p = os.path.dirname(os.path.abspath(__file__))
@@ -16,7 +15,10 @@ import collections
 
 import multiprocessing as mp
 import pickle
-import os
+
+import networkx
+
+
 
 def pack(f,*args,**kwds):
     """"Pack a function evaluation into a symbolic representations we can easily 'pickle' """
@@ -31,8 +33,11 @@ def unpack(O):
 
 def run(model_params,run_params, keep_model = False):
     """Run an execution with given parameters"""
-    MP = { key: pack(val) for key,val in model_params.items() }
-    RP = { key: pack(val) for key,val in run_params.items() }
+    MP = { key: unpack(val) for key,val in model_params.items() }
+    RP = { key: unpack(val) for key,val in run_params.items() }
+    if not MP['G_Q']:
+        MP['G_Q'] = networkx.classes.function.create_empty_copy(MP["G"]) # default quarantine graph is empty
+
     desc=  {key : str(val) for key,val in model_params.items() }
     desc.update({key : str(val) for key,val in run_params.items() })
     model = ExtSEIRSNetworkModel(**MP)
