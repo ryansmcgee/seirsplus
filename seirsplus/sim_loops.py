@@ -3,7 +3,7 @@ import pickle
 import numpy
 
 import time
-
+import random
 
 
 def run_tti_sim(model, T, 
@@ -17,7 +17,18 @@ def run_tti_sim(model, T,
                 isolation_compliance_positive_individual=[None], isolation_compliance_positive_groupmate=[None],
                 isolation_compliance_positive_contact=[None], isolation_compliance_positive_contactgroupmate=[None],
                 isolation_lag_symptomatic=1, isolation_lag_positive=1, isolation_lag_contact=0, isolation_groups=None,
-                cadence_testing_days=None, cadence_cycle_length=28, temporal_falseneg_rates=None
+                cadence_testing_days=None, cadence_cycle_length=28, temporal_falseneg_rates=None,
+                test_priority = 'random',
+                # test_priority: how to to choose which nodes to test:
+                # 'random' - use test budget for random fraction of eligible population, 'last_tested' - sort according to the time passed since testing (breaking ties randomly)
+                # if test_priority is callable then use as a key to sort nodes (lower value is higher priority)
+                history = None,
+                # history is a  dictionary that, if provided, will be updated with history and summary information for logging
+                # it preferably should be OrderedDict if we want to preserve ordering of logs
+                stopping_policy=None,
+                # stopping_policy: function that takes as input the model  and current history and decides whether to stop execution
+                #                  returns True to stop, False to continue running
+                verbose = True, # suppress printing if verbose is false - useful for running many simulations in parallel
                 ):
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -75,9 +86,45 @@ def run_tti_sim(model, T,
 
     model.tmax  = T
     running     = True
+
+
+    def log(d):
+        # log values in dictionary d into history dict
+        #nonlocal history # uncomment for Python 3.x
+        #nonlocal model   # uncomment for Python 3.x
+        if history is None: return #o/w assume it's a dictionary
+        if model.t in history:
+            history[model.t].update(d)
+        else:
+            history[model.t] = dict(d)
+
+    def vprint(s):
+        # print s if verbose is true
+        if verbose: print(s)
+
+
     while running:
 
         running = model.run_iteration()
+
+        if not (history is None): # log current state of the model
+            d = {}
+            statistics = ["numS","numE","numI_pre","numI_sym","numI_asym","numH","numR","numF","numQ_S","numQ_E","numQ_pre","numQ_sym","numQ_asym","numQ_R"]
+            for att in statistics:
+                    d[att] = getattr(model,att)[model.tidx]
+                    if (model.nodeGroupData):
+                        for groupName  in model.nodeGroupData:
+                            groupData = model.nodeGroupData[groupName]
+                            d[groupName+"/"+att] = groupData[att][model.tidx]
+            log(d)
+
+
+        if running and stopping_policy:
+            running = not stopping_policy(model,history)
+            if not running:
+                model.finalize_data_series()
+
+
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Introduce exogenous exposures randomly:
@@ -86,12 +133,18 @@ def run_tti_sim(model, T,
 
             timeOfLastIntroduction = model.t
 
-            numNewExposures = numpy.random.poisson(lam=average_introductions_per_day)
+            if isinstance(average_introductions_per_day,dict):
+                numNewExposures = {}
+                for group,num in average_introductions_per_day.items():
+                    numNewExposures[group] = numpy.random.poisson(lam=num)
+            else:
+                numNewExposures = numpy.random.poisson(lam=average_introductions_per_day)
             
             model.introduce_exposures(num_new_exposures=numNewExposures)
+            log({"numNewExposures": numNewExposures})
 
             if(numNewExposures > 0):
-                print("[NEW EXPOSURE @ t = %.2f (%d exposed)]" % (model.t, numNewExposures))
+                vprint("[NEW EXPOSURE @ t = %.2f (%d exposed)]" % (model.t, numNewExposures))
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Execute testing policy at designated intervals:
@@ -105,6 +158,7 @@ def run_tti_sim(model, T,
 
             currentNumInfected = model.total_num_infected()[model.tidx]
             currentPctInfected = model.total_num_infected()[model.tidx]/model.numNodes
+            log({"currentNumInfected": currentNumInfected})
 
             if(currentPctInfected >= intervention_start_pct_infected and not interventionOn):
                 interventionOn        = True
@@ -112,7 +166,7 @@ def run_tti_sim(model, T,
             
             if(interventionOn):
 
-                print("[INTERVENTIONS @ t = %.2f (%d (%.2f%%) infected)]" % (model.t, currentNumInfected, currentPctInfected*100))
+                vprint("[INTERVENTIONS @ t = %.2f (%d (%.2f%%) infected)]" % (model.t, currentNumInfected, currentPctInfected*100))
                 
                 nodeStates                       = model.X.flatten()
                 nodeTestedStatuses               = model.tested.flatten()
@@ -257,8 +311,15 @@ def run_tti_sim(model, T,
                         testingPool_degrees       = model.degree.flatten()[testingPool]
                         testingPool_degreeWeights = numpy.power(testingPool_degrees,random_testing_degree_bias)/numpy.sum(numpy.power(testingPool_degrees,random_testing_degree_bias))
 
-                        if(len(testingPool) > 0):
-                            randomSelection = testingPool[numpy.random.choice(len(testingPool), numRandomTests, p=testingPool_degreeWeights, replace=False)]
+                        poolSize = len(testingPool)
+                        if(poolSize > 0):
+                            if callable(test_priority):
+                                randomSelection = sorted(testingPool, key=test_priority)[:numRandomTests]
+                            elif test_priority == 'last_tested':
+                                # sort the pool according to the time they were last tested, breaking ties randomly
+                                randomSelection = sorted(testingPool,key = lambda i: (model.testedTime[i], random.randint(0,poolSize*poolSize)))[:numRandomTests]
+                            else:
+                                randomSelection = testingPool[numpy.random.choice(len(testingPool), numRandomTests, p=testingPool_degreeWeights, replace=False)]
 
                 
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -372,14 +433,14 @@ def run_tti_sim(model, T,
                 tracingPoolQueue.append(newTracingPool)
 
 
-                print("\t"+str(numTested_symptomatic) +"\ttested due to symptoms  [+ "+str(numPositive_symptomatic)+" positive (%.2f %%) +]" % (numPositive_symptomatic/numTested_symptomatic*100 if numTested_symptomatic>0 else 0))
-                print("\t"+str(numTested_tracing)     +"\ttested as traces        [+ "+str(numPositive_tracing)+" positive (%.2f %%) +]" % (numPositive_tracing/numTested_tracing*100 if numTested_tracing>0 else 0))            
-                print("\t"+str(numTested_random)      +"\ttested randomly         [+ "+str(numPositive_random)+" positive (%.2f %%) +]" % (numPositive_random/numTested_random*100 if numTested_random>0 else 0))            
-                print("\t"+str(numTested)             +"\ttested TOTAL            [+ "+str(numPositive)+" positive (%.2f %%) +]" % (numPositive/numTested*100 if numTested>0 else 0))           
+                vprint("\t"+str(numTested_symptomatic) +"\ttested due to symptoms  [+ "+str(numPositive_symptomatic)+" positive (%.2f %%) +]" % (numPositive_symptomatic/numTested_symptomatic*100 if numTested_symptomatic>0 else 0))
+                vprint("\t"+str(numTested_tracing)     +"\ttested as traces        [+ "+str(numPositive_tracing)+" positive (%.2f %%) +]" % (numPositive_tracing/numTested_tracing*100 if numTested_tracing>0 else 0))
+                vprint("\t"+str(numTested_random)      +"\ttested randomly         [+ "+str(numPositive_random)+" positive (%.2f %%) +]" % (numPositive_random/numTested_random*100 if numTested_random>0 else 0))
+                vprint("\t"+str(numTested)             +"\ttested TOTAL            [+ "+str(numPositive)+" positive (%.2f %%) +]" % (numPositive/numTested*100 if numTested>0 else 0))
 
-                print("\t"+str(numSelfIsolated_symptoms)        +" will isolate due to symptoms         ("+str(numSelfIsolated_symptomaticGroupmate)+" as groupmates of symptomatic)")
-                print("\t"+str(numPositive)                     +" will isolate due to positive test    ("+str(numIsolated_positiveGroupmate)+" as groupmates of positive)")
-                print("\t"+str(numSelfIsolated_positiveContact) +" will isolate due to positive contact ("+str(numSelfIsolated_positiveContactGroupmate)+" as groupmates of contact)")
+                vprint("\t"+str(numSelfIsolated_symptoms)        +" will isolate due to symptoms         ("+str(numSelfIsolated_symptomaticGroupmate)+" as groupmates of symptomatic)")
+                vprint("\t"+str(numPositive)                     +" will isolate due to positive test    ("+str(numIsolated_positiveGroupmate)+" as groupmates of positive)")
+                vprint("\t"+str(numSelfIsolated_positiveContact) +" will isolate due to positive contact ("+str(numSelfIsolated_positiveContactGroupmate)+" as groupmates of contact)")
 
                 #----------------------------------------
                 # Update the status of nodes who are to be isolated:
@@ -402,7 +463,20 @@ def run_tti_sim(model, T,
                     model.set_isolation(isolationNode, True)
                     numIsolated += 1
 
-                print("\t"+str(numIsolated)+" entered isolation")
+                vprint("\t"+str(numIsolated)+" entered isolation")
+                log({"numTested_symptomatic": numTested_symptomatic,
+                     "numPositive_symptomatic" : numPositive_symptomatic,
+                     "numTested_tracing" : numTested_tracing,
+                     "numPositive_tracing" : numPositive_tracing,
+                     "numTested" : numTested,
+                     "numSelfIsolated_symptoms":  numSelfIsolated_symptoms,
+                    "numSelfIsolated_symptomaticGroupmate": numSelfIsolated_symptomaticGroupmate,
+                    "numPositive" : numPositive,
+                     "numIsolated_positiveGroupmate" : numIsolated_positiveGroupmate,
+                     "numSelfIsolated_positiveContact" : numSelfIsolated_positiveContact,
+                     "numIsolated" : numIsolated
+                    })
+
                 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
