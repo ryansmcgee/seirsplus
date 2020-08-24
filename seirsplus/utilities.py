@@ -73,10 +73,12 @@ try:
         return x.iloc[-1]
 
 
-    def hist2df(history):
+    def hist2df(history , **kwargs):
         """Take history dictionary and return:
         pandas DataFrame of all history
-        pandas Series of the summary of history, taking the last value and the sum, as well average over time (sum of scaled)"""
+        pandas Series of the summary of history, taking the last value and the sum, as well average over time (sum of scaled)
+        Optional kwargs argument - if given then add them to the dataFrame and DataSeries - helpful when merging many logs from different runs.
+        """
         L = [{'time': t, **d} for t, d in history.items()]
         tmax = L[-1]['time']
         n = len(L)
@@ -89,6 +91,10 @@ try:
         summary = temp.agg([last, numpy.sum])
         summary = summary.stack()
         summary.index = ['/'.join(reversed(col)).strip() for col in summary.index.values]
+        if kwargs:
+            for key,val in kwargs.items():
+                df[key] = val
+                summary[key] = val
         return df, summary
 
 except ImportError:

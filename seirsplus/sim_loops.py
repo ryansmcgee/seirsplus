@@ -33,6 +33,7 @@ def run_tti_sim(model, T,
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
     # Testing cadences involve a repeating 28 day cycle starting on a Monday
     # (0:Mon, 1:Tue, 2:Wed, 3:Thu, 4:Fri, 5:Sat, 6:Sun, 7:Mon, 8:Tues, ...)
     # For each cadence, testing is done on the day numbers included in the associated list.
@@ -109,7 +110,7 @@ def run_tti_sim(model, T,
 
         if not (history is None): # log current state of the model
             d = {}
-            statistics = ["numS","numE","numI_pre","numI_sym","numI_asym","numH","numR","numF","numQ_S","numQ_E","numQ_pre","numQ_sym","numQ_asym","numQ_R"]
+            statistics = ["N","numS","numE","numI_pre","numI_sym","numI_asym","numH","numR","numF","numQ_S","numQ_E","numQ_pre","numQ_sym","numQ_asym","numQ_R"]
             for att in statistics:
                     d[att] = getattr(model,att)[model.tidx]
                     if (model.nodeGroupData):
