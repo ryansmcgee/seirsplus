@@ -33,6 +33,25 @@ def run_tti_sim(model, T,
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+    def trace(param):
+        """
+        if var is a single number between 0 and 1 then convert it to an arrau of NumNodes True/False randomly chosen with this probability:
+        if var is a dictionary of form { group_name: prob }  then use the above separately for each group
+        This allows parameters to be more compactly described (useful when running many executions in parallel)
+        """
+        if isinstance(param,(float,int)):
+            return (numpy.random.rand(model.numNodes) < param)
+        if isinstance(param,dict):
+            arr = numpy.full(model.numNodes,False, dtype=bool)
+            for group, p in param.items():
+                mask = model.nodeGroupData[group]['mask']
+                arr[mask] = (numpy.random.rand(model.numNodes) < p)[mask]
+            return arr
+        return param
+
+
+
+
 
     # Testing cadences involve a repeating 28 day cycle starting on a Monday
     # (0:Mon, 1:Tue, 2:Wed, 3:Thu, 4:Fri, 5:Sat, 6:Sun, 7:Mon, 8:Tues, ...)
