@@ -20,12 +20,12 @@ import networkx
 
 
 
-def pack(f,*args,**kwds, getelement = ""):
+def pack(f,*args,getelement = "", **kwds):
     """"Pack a function evaluation into a symbolic representations we can easily 'pickle' """
     return ("eval"+str(getelement),f.__name__, args,kwds)
 
 def packfirst(f,*args,**kwds):
-    return pack(f,*args,**kwds,getelement=0)
+    return pack(f,*args,getelement=0,**kwds)
 
 def unpack(O):
     """Unpack and evaluate expression"""
