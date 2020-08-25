@@ -89,6 +89,9 @@ def main():
     parser.add_argument("--realizations", default = 5, type=int, help="Number of realizations")
     parser.add_argument("--savename", default="data", help="File name to save resulting data (with csv and zip extensions)")
     args = parser.parse_args()
+    print("Arguments:")
+    for arg in vars(args):
+        print(arg,":", getattr(args, arg))
     print("Loading torun", flush=True)
     with open(args.torun, 'rb') as handle:
         torun = pickle.load(handle)
@@ -97,21 +100,17 @@ def main():
     print("Saving csv", flush=True)
     data.to_csv(args.savename+'.csv')
     chunk_size = 100000
-    if data.shape[0] > chunk_size:
-        print("Saving split parts", flush=True)
-        i = 1
-        for start in range(0, data.shape[0], chunk_size):
-            print(f"Saving pickle {i}", flush = True)
-            temp = data.iloc[start:start + chunk_size]
-            fname = args.savename+"_"+str(i)+".zip"
-            temp.to_pickle(fname)
-            i += 1
-        fname = args.savename + "_" + str(i) + ".zip"
-        if os.path.exists(fname): # so there is no confusion that this was the last part
-            os.remove(fname)
-    else:
-        print("Saving data")
-        data.to_pickle(args.savename+".zip")
+    print("Saving split parts", flush=True)
+    i = 1
+    for start in range(0, data.shape[0], chunk_size):
+        print(f"Saving pickle {i}", flush = True)
+        temp = data.iloc[start:start + chunk_size]
+        fname = args.savename+"_"+str(i)+".zip"
+        temp.to_pickle(fname)
+        i += 1
+    fname = args.savename + "_" + str(i) + ".zip"
+    if os.path.exists(fname): # so there is no confusion that this was the last part
+        os.remove(fname)
     print("Done", flush=True)
 
 
