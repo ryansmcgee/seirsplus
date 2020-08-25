@@ -8,7 +8,7 @@ sys.path.append(p)
 
 
 from models import *
-from networks import *
+from .networks import *
 from sim_loops import *
 from utilities import *
 import collections
@@ -17,7 +17,7 @@ import multiprocessing as mp
 import pickle
 
 import networkx
-
+import argparse
 
 
 def pack(f,*args,getelement = "", **kwds):
@@ -34,7 +34,7 @@ def unpack(O):
         f = globals()[O[1]]
         res =  f(*O[2],**O[3])
         if len(O[0]) > K:
-            i = int(O[K:])
+            i = int(O[0][K:])
             return res[i]
         return res
     return O
@@ -50,8 +50,8 @@ def run(model_params,run_params, keep_model = False):
     desc.update({key : str(val) for key,val in run_params.items() })
     model = ExtSEIRSNetworkModel(**MP)
     hist = collections.OrderedDict()
-    run_tti_sim(model, hist=hist, **RP)
-    df, sum =  hist2df(hist,desc)
+    run_tti_sim(model, history=hist, **RP)
+    df, sum =  hist2df(hist,**desc)
     return df,sum, model if keep_model else None
 
 def run_(T):
@@ -62,7 +62,7 @@ def run_(T):
     return sum
 
 def parallel_run(to_do, realizations= 1, keep_in = 0):
-    """Get list of triples (MP,RP) of model parameters to run,  run each given number of realizations in parallel
+    """Get list of pairs (MP,RP) of model parameters to run,  run each given number of realizations in parallel
     Among all realizations we keep"""
     print("Preparing list to run", flush=True)
     run_list = [(T[0],T[1], r < keep_in) for r in range(realizations) for T in to_do]
@@ -76,11 +76,17 @@ def parallel_run(to_do, realizations= 1, keep_in = 0):
     df = pd.DataFrame(rows)
     return df
 
+def save_to_file(L,filename = 'torun.pickle'):
+    """Save list of (MP,RP) pairs to run"""
+    with open(filename, 'wb') as handle:
+        pickle.dump(L, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--torun", default = "torun.pickle", help="File name of list to run")
-    parser.add_argument("--realizations", default = 5, help="Number of realizations")
+    parser.add_argument("--realizations", default = 5, type=int, help="Number of realizations")
     parser.add_argument("--savename", default="data", help="File name to save resulting data (with csv and zip extensions)")
     args = parser.parse_args()
     print("Loading torun", flush=True)
