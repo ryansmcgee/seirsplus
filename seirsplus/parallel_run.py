@@ -19,7 +19,6 @@ import pickle
 import networkx
 import argparse
 
-
 def pack(f,*args,getelement = "", **kwds):
     """"Pack a function evaluation into a symbolic representations we can easily 'pickle' """
     return ("eval"+str(getelement),f.__name__, args,kwds)
@@ -39,33 +38,35 @@ def unpack(O):
         return res
     return O
 
-def run(model_params,run_params, keep_model = False):
+def run(model_params,run_params, extra, keep_model = False):
     """Run an execution with given parameters"""
     MP = { key: unpack(val) for key,val in model_params.items() }
     RP = { key: unpack(val) for key,val in run_params.items() }
     if not MP['G_Q']:
-        MP['G_Q'] = networkx.classes.function.create_empty_copy(MP["G"]) # default quarantine graph is empty
-
-    desc=  {key : str(val) for key,val in model_params.items() }
+        MP['G_Q'] = networkx.classes.function.create_empty_copy(MP["G"]) # default quarantine graph is empty 
+    desc=  dict(extra)
+    desc.update({key : str(val) for key,val in model_params.items() })
     desc.update({key : str(val) for key,val in run_params.items() })
     model = ExtSEIRSNetworkModel(**MP)
     hist = collections.OrderedDict()
     run_tti_sim(model, history=hist, **RP)
-    df, sum =  hist2df(hist,**desc)
-    return df,sum, model if keep_model else None
+    df, summary =  hist2df(hist,**desc)
+    m = model if keep_model else None
+    return df,summary, m
 
 def run_(T):
     # single parameter version of run - returns only summary with an additional "model"
-    df, sum,model =  run(T[0],T[1],T[2])
     T[1]["verbose"] = False # no printouts when running in parallel
-    sum["model"] = model
-    return sum
+    df, summary,model =  run(T[0],T[1],T[2],T[3])
+    summary["model"] = model
+    return summary
 
 def parallel_run(to_do, realizations= 1, keep_in = 0):
-    """Get list of pairs (MP,RP) of model parameters to run,  run each given number of realizations in parallel
-    Among all realizations we keep"""
+    """Get list of pairs (MP,RP, extra) of model parameters to run,  run each given number of realizations in parallel
+    Among all realizations we keep.
+    Extra is extra fields for logging and grouping purposes"""
     print("Preparing list to run", flush=True)
-    run_list = [(T[0],T[1], r < keep_in) for r in range(realizations) for T in to_do]
+    run_list = [(M,R,E, r < keep_in) for r in range(realizations) for M,R,E in to_do]
     print(f"We have {mp.cpu_count()} CPUs")
     pool = mp.Pool(mp.cpu_count())
     print(f"Starting execution of {len(run_list)} runs", flush=True)
@@ -81,7 +82,15 @@ def save_to_file(L,filename = 'torun.pickle'):
     with open(filename, 'wb') as handle:
         pickle.dump(L, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    
+def read_from_file(prefix= 'data'):
+    i = 1
+    chunks = []
+    while os.path.exists(prefix+"_"+str(i)+".zip"):
+        print("Loading chunk "+ str(i), flush=True)
+        chunks.append(pd.read_pickle(prefix+"_"+str(i)+".zip"))
+        i += 1
+    return pd.concat(chunks)
+
 
 def main():
     parser = argparse.ArgumentParser()
