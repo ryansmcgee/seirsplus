@@ -20,15 +20,23 @@ import networkx
 
 
 
-def pack(f,*args,**kwds):
+def pack(f,*args,**kwds, getelement = ""):
     """"Pack a function evaluation into a symbolic representations we can easily 'pickle' """
-    return ("eval",f.__name__, args,kwds)
+    return ("eval"+str(getelement),f.__name__, args,kwds)
+
+def packfirst(f,*args,**kwds):
+    return pack(f,*args,**kwds,getelement=0)
 
 def unpack(O):
     """Unpack and evaluate expression"""
-    if isinstance(O,tuple) and (len(O)>1) and (O[0]=="eval"):
+    K = len("eval") # this is four of course but just in case we change things later
+    if isinstance(O,tuple) and (len(O)>1) and (O[0][:K]=="eval"):
         f = globals()[O[1]]
-        return f(*O[2],**O[3])
+        res =  f(*O[2],**O[3])
+        if len(O[0]) > K:
+            i = int(O[K:])
+            return res[i]
+        return res
     return O
 
 def run(model_params,run_params, keep_model = False):
