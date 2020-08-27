@@ -95,6 +95,8 @@ try:
             for key,val in kwargs.items():
                 df[key] = val
                 summary[key] = val
+        df.set_index('time',inplace=True)
+        df.sort_index(inplace=True)
         return df, summary
 
 except ImportError:
