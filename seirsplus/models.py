@@ -2153,7 +2153,7 @@ class ExtSEIRSNetworkModel():
         # Degree-based transmission scaling parameters:
         #----------------------------------------
         self.delta_pairwise_mode = self.parameters['delta_pairwise_mode']
-        with numpy.errstate(divide='ignore'): # ignore log(0) warning, then convert log(0) = -inf -> 0.0
+        with numpy.errstate(divide='ignore', invalid='ignore'): # ignore log(0) warning, then convert log(0) = -inf -> 0.0
             self.delta               = numpy.log(self.degree)/numpy.log(numpy.mean(self.degree))     if self.parameters['delta'] is None   else numpy.array(self.parameters['delta'])   if isinstance(self.parameters['delta'], (list, numpy.ndarray))   else numpy.full(fill_value=self.parameters['delta'], shape=(self.numNodes,1))
             self.delta_Q             = numpy.log(self.degree_Q)/numpy.log(numpy.mean(self.degree_Q)) if self.parameters['delta_Q'] is None else numpy.array(self.parameters['delta_Q']) if isinstance(self.parameters['delta_Q'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['delta_Q'], shape=(self.numNodes,1))
         self.delta[numpy.isneginf(self.delta)] = 0.0
