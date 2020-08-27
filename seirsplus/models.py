@@ -2646,7 +2646,7 @@ class ExtSEIRSNetworkModel():
             tau = (1/alpha)*numpy.log(float(1/r1))
             if int(self.t + tau) > int(self.t)+1:
                 # if next event will skip a day
-                delta = int(self.t) + 1.0
+                delta = int(self.t) - self.t  + 1.0
                 self.wait_until_t = self.t + tau
                 self.blankEvent = True
                 self.t += delta
