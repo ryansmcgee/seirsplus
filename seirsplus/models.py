@@ -1791,11 +1791,17 @@ class ExtSEIRSNetworkModel():
         self.tidx       = 0
         self.tseries[0] = 0
 
+        self.blankEvent = False # if blankEvent = True then we run a blank event until we reach "wait_until_t"
+        # this ensures that we don't skip a day of doing randomized testing or any other intervention
+        self.wait_until_t = 0
+
+        self.runTillEnd = False # if True then don't stop when infetions = 0 - makes sense if external infections may be introduced later
+
         # Vectors holding the time that each node has been in a given state or in isolation:
         self.timer_state     = numpy.zeros((self.numNodes,1))
         self.timer_isolation = numpy.zeros(self.numNodes)
         self.isolationTime   = isolation_time
-        
+
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Initialize Counts of inidividuals with each state:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2625,7 +2631,7 @@ class ExtSEIRSNetworkModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         propensities, transitionTypes = self.calc_propensities()
 
-        if(propensities.sum() > 0):
+        if (not self.blankEvent) and (propensities.sum() > 0):
 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             # Calculate alpha
@@ -2638,8 +2644,17 @@ class ExtSEIRSNetworkModel():
             # Compute the time until the next event takes place
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             tau = (1/alpha)*numpy.log(float(1/r1))
-            self.t += tau
-            self.timer_state += tau
+            if int(self.t + tau) > int(self.t)+1:
+                # if next event will skip a day
+                delta = int(self.t) + 1.0
+                self.wait_until_t = self.t + tau
+                self.blankEvent = True
+                self.t += delta
+                self.timer_state += delta
+            else:
+                self.blankEvent = False
+                self.t += tau
+                self.timer_state += tau
 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             # Compute which event takes place
@@ -2682,7 +2697,16 @@ class ExtSEIRSNetworkModel():
 
         else:
 
-            tau = 0.01
+            if self.blankEvent:
+                # if this is a blank event then either go to the time we're waiting for or the next day
+                # the goal is to verify we have at least one event every day
+                if int(self.t) >= int( self.wait_until_t)-1:
+                    tau = self.wait_until_t - self.t
+                    self.blankEvent = False
+                else:
+                    tau = int(self.t)+1 - self.t
+            else:
+                tau = 0.01
             self.t += tau
             self.timer_state += tau
 
@@ -2750,7 +2774,8 @@ class ExtSEIRSNetworkModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Terminate if tmax reached or num infections is 0:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if(self.t >= self.tmax or (self.total_num_infected(self.tidx) < 1 and self.total_num_isolated(self.tidx) < 1)):
+        # if self.runTillEnd is true then only terminate when tmax is reached
+        if(self.t >= self.tmax) or ((not self.runTillEnd) and (self.total_num_infected(self.tidx) < 1 and self.total_num_isolated(self.tidx) < 1)):
             self.finalize_data_series()
             return False
 

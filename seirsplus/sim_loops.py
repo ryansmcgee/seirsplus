@@ -18,6 +18,7 @@ def run_tti_sim(model, T,
                 isolation_compliance_positive_contact=[None], isolation_compliance_positive_contactgroupmate=[None],
                 isolation_lag_symptomatic=1, isolation_lag_positive=1, isolation_lag_contact=0, isolation_groups=None,
                 cadence_testing_days=None, cadence_cycle_length=28, temporal_falseneg_rates=None,
+                runTillEnd = False, # True: don't stop simulation if number of infected & isolated is zero, since more external infections may be introduced later
                 test_priority = 'random',
                 # test_priority: how to to choose which nodes to test:
                 # 'random' - use test budget for random fraction of eligible population, 'last_tested' - sort according to the time passed since testing (breaking ties randomly)
@@ -105,6 +106,7 @@ def run_tti_sim(model, T,
     isolationQueue_contact        = [[] for i in range(isolation_lag_contact)]
 
     model.tmax  = T
+    model.runTillEnd = runTillEnd
     running     = True
 
 
@@ -179,12 +181,13 @@ def run_tti_sim(model, T,
 
             currentNumInfected = model.total_num_infected()[model.tidx]
             currentPctInfected = model.total_num_infected()[model.tidx]/model.numNodes
-            log({"currentNumInfected": currentNumInfected})
+            log({"currentNumInfected": currentNumInfected , "cadenceDayNumber": cadenceDayNumber })
 
             if(currentPctInfected >= intervention_start_pct_infected and not interventionOn):
                 interventionOn        = True
                 interventionStartTime = model.t
-            
+
+            log({"interventionOn": interventionOn})
             if(interventionOn):
 
                 vprint("[INTERVENTIONS @ t = %.2f (%d (%.2f%%) infected)]" % (model.t, currentNumInfected, currentPctInfected*100))
@@ -277,6 +280,8 @@ def run_tti_sim(model, T,
                                                     ).flatten()
 
                     numSymptomaticTests  = min(len(symptomaticPool), max_symptomatic_tests_per_day)
+
+                    log({"symptomaticPool": len(symptomaticPool), "numSymptomaticTests": numSymptomaticTests })
                     
                     if(len(symptomaticPool) > 0):
                         symptomaticSelection = symptomaticPool[numpy.random.choice(len(symptomaticPool), min(numSymptomaticTests, len(symptomaticPool)), replace=False)]
@@ -298,10 +303,12 @@ def run_tti_sim(model, T,
                     #----------------------------------------
 
                     tracingPool = tracingPoolQueue.pop(0)
+                    log({"currentTracingPool" : len(tracingPool)})
 
                     if(any(testing_compliance_traced)):
 
                         numTracingTests = min(len(tracingPool), min(tests_per_day-len(symptomaticSelection), max_tracing_tests_per_day))
+                        log({"numTracingTests" : numTracingTests})
 
                         for trace in range(numTracingTests):
                             traceNode = tracingPool.pop()
@@ -326,9 +333,9 @@ def run_tti_sim(model, T,
                                                      & (nodeStates != model.H)
                                                      & (nodeStates != model.F)
                                                     ).flatten()
-
+                        log({"testingPool" : len(testingPool)})
                         numRandomTests = max(min(tests_per_day-len(tracingSelection)-len(symptomaticSelection), len(testingPool)), 0)
-                        
+                        log({"numRandomTests": numRandomTests})
                         testingPool_degrees       = model.degree.flatten()[testingPool]
                         testingPool_degreeWeights = numpy.power(testingPool_degrees,random_testing_degree_bias)/numpy.sum(numpy.power(testingPool_degrees,random_testing_degree_bias))
 
@@ -451,6 +458,7 @@ def run_tti_sim(model, T,
                 isolationQueue_contact.append(newIsolationGroup_contact)
 
                 # Add the nodes to be traced to the tracing queue:
+                log({"newTracingPool" : len(newTracingPool)})
                 tracingPoolQueue.append(newTracingPool)
 
 
