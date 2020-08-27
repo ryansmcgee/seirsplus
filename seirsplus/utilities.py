@@ -99,6 +99,7 @@ try:
         df.sort_index(inplace=True)
         return df, summary
 
+
 except ImportError:
     print("Warning: pandas missing - some logging functions will not work", file=sys.stderr)
     def last(x):
