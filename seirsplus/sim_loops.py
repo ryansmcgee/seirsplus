@@ -126,6 +126,10 @@ def run_tti_sim(model, T,
     while running:
 
         running = model.run_iteration()
+        if running and stopping_policy:
+            running = not stopping_policy(model, history)
+            if not running:
+                model.finalize_data_series()
 
         if not (history is None): # log current state of the model
             d = {}
@@ -139,10 +143,7 @@ def run_tti_sim(model, T,
             log(d)
 
 
-        if running and stopping_policy:
-            running = not stopping_policy(model,history)
-            if not running:
-                model.finalize_data_series()
+
 
 
 
@@ -498,7 +499,6 @@ def run_tti_sim(model, T,
                      "numIsolated" : numIsolated
                     })
 
-                
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
