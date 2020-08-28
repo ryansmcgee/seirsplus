@@ -18,13 +18,14 @@ def run_tti_sim(model, T,
                 isolation_compliance_positive_contact=[None], isolation_compliance_positive_contactgroupmate=[None],
                 isolation_lag_symptomatic=1, isolation_lag_positive=1, isolation_lag_contact=0, isolation_groups=None,
                 cadence_testing_days=None, cadence_cycle_length=28, temporal_falseneg_rates=None,
+                runTillEnd = False, # True: don't stop simulation if number of infected & isolated is zero, since more external infections may be introduced later
                 test_priority = 'random',
                 # test_priority: how to to choose which nodes to test:
                 # 'random' - use test budget for random fraction of eligible population, 'last_tested' - sort according to the time passed since testing (breaking ties randomly)
                 # if test_priority is callable then use as a key to sort nodes (lower value is higher priority)
                 history = None,
-                # history is a  dictonary that, if provided, will be updated with history and summary information for logging
-                # OrderedDict is optional but may be better for efficiency in some stopping policies
+                # history is a  dictionary that, if provided, will be updated with history and summary information for logging
+                # it preferably should be OrderedDict if we want to preserve ordering of logs
                 stopping_policy=None,
                 # stopping_policy: function that takes as input the model  and current history and decides whether to stop execution
                 #                  returns True to stop, False to continue running
@@ -32,6 +33,26 @@ def run_tti_sim(model, T,
                 ):
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    def trace(param):
+        """
+        if var is a single number between 0 and 1 then convert it to an arrau of NumNodes True/False randomly chosen with this probability:
+        if var is a dictionary of form { group_name: prob }  then use the above separately for each group
+        This allows parameters to be more compactly described (useful when running many executions in parallel)
+        """
+        if isinstance(param,(float,int)):
+            return (numpy.random.rand(model.numNodes) < param)
+        if isinstance(param,dict):
+            arr = numpy.full(model.numNodes,False, dtype=bool)
+            for group, p in param.items():
+                mask = model.nodeGroupData[group]['mask']
+                arr[mask] = (numpy.random.rand(model.numNodes) < p)[mask]
+            return arr
+        return param
+
+
+
+
 
     # Testing cadences involve a repeating 28 day cycle starting on a Monday
     # (0:Mon, 1:Tue, 2:Wed, 3:Thu, 4:Fri, 5:Sat, 6:Sun, 7:Mon, 8:Tues, ...)
@@ -85,6 +106,7 @@ def run_tti_sim(model, T,
     isolationQueue_contact        = [[] for i in range(isolation_lag_contact)]
 
     model.tmax  = T
+    model.runTillEnd = runTillEnd
     running     = True
 
 
@@ -106,10 +128,14 @@ def run_tti_sim(model, T,
     while running:
 
         running = model.run_iteration()
+        if running and stopping_policy:
+            running = not stopping_policy(model, history)
+            if not running:
+                model.finalize_data_series()
 
         if not (history is None): # log current state of the model
             d = {}
-            statistics = ["numS","numE","numI_pre","numI_sym","numI_asym","numH","numR","numF","numQ_S","numQ_E","numQ_pre","numQ_sym","numQ_asym","numQ_R"]
+            statistics = ["N","numS","numE","numI_pre","numI_sym","numI_asym","numH","numR","numF","numQ_S","numQ_E","numQ_pre","numQ_sym","numQ_asym","numQ_R"]
             for att in statistics:
                     d[att] = getattr(model,att)[model.tidx]
                     if (model.nodeGroupData):
@@ -119,10 +145,7 @@ def run_tti_sim(model, T,
             log(d)
 
 
-        if running and stopping_policy:
-            running = not stopping_policy(model,history)
-            if not running:
-                model.finalize_data_series()
+
 
 
 
@@ -158,12 +181,13 @@ def run_tti_sim(model, T,
 
             currentNumInfected = model.total_num_infected()[model.tidx]
             currentPctInfected = model.total_num_infected()[model.tidx]/model.numNodes
-            log({"currentNumInfected": currentNumInfected})
+            log({"currentNumInfected": currentNumInfected , "cadenceDayNumber": cadenceDayNumber })
 
             if(currentPctInfected >= intervention_start_pct_infected and not interventionOn):
                 interventionOn        = True
                 interventionStartTime = model.t
-            
+
+            log({"interventionOn": interventionOn})
             if(interventionOn):
 
                 vprint("[INTERVENTIONS @ t = %.2f (%d (%.2f%%) infected)]" % (model.t, currentNumInfected, currentPctInfected*100))
@@ -256,6 +280,8 @@ def run_tti_sim(model, T,
                                                     ).flatten()
 
                     numSymptomaticTests  = min(len(symptomaticPool), max_symptomatic_tests_per_day)
+
+                    log({"symptomaticPool": len(symptomaticPool), "numSymptomaticTests": numSymptomaticTests })
                     
                     if(len(symptomaticPool) > 0):
                         symptomaticSelection = symptomaticPool[numpy.random.choice(len(symptomaticPool), min(numSymptomaticTests, len(symptomaticPool)), replace=False)]
@@ -277,10 +303,12 @@ def run_tti_sim(model, T,
                     #----------------------------------------
 
                     tracingPool = tracingPoolQueue.pop(0)
+                    log({"currentTracingPool" : len(tracingPool)})
 
                     if(any(testing_compliance_traced)):
 
                         numTracingTests = min(len(tracingPool), min(tests_per_day-len(symptomaticSelection), max_tracing_tests_per_day))
+                        log({"numTracingTests" : numTracingTests})
 
                         for trace in range(numTracingTests):
                             traceNode = tracingPool.pop()
@@ -305,9 +333,9 @@ def run_tti_sim(model, T,
                                                      & (nodeStates != model.H)
                                                      & (nodeStates != model.F)
                                                     ).flatten()
-
+                        log({"testingPool" : len(testingPool)})
                         numRandomTests = max(min(tests_per_day-len(tracingSelection)-len(symptomaticSelection), len(testingPool)), 0)
-                        
+                        log({"numRandomTests": numRandomTests})
                         testingPool_degrees       = model.degree.flatten()[testingPool]
                         testingPool_degreeWeights = numpy.power(testingPool_degrees,random_testing_degree_bias)/numpy.sum(numpy.power(testingPool_degrees,random_testing_degree_bias))
 
@@ -430,6 +458,7 @@ def run_tti_sim(model, T,
                 isolationQueue_contact.append(newIsolationGroup_contact)
 
                 # Add the nodes to be traced to the tracing queue:
+                log({"newTracingPool" : len(newTracingPool)})
                 tracingPoolQueue.append(newTracingPool)
 
 
@@ -469,6 +498,7 @@ def run_tti_sim(model, T,
                      "numTested_tracing" : numTested_tracing,
                      "numPositive_tracing" : numPositive_tracing,
                      "numTested" : numTested,
+                     "numTested_random" : numTested_random,
                      "numSelfIsolated_symptoms":  numSelfIsolated_symptoms,
                     "numSelfIsolated_symptomaticGroupmate": numSelfIsolated_symptomaticGroupmate,
                     "numPositive" : numPositive,
@@ -477,7 +507,6 @@ def run_tti_sim(model, T,
                      "numIsolated" : numIsolated
                     })
 
-                
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

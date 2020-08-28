@@ -1,3 +1,4 @@
+import sys
 import numpy
 import matplotlib.pyplot as pyplot
 
@@ -60,6 +61,52 @@ def results_summary(model):
     print("total percent fatality: %0.2f%%" % (model.numF[-1]/model.numNodes * 100) )
     print("peak  pct hospitalized: %0.2f%%" % (numpy.max(model.numH)/model.numNodes * 100) )
 
+
+#########################################################################################################################################
+# Logging packages - requires pandas
+
+try:
+    import pandas as pd
+
+    def last(x):
+        """Return last element of a pandas Series"""
+        return x.iloc[-1]
+
+
+    def hist2df(history , **kwargs):
+        """Take history dictionary and return:
+        pandas DataFrame of all history
+        pandas Series of the summary of history, taking the last value and the sum, as well average over time (sum of scaled)
+        Optional kwargs argument - if given then add them to the dataFrame and DataSeries - helpful when merging many logs from different runs.
+        """
+        L = [{'time': t, **d} for t, d in history.items()]
+        tmax = L[-1]['time']
+        n = len(L)
+        df = pd.DataFrame(L)
+        df['interval_length'] = (df['time'] - df['time'].shift(1)).fillna(0)
+        temp = df.copy().fillna(0)
+        for col in df.columns:
+            if col == 'time': continue
+            temp[col + "/scaled"] = temp[col] * temp['interval_length'] / tmax
+        summary = temp.agg([last, numpy.sum])
+        summary = summary.stack()
+        summary.index = ['/'.join(reversed(col)).strip() for col in summary.index.values]
+        if kwargs:
+            for key,val in kwargs.items():
+                df[key] = val
+                summary[key] = val
+        df.set_index('time',inplace=True)
+        df.sort_index(inplace=True)
+        return df, summary
+
+
+except ImportError:
+    print("Warning: pandas missing - some logging functions will not work", file=sys.stderr)
+    def last(x):
+        raise NotImplementedError("This function requires pandas to work")
+
+    def hist2df(history):
+        raise NotImplementedError("This function requires pandas to work")
 
 
 
