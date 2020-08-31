@@ -83,10 +83,13 @@ try:
         tmax = L[-1]['time']
         n = len(L)
         df = pd.DataFrame(L)
+        df = df.fillna(0)
         df['interval_length'] = (df['time'] - df['time'].shift(1)).fillna(0)
-        temp = df.copy().fillna(0)
-        for col in df.columns:
-            if col == 'time': continue
+        df.set_index('time',inplace=True)
+        df.sort_index(inplace=True)
+        temp = df.copy()
+        orig_cols = list(df.columns)
+        for col in orig_cols:
             temp[col + "/scaled"] = temp[col] * temp['interval_length'] / tmax
         summary = temp.agg([last, numpy.sum])
         summary = summary.stack()
@@ -95,8 +98,16 @@ try:
             for key,val in kwargs.items():
                 df[key] = val
                 summary[key] = val
-        df.set_index('time',inplace=True)
-        df.sort_index(inplace=True)
+        if "positiveTestResults" in df.columns:
+            # add summary statistics for when first positive test results are detected
+            temp =  df[df.positiveTestResults > 0]
+            row = temp.iloc[0] if len(temp) else None
+            vals = []
+            labels = []
+            for col in orig_cols:
+                labels.append(col+"/1st")
+                vals.append(row[col] if row else 0)
+            summary = summary.append(pd.Series(vals,index=labels))
         return df, summary
 
 

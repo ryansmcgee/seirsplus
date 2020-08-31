@@ -504,7 +504,8 @@ def run_tti_sim(model, T,
                     "numPositive" : numPositive,
                      "numIsolated_positiveGroupmate" : numIsolated_positiveGroupmate,
                      "numSelfIsolated_positiveContact" : numSelfIsolated_positiveContact,
-                     "numIsolated" : numIsolated
+                     "numIsolated" : numIsolated,
+                     "positiveTestResults": len(isolationGroup_positive)
                     })
 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
