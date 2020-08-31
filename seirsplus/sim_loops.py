@@ -34,10 +34,10 @@ def run_tti_sim(model, T,
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    def trace(param):
+    def sample(param):
         """
-        if var is a single number between 0 and 1 then convert it to an arrau of NumNodes True/False randomly chosen with this probability:
-        if var is a dictionary of form { group_name: prob }  then use the above separately for each group
+        if param is a single number between 0 and 1 then convert it to an arrau of NumNodes True/False randomly chosen with this probability:
+        if param is a dictionary of form { group_name: prob }  then use the above separately for each group
         This allows parameters to be more compactly described (useful when running many executions in parallel)
         """
         if isinstance(param,(float,int)):
@@ -49,6 +49,17 @@ def run_tti_sim(model, T,
                 arr[mask] = (numpy.random.rand(model.numNodes) < p)[mask]
             return arr
         return param
+
+    testing_compliance_random = sample(testing_compliance_random)
+    testing_compliance_traced = sample(testing_compliance_traced)
+    testing_compliance_symptomatic = sample(testing_compliance_symptomatic)
+    tracing_compliance = sample(testing_compliance_symptomatic)
+    isolation_compliance_symptomatic_individual = sample(isolation_compliance_symptomatic_individual)
+    isolation_compliance_symptomatic_groupmate = sample(isolation_compliance_symptomatic_groupmate)
+    isolation_compliance_positive_individual = sample(isolation_compliance_positive_individual)
+    isolation_compliance_positive_groupmate = sample(isolation_compliance_positive_groupmate)
+    isolation_compliance_positive_contact = sample(isolation_compliance_positive_contact)
+    isolation_compliance_positive_contactgroupmate = sample(isolation_compliance_positive_contactgroupmate)
 
 
 
