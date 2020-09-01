@@ -126,10 +126,14 @@ try:
         if len(temp)>0:
             firstPositiveTestTime = temp.index[0]
             detectionTime = firstPositiveTestTime + test_lag
-        summary2 = summarize(df[df.index<= detectionTime])
+        temp = df[df.index<= detectionTime]
+        if len(temp):
+            summary2 = summarize(temp)
+            summary2.rename({col: col+"/1st" for col in summary2.index })
+            summary = summary.append(summary2)
         summary.append(pd.Series([firstPositiveTestTime, test_lag, detectionTime],
                                   index= ['firstPositiveTestTime', 'test_lag', 'detectionTime']))
-        summary = summary.append(summary2)
+
         if kwargs:
             for key,val in kwargs.items():
                 if isinstance(val,numpy.ndarray):
