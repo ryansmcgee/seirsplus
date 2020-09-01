@@ -68,6 +68,8 @@ def results_summary(model):
 try:
     import pandas as pd
     import seaborn as sns
+    import matplotlib.pyplot as plt
+
 
     def last(x):
         """Return last element of a pandas Series"""
