@@ -127,7 +127,7 @@ try:
             firstPositiveTestTime = temp.index[0]
             detectionTime = firstPositiveTestTime + test_lag
         summary2 = summarize(df[df.index<= detectionTime])
-        summary.aappend(pd.Series([firstPositiveTestTime, test_lag, detectionTime], index= ['firstPositiveTestTime', 'test_lag', 'detectionTime']))
+        summary.append(pd.Series([firstPositiveTestTime, test_lag, detectionTime], index= ['firstPositiveTestTime', 'test_lag', 'detectionTime']))
         summary = summary.append(summary2)
         if kwargs:
             for key,val in kwargs.items():
