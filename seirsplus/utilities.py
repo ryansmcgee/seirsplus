@@ -113,6 +113,8 @@ try:
         row = None
         if len(temp)>0:
             firstPositiveTestTime = temp.iloc[0].index
+            print(firstPositiveTestTime, type(firstPositiveTestTime))
+            print(test_lag, type(test_lag))
             detectionTime = firstPositiveTestTime + test_lag
             temp = temp[temp.index> detectionTime]
             row = temp.iloc[0] if len(temp) else None
