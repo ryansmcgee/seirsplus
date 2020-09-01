@@ -129,7 +129,7 @@ try:
         temp = df[df.index<= detectionTime]
         if len(temp):
             summary2 = summarize(temp)
-            summary2.rename({col: col+"/1st" for col in summary2.index })
+            summary2.rename({col: col+"/1st" for col in summary2.index }, inplace=True)
             summary = summary.append(summary2)
         summary.append(pd.Series([firstPositiveTestTime, test_lag, detectionTime],
                                   index= ['firstPositiveTestTime', 'test_lag', 'detectionTime']))
