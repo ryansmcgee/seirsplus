@@ -40,10 +40,10 @@ class Defer:
     def __str__(self):
         res = self.f_name+"("
         res += ", ".join([str(a) for a in self.args])
-        if args and kwds:
+        if self.args and self.kwds:
             res+=", "
-        if kwds:
-            res += ", ".join([str(k)+"="+str(v) for k,v in kwds.items()])
+        if self.kwds:
+            res += ", ".join([str(k)+"="+str(v) for k,v in self.kwds.items()])
         return res
 
     def eval(self):
