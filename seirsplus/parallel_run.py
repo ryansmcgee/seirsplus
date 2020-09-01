@@ -19,30 +19,64 @@ import pickle
 import networkx
 import argparse
 
-def pack(f,*args,getelement = "", **kwds):
-    """"Pack a function evaluation into a symbolic representations we can easily 'pickle' """
-    return ("eval"+str(getelement),f.__name__, args,kwds)
 
-def packfirst(f,*args,**kwds):
-    return pack(f,*args,getelement=0,**kwds)
+
+class Defer:
+    """Class for deferring computation
+    Defer(f,positional and keyword arguments) stores f's name and the arguments for later evaluation"""
+    def __init__(self,f,*args,**kwds):
+        self.f_name = f.__name__
+        self.args = args
+        self.kwds = kwds
+
+    def __str__(self):
+        res = self.f_name+"("
+        res += ", ".join([str(a) for a in self.args])
+        if args and kwds:
+            res+=", "
+        if kwds:
+            res += ", ".join([str(k)+"="+str(v) for k,v in kwds.items()])
+        return res
+
+    def eval(self):
+        f = globals()[self.f_name]
+        args_ = [unpack(a) for a in self.args]
+        kwds_ = {k:unpack(v) for k,v in self.kwds.items()}
+        return f(*args_,**kwds_)
 
 def unpack(O):
-    """Unpack and evaluate expression"""
-    K = len("eval") # this is four of course but just in case we change things later
-    if isinstance(O,tuple) and (len(O)>1) and (O[0][:K]=="eval"):
-        f = globals()[O[1]]
-        res =  f(*O[2],**O[3])
-        if len(O[0]) > K:
-            i = int(O[0][K:])
-            return res[i]
-        return res
+    if isinstance(O,Defer):
+        return O.eval()
     return O
+
+
+def generate_workplace_contact_network_(*args,**kwds):
+    """Helper function to produce graph + isolation groups"""
+    G, cohorts, teams = generate_workplace_contact_network(*args,**kwds)
+    return G, teams.values()
+
+def generate_workplace_contact_network_deferred(*args,**kwds):
+    """Returns deferred execution of functoin to generate return graph and isolation groups"""
+    return Defer(generate_workplace_contact_network_,*args,**kwds)
+
 
 def run(model_params,run_params, extra, keep_model = False):
     """Run an execution with given parameters"""
     MP = { key: unpack(val) for key,val in model_params.items() }
     RP = { key: unpack(val) for key,val in run_params.items() }
-    if not MP['G_Q']:
+    for D in [MP,RP]:
+        # replace key a value pair of form (k1,k2,k3):(v1,v2,v3) with k1:v1,k2:v2,k3:v3 etc..
+        # useful if several keys depend on the same deferred computation
+        for key in list(D.keys()):
+            if isinstance((key,tuple)):
+                L = D[key]
+                if len(L) != len(key):
+                    raise Exception("Key" + str(key) + "should have same length as value" + str(L))
+                for i,subkey in enumerate(key):
+                    D[subkey] = L[i]
+                del D[key]
+
+    if ('G_Q' not in MP) or (not MP['G_Q']):
         MP['G_Q'] = networkx.classes.function.create_empty_copy(MP["G"]) # default quarantine graph is empty 
     desc=  dict(extra)
     desc.update({key : str(val) for key,val in model_params.items() })

@@ -106,7 +106,7 @@ try:
             labels = []
             for col in orig_cols:
                 labels.append(col+"/1st")
-                vals.append(row[col] if row else 0)
+                vals.append(0 if row is None else row[col])
             summary = summary.append(pd.Series(vals,index=labels))
         return df, summary
 
