@@ -67,6 +67,7 @@ def results_summary(model):
 
 try:
     import pandas as pd
+    import seaborn as sns
 
     def last(x):
         """Return last element of a pandas Series"""
