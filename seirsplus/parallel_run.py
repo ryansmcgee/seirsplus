@@ -78,8 +78,7 @@ def run(params_, keep_model = False):
         if isinstance(key,tuple):
             L = params[key]
             if not isinstance(L,(list,tuple)):
-                U = unpack(L)
-                raise Exception("L is of type " +str(type(L)) + f" and not tuple, L = {L}, U={U}")
+                raise Exception("L is of type " +str(type(L)) + " and not tuple (L= " + str(L) +")")
             if len(L) != len(key):
                 raise Exception("Key" + str(key) + "should have same length as value" + str(L))
             for i,subkey in enumerate(key):
@@ -87,7 +86,7 @@ def run(params_, keep_model = False):
             del params[key]
 
     if ('G_Q' not in params) or (not params['G_Q']):
-        params['G_Q'] = networkx.classes.function.create_empty_copy(MP["G"]) # default quarantine graph is empty
+        params['G_Q'] = networkx.classes.function.create_empty_copy(params["G"]) # default quarantine graph is empty
     desc= {}
     model_params = {}
     run_params = {}
@@ -115,9 +114,8 @@ def run_(T):
     return summary
 
 def parallel_run(to_do, realizations= 1, keep_in = 0):
-    """Get list of pairs (MP,RP, extra) of model parameters to run,  run each given number of realizations in parallel
-    Among all realizations we keep.
-    Extra is extra fields for logging and grouping purposes"""
+    """Get list of dictionaries of model and run parameters to run,  run each given number of realizations in parallel
+    Among all realizations we keep."""
     print("Preparing list to run", flush=True)
     run_list = [(D, r < keep_in) for r in range(realizations) for D in to_do]
     #print(f"We have {mp.cpu_count()} CPUs")
@@ -130,7 +128,7 @@ def parallel_run(to_do, realizations= 1, keep_in = 0):
     return df
 
 def save_to_file(L,filename = 'torun.pickle'):
-    """Save list of (MP,RP) pairs to run"""
+    """Save list of  parameter dictionaries  to run"""
     with open(filename, 'wb') as handle:
         pickle.dump(L, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
