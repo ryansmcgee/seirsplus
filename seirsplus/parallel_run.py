@@ -68,6 +68,7 @@ def generate_workplace_contact_network_deferred(*args,**kwds):
     return Defer(generate_workplace_contact_network_,*args,**kwds)
 
 
+
 def run(params_, keep_model = False):
     """Run an execution with given parameters"""
     params = { key: unpack(val) for key,val in params_.items() }
