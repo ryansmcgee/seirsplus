@@ -79,7 +79,7 @@ try:
         orig_cols = list(df.columns)
         todrop = []
         for col in orig_cols:
-            temp[col + "/scaled"] = temp[col] * temp['interval_length'] / tmax
+            temp[col + "/scaled"] = (temp[col] * temp['interval_length'] / tmax) if tmax else 0
             todrop.append(col+"/scaled/last")
         summary = temp.agg([last, numpy.sum])
         summary = summary.stack()
@@ -127,7 +127,7 @@ try:
             firstPositiveTestTime = temp.index[0]
             detectionTime = firstPositiveTestTime + test_lag
         summary2 = summarize(df[df.index<= detectionTime])
-        summary.append(pd.Series([firstPositiveTestTime, test_lag, detectionTime], index= ['firstPositiveTestTime', 'test_lag', 'detectionTime']))
+        summary.append(pd.Series([tmax,firstPositiveTestTime, test_lag, detectionTime], index= ['tmax','firstPositiveTestTime', 'test_lag', 'detectionTime'))
         summary = summary.append(summary2)
         if kwargs:
             for key,val in kwargs.items():
