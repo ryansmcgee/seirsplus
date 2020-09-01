@@ -79,6 +79,14 @@ try:
         pandas Series of the summary of history, taking the last value and the sum, as well average over time (sum of scaled)
         Optional kwargs argument - if given then add them to the dataFrame and DataSeries - helpful when merging many logs from different runs.
         """
+        test_lag = 0
+        if 'test_lag' in kwargs:
+            test_lag = kwargs['test_lag']
+        else:
+            for t,d in history.items():
+                if 'isolation_lag_positive' in d:
+                    test_lag = d['isolation_lag_positive']
+                    break
         L = [{'time': t, **d} for t, d in history.items()]
         tmax = L[-1]['time']
         n = len(L)
@@ -98,16 +106,23 @@ try:
             for key,val in kwargs.items():
                 df[key] = val
                 summary[key] = val
-        if "positiveTestResults" in df.columns:
-            # add summary statistics for when first positive test results are detected
-            temp =  df[df.positiveTestResults > 0]
+
+        detectionTime = -1
+        firstPositiveTestTime = -1
+        temp = df[df.numPositive>0]
+        row = None
+        if len(temp)>0:
+            firstPositiveTestTime = temp.iloc[0].index
+            detectionTime = firstPositiveTestTime + test_lag
+            temp = temp[temp.index> detectionTime]
             row = temp.iloc[0] if len(temp) else None
-            vals = []
-            labels = []
-            for col in orig_cols:
-                labels.append(col+"/1st")
-                vals.append(0 if row is None else row[col])
-            summary = summary.append(pd.Series(vals,index=labels))
+        vals = [firstPositiveTestTime, test_lag, detectionTime]
+        labels = ['firstPositiveTestTime', 'test_lag', 'detectionTime']
+        for col in orig_cols:
+            labels.append(col+"/1st")
+            vals.append(0 if row is None else row[col])
+
+        summary = summary.append(pd.Series(vals,index=labels))
         return df, summary
 
 
@@ -118,6 +133,7 @@ except ImportError:
 
     def hist2df(history):
         raise NotImplementedError("This function requires pandas to work")
+
 
 
 
