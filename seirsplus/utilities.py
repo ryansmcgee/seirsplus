@@ -127,7 +127,8 @@ try:
             firstPositiveTestTime = temp.index[0]
             detectionTime = firstPositiveTestTime + test_lag
         summary2 = summarize(df[df.index<= detectionTime])
-        summary.append(pd.Series([tmax,firstPositiveTestTime, test_lag, detectionTime], index= ['tmax','firstPositiveTestTime', 'test_lag', 'detectionTime'))
+        summary.append(pd.Series([tmax,firstPositiveTestTime, test_lag, detectionTime],
+                                  index= ['tmax','firstPositiveTestTime', 'test_lag', 'detectionTime']))
         summary = summary.append(summary2)
         if kwargs:
             for key,val in kwargs.items():
@@ -147,11 +148,6 @@ except ImportError:
 
     def hist2df(history):
         raise NotImplementedError("This function requires pandas to work")
-
-
-
-
-
 
 
 
