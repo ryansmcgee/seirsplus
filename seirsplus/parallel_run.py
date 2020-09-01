@@ -119,7 +119,7 @@ def parallel_run(to_do, realizations= 1, keep_in = 0):
     #print(f"We have {mp.cpu_count()} CPUs")
     #pool = mp.Pool(mp.cpu_count())
     print("Starting execution of " +str(len(run_list)) +" runs", flush=True)
-    rows = list(p_umap(run,run_list))
+    rows = list(p_umap(run_,run_list))
     #rows = list(pool.map(run_, run_list))
     print("done", flush=True)
     df = pd.DataFrame(rows)
