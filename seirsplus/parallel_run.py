@@ -68,9 +68,9 @@ def generate_workplace_contact_network_deferred(*args,**kwds):
     return Defer(generate_workplace_contact_network_,*args,**kwds)
 
 
-def run(params, keep_model = False):
+def run(params_, keep_model = False):
     """Run an execution with given parameters"""
-    params = { key: unpack(val) for key,val in params.items() }
+    params = { key: unpack(val) for key,val in params_.items() }
     # replace key a value pair of form (k1,k2,k3):(v1,v2,v3) with k1:v1,k2:v2,k3:v3 etc..
     # useful if several keys depend on the same deferred computation
     for key in list(params.keys()):
