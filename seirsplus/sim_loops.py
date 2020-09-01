@@ -499,6 +499,7 @@ def run_tti_sim(model, T,
                     numIsolated += 1
 
                 isolationGroup_positive = isolationQueue_positive.pop(0)
+                positiveTestResults = len(isolationGroup_positive)
                 for isolationNode in isolationGroup_positive:
                     model.set_isolation(isolationNode, True)
                     numIsolated += 1
@@ -516,7 +517,7 @@ def run_tti_sim(model, T,
                      "numIsolated_positiveGroupmate" : numIsolated_positiveGroupmate,
                      "numSelfIsolated_positiveContact" : numSelfIsolated_positiveContact,
                      "numIsolated" : numIsolated,
-                     "positiveTestResults": len(isolationGroup_positive)
+                     "positiveTestResults": positiveTestResults
                     })
 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
