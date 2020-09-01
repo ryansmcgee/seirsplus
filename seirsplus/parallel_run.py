@@ -53,7 +53,7 @@ class Defer:
         return f(*args_,**kwds_)
 
 def unpack(O):
-    if isinstance(O,Defer):
+    if  "Defer" in type(O).__name__:
         return O.eval()
     return O
 
