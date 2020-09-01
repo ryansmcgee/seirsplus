@@ -145,6 +145,45 @@ try:
         return df, summary
 
 
+    def violin_plot(lists, labels, title="", ylabel=""):
+        sns.set()
+        fig, ax = plt.subplots(figsize=(16, 8))
+
+        vp = ax.violinplot(lists, showmeans=True)
+        i = 1
+        for pc in vp['bodies']:
+            pc.set_color(f'C{i}')
+
+        for partname in ('cbars', 'cmins', 'cmaxes', 'cmeans'):
+            pc = vp[partname]
+            pc.set_edgecolor("black")
+            pc.set_linewidth(1)
+
+        ax.get_xaxis().set_tick_params(direction='out')
+        ax.xaxis.set_ticks_position('bottom')
+        ax.set_xticks(np.arange(1, len(labels) + 1))
+        ax.set_xticklabels(labels)
+        ax.set_xlim(0.25, len(labels) + 0.75)
+        ax.set_ylabel(ylabel)
+        if title:
+            ax.set_title(title)
+        for tick in ax.get_xticklabels():
+            tick.set_rotation(45)
+        plt.show()
+
+
+    def show_violins(data, field, groupby = 'variant', ylabel=None,title=""):
+        """Show 'violin graphs' of a certain field according to different variants"""
+        plots = []
+        labels = []
+        if ylabel is None:
+            ylabel = field
+        for v in sorted(data[groupby].unique()):
+            plots.append(data[data[groupby] == v][field])
+            labels.append(v)
+        violin_plot(plots, labels, ylabel=ylabel, title=title)
+
+
 except ImportError:
     print("Warning: pandas missing - some logging functions will not work", file=sys.stderr)
     def last(x):
