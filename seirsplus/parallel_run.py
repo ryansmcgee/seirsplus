@@ -76,6 +76,9 @@ def run(params_, keep_model = False):
     for key in list(params.keys()):
         if isinstance(key,tuple):
             L = params[key]
+            if not isinstance(L,(list,tuple)):
+                U = unpack(L)
+                raise Exception("L is of type " +str(type(L)) + f" and not tuple, L = {L}, U={U}")
             if len(L) != len(key):
                 raise Exception("Key" + str(key) + "should have same length as value" + str(L))
             for i,subkey in enumerate(key):
