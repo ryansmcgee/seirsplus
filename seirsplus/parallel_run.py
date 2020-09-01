@@ -61,7 +61,7 @@ def unpack(O):
 def generate_workplace_contact_network_(*args,**kwds):
     """Helper function to produce graph + isolation groups"""
     G, cohorts, teams = generate_workplace_contact_network(*args,**kwds)
-    return G, teams.values()
+    return G, list(teams.values())
 
 def generate_workplace_contact_network_deferred(*args,**kwds):
     """Returns deferred execution of functoin to generate return graph and isolation groups"""

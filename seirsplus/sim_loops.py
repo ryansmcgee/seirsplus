@@ -234,13 +234,15 @@ def run_tti_sim(model, T,
                             #----------------------------------------
                             # Isolate the GROUPMATES of this SYMPTOMATIC node without a test:
                             #----------------------------------------
-                            if(isolation_groups is not None and any(isolation_compliance_symptomatic_groupmate)):
-                                isolationGroupmates = next((group for group in isolation_groups if symptomaticNode in group), None)
-                                for isolationGroupmate in isolationGroupmates:
-                                    if(isolationGroupmate != symptomaticNode):
-                                        if(isolation_compliance_symptomatic_groupmate[isolationGroupmate]):
-                                            numSelfIsolated_symptomaticGroupmate += 1
-                                            newIsolationGroup_symptomatic.append(isolationGroupmate)
+                            if(isolation_groups is not None) and any(isolation_compliance_symptomatic_groupmate):
+                                for group in isolation_groups: # allow non disjoint groups
+                                    if not symptomaticNode in group:
+                                        continue
+                                    for isolationGroupmate in group:
+                                        if(isolationGroupmate != symptomaticNode):
+                                            if(isolation_compliance_symptomatic_groupmate[isolationGroupmate]):
+                                                numSelfIsolated_symptomaticGroupmate += 1
+                                                newIsolationGroup_symptomatic.append(isolationGroupmate)
 
 
                 #----------------------------------------
