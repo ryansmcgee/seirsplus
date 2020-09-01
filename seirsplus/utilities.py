@@ -112,9 +112,7 @@ try:
         temp = df[df.numPositive>0]
         row = None
         if len(temp)>0:
-            firstPositiveTestTime = temp.iloc[0].index
-            print(firstPositiveTestTime, type(firstPositiveTestTime))
-            print(test_lag, type(test_lag))
+            firstPositiveTestTime = temp.index[0]
             detectionTime = firstPositiveTestTime + test_lag
             temp = temp[temp.index> detectionTime]
             row = temp.iloc[0] if len(temp) else None
