@@ -240,10 +240,9 @@ def run_tti_sim(model, T,
                                         continue
                                     for isolationGroupmate in group:
                                         if(isolationGroupmate != symptomaticNode):
-                                            if(isolation_compliance_symptomatic_groupmate[isolationGroupmate]):
+                                            if (isolation_compliance_symptomatic_groupmate[isolationGroupmate]):
                                                 numSelfIsolated_symptomaticGroupmate += 1
                                                 newIsolationGroup_symptomatic.append(isolationGroupmate)
-
 
                 #----------------------------------------
                 # Isolate the CONTACTS of detected POSITIVE cases without a test:
@@ -260,14 +259,16 @@ def run_tti_sim(model, T,
                         #----------------------------------------
                         # Isolate the GROUPMATES of this self-isolating CONTACT without a test:
                         #----------------------------------------
-                        if(isolation_groups is not None and any(isolation_compliance_positive_contactgroupmate)):
-                            isolationGroupmates = next((group for group in isolation_groups if contactNode in group), None)
-                            for isolationGroupmate in isolationGroupmates:
-                                # if(isolationGroupmate != contactNode):
-                                if(isolation_compliance_positive_contactgroupmate[isolationGroupmate]):
-                                    newIsolationGroup_contact.append(isolationGroupmate)
-                                    numSelfIsolated_positiveContactGroupmate += 1
-                                    
+                        if (isolation_groups is not None) and any(isolation_compliance_positive_contactgroupmate):
+                            for group in isolation_groups:  # allow non disjoint groups
+                                if not contactNode in group:
+                                    continue
+                                for isolationGroupmate in group:
+                                    if (isolationGroupmate != contactNode): # do not include node itself
+                                        if (isolation_compliance_positive_contactgroupmate[isolationGroupmate]):
+                                            newIsolationGroup_contact.append(isolationGroupmate)
+                                            numSelfIsolated_positiveContactGroupmate += 1
+
 
                 #----------------------------------------
                 # Update the nodeStates list after self-isolation updates to model.X:
@@ -442,14 +443,17 @@ def run_tti_sim(model, T,
 
                             #----------------------------------------
                             # Add the groupmates of this positive node to the isolation group:
-                            #----------------------------------------  
-                            if(isolation_groups is not None and any(isolation_compliance_positive_groupmate)):
-                                isolationGroupmates = next((group for group in isolation_groups if testNode in group), None)
-                                for isolationGroupmate in isolationGroupmates:
-                                    if(isolationGroupmate != testNode):
-                                        if(isolation_compliance_positive_groupmate[isolationGroupmate]):
-                                            numIsolated_positiveGroupmate += 1
-                                            newIsolationGroup_positive.append(isolationGroupmate)
+                            #----------------------------------------
+                            if (isolation_groups is not None) and any(isolation_compliance_symptomatic_groupmate):
+                                for group in isolation_groups:  # allow non disjoint groups
+                                    if not testNode in group:
+                                        continue
+                                    for isolationGroupmate in group:
+                                        if (isolationGroupmate != testNode):
+                                            if (isolation_compliance_symptomatic_groupmate[isolationGroupmate]):
+                                                numSelfIsolated_symptomaticGroupmate += 1
+                                                newIsolationGroup_symptomatic.append(isolationGroupmate)
+
 
                             #----------------------------------------  
                             # Add this node's neighbors to the contact tracing pool:
