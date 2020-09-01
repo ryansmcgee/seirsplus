@@ -72,6 +72,27 @@ try:
         """Return last element of a pandas Series"""
         return x.iloc[-1]
 
+    def summarize(df):
+        """Return a Series with last value, sum of values, and weighted average of values"""
+        temp = df.copy()
+        tmax = df['interval_length'].sum()
+        orig_cols = list(df.columns)
+        todrop = []
+        for col in orig_cols:
+            temp[col + "/scaled"] = temp[col] * temp['interval_length'] / tmax
+            todrop.append(col+"/scaled/last")
+        summary = temp.agg([last, numpy.sum])
+        summary = summary.stack()
+        summary.index = ['/'.join(reversed(col)).strip() for col in summary.index.values]
+        summary.drop(todrop,inplace=True)
+        summary.rename({col+"/scaled/sum": col+"/average" for col in orig_cols},inplace=True)
+        return summary
+
+
+
+
+
+
 
     def hist2df(history , **kwargs):
         """Take history dictionary and return:
@@ -79,6 +100,17 @@ try:
         pandas Series of the summary of history, taking the last value and the sum, as well average over time (sum of scaled)
         Optional kwargs argument - if given then add them to the dataFrame and DataSeries - helpful when merging many logs from different runs.
         """
+        L = [{'time': t, **d} for t, d in history.items()]
+        n = len(L)
+        df = pd.DataFrame(L)
+        df = df.fillna(0)
+        df['interval_length'] = (df['time'] - df['time'].shift(1)).fillna(0)
+        df.set_index('time',inplace=True)
+        df.sort_index(inplace=True)
+        summary = summarize(df)
+
+        # add to summary statistics up to first detection
+
         test_lag = 0
         if 'test_lag' in kwargs:
             test_lag = kwargs['test_lag']
@@ -87,26 +119,6 @@ try:
                 if 'isolation_lag_positive' in d:
                     test_lag = d['isolation_lag_positive']
                     break
-        L = [{'time': t, **d} for t, d in history.items()]
-        tmax = L[-1]['time']
-        n = len(L)
-        df = pd.DataFrame(L)
-        df = df.fillna(0)
-        df['interval_length'] = (df['time'] - df['time'].shift(1)).fillna(0)
-        df.set_index('time',inplace=True)
-        df.sort_index(inplace=True)
-        temp = df.copy()
-        orig_cols = list(df.columns)
-        for col in orig_cols:
-            temp[col + "/scaled"] = temp[col] * temp['interval_length'] / tmax
-        summary = temp.agg([last, numpy.sum])
-        summary = summary.stack()
-        summary.index = ['/'.join(reversed(col)).strip() for col in summary.index.values]
-        if kwargs:
-            for key,val in kwargs.items():
-                df[key] = val
-                summary[key] = val
-
         detectionTime = -1
         firstPositiveTestTime = -1
         temp = df[df.numPositive>0]
@@ -114,15 +126,17 @@ try:
         if len(temp)>0:
             firstPositiveTestTime = temp.index[0]
             detectionTime = firstPositiveTestTime + test_lag
-            temp = temp[temp.index> detectionTime]
-            row = temp.iloc[0] if len(temp) else None
-        vals = [firstPositiveTestTime, test_lag, detectionTime]
-        labels = ['firstPositiveTestTime', 'test_lag', 'detectionTime']
-        for col in orig_cols:
-            labels.append(col+"/1st")
-            vals.append(0 if row is None else row[col])
-
-        summary = summary.append(pd.Series(vals,index=labels))
+        summary2 = summarize(df[df.index<= detectionTime])
+        summary.aappend(pd.Series([firstPositiveTestTime, test_lag, detectionTime], index= ['firstPositiveTestTime', 'test_lag', 'detectionTime']))
+        summary = summary.append(summary2)
+        if kwargs:
+            for key,val in kwargs.items():
+                if isinstance(val,numpy.ndarray):
+                    val = val.mean()
+                elif isinstance(val,list) and val and isinstance(val[0],(int,float)):
+                    val = sum(val)/len(val)
+                df[key] = val
+                summary[key] = val
         return df, summary
 
 
