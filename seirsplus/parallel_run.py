@@ -13,11 +13,19 @@ from sim_loops import *
 from utilities import *
 import collections
 
-import multiprocessing as mp
-import pickle
 
+import pickle
+import inspect
 import networkx
 import argparse
+
+try:
+    from p_tqdm import p_umap # https://github.com/swansonk14/p_tqdm
+except ImportError:
+    print("Please install p_tqdm package via pip install p_tqdm")
+    print("Preparing code for parallel run will work, but running the script will not")
+    def p_umap(*L):
+        raise Exception("Package p_tqdm not found")
 
 
 
@@ -60,38 +68,45 @@ def generate_workplace_contact_network_deferred(*args,**kwds):
     return Defer(generate_workplace_contact_network_,*args,**kwds)
 
 
-def run(model_params,run_params, extra, keep_model = False):
+def run(params, keep_model = False):
     """Run an execution with given parameters"""
-    MP = { key: unpack(val) for key,val in model_params.items() }
-    RP = { key: unpack(val) for key,val in run_params.items() }
-    for D in [MP,RP]:
-        # replace key a value pair of form (k1,k2,k3):(v1,v2,v3) with k1:v1,k2:v2,k3:v3 etc..
-        # useful if several keys depend on the same deferred computation
-        for key in list(D.keys()):
-            if isinstance((key,tuple)):
-                L = D[key]
-                if len(L) != len(key):
-                    raise Exception("Key" + str(key) + "should have same length as value" + str(L))
-                for i,subkey in enumerate(key):
-                    D[subkey] = L[i]
-                del D[key]
+    params = { key: unpack(val) for key,val in model_params.items() }
+    # replace key a value pair of form (k1,k2,k3):(v1,v2,v3) with k1:v1,k2:v2,k3:v3 etc..
+    # useful if several keys depend on the same deferred computation
+    for key in list(params.keys()):
+        if isinstance((key,tuple)):
+            L = params[key]
+            if len(L) != len(key):
+                raise Exception("Key" + str(key) + "should have same length as value" + str(L))
+            for i,subkey in enumerate(key):
+                params[subkey] = L[i]
+            del params[key]
 
-    if ('G_Q' not in MP) or (not MP['G_Q']):
-        MP['G_Q'] = networkx.classes.function.create_empty_copy(MP["G"]) # default quarantine graph is empty 
-    desc=  dict(extra)
+    if ('G_Q' not in params) or (not params['G_Q']):
+        params['G_Q'] = networkx.classes.function.create_empty_copy(MP["G"]) # default quarantine graph is empty
+    desc= {}
+    model_params = {}
+    run_params = {}
+    for k, v in params.items():
+        if k in inspect.signature(ExtSEIRSNetworkModel).parameters:
+            model_params[k] = v
+        elif k in inspect.signature(run_tti_sim).parameters:
+            run_params[k] = v
+        else:
+            desc[k] = v
     desc.update({key : str(val) for key,val in model_params.items() })
     desc.update({key : str(val) for key,val in run_params.items() })
-    model = ExtSEIRSNetworkModel(**MP)
+    model = ExtSEIRSNetworkModel(**model_params)
     hist = collections.OrderedDict()
-    run_tti_sim(model, history=hist, **RP)
+    run_tti_sim(model, history=hist, **run_params)
     df, summary =  hist2df(hist,**desc)
     m = model if keep_model else None
     return df,summary, m
 
 def run_(T):
     # single parameter version of run - returns only summary with an additional "model"
-    T[1]["verbose"] = False # no printouts when running in parallel
-    df, summary,model =  run(T[0],T[1],T[2],T[3])
+    T[0]["verbose"] = False # no printouts when running in parallel
+    df, summary,model =  run(T[0],T[1])
     summary["model"] = model
     return summary
 
@@ -100,14 +115,13 @@ def parallel_run(to_do, realizations= 1, keep_in = 0):
     Among all realizations we keep.
     Extra is extra fields for logging and grouping purposes"""
     print("Preparing list to run", flush=True)
-    run_list = [(M,R,E, r < keep_in) for r in range(realizations) for M,R,E in to_do]
-    print(f"We have {mp.cpu_count()} CPUs")
-    pool = mp.Pool(mp.cpu_count())
+    run_list = [(D, r < keep_in) for r in range(realizations) for D in to_do]
+    #print(f"We have {mp.cpu_count()} CPUs")
+    #pool = mp.Pool(mp.cpu_count())
     print(f"Starting execution of {len(run_list)} runs", flush=True)
-    # rows = list(map(single_exec, run_list))
-    rows = list(pool.map(run_, run_list))
+    rows = list(p_umap(run,run_list))
+    #rows = list(pool.map(run_, run_list))
     print("done", flush=True)
-    pool.close()
     df = pd.DataFrame(rows)
     return df
 
