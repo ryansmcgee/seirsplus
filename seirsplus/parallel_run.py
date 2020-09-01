@@ -70,11 +70,11 @@ def generate_workplace_contact_network_deferred(*args,**kwds):
 
 def run(params, keep_model = False):
     """Run an execution with given parameters"""
-    params = { key: unpack(val) for key,val in model_params.items() }
+    params = { key: unpack(val) for key,val in params.items() }
     # replace key a value pair of form (k1,k2,k3):(v1,v2,v3) with k1:v1,k2:v2,k3:v3 etc..
     # useful if several keys depend on the same deferred computation
     for key in list(params.keys()):
-        if isinstance((key,tuple)):
+        if isinstance(key,tuple):
             L = params[key]
             if len(L) != len(key):
                 raise Exception("Key" + str(key) + "should have same length as value" + str(L))
@@ -118,7 +118,7 @@ def parallel_run(to_do, realizations= 1, keep_in = 0):
     run_list = [(D, r < keep_in) for r in range(realizations) for D in to_do]
     #print(f"We have {mp.cpu_count()} CPUs")
     #pool = mp.Pool(mp.cpu_count())
-    print(f"Starting execution of {len(run_list)} runs", flush=True)
+    print("Starting execution of " +str(len(run_list)) +" runs", flush=True)
     rows = list(p_umap(run,run_list))
     #rows = list(pool.map(run_, run_list))
     print("done", flush=True)
@@ -160,7 +160,7 @@ def main():
     print("Saving split parts", flush=True)
     i = 1
     for start in range(0, data.shape[0], chunk_size):
-        print(f"Saving pickle {i}", flush = True)
+        print("Saving pickle " + str(i), flush = True)
         temp = data.iloc[start:start + chunk_size]
         fname = args.savename+"_"+str(i)+".zip"
         temp.to_pickle(fname)
