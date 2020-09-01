@@ -111,7 +111,7 @@ def run_(T):
     T[0]["verbose"] = False # no printouts when running in parallel
     df, summary,model =  run(T[0],T[1])
     summary["model"] = model
-    return summary
+    return summary.to_dict()
 
 def parallel_run(to_do, realizations= 1, keep_in = 0):
     """Get list of dictionaries of model and run parameters to run,  run each given number of realizations in parallel
