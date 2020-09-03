@@ -153,6 +153,11 @@ def run_tti_sim(model, T,
                         for groupName  in model.nodeGroupData:
                             groupData = model.nodeGroupData[groupName]
                             d[groupName+"/"+att] = groupData[att][model.tidx]
+            d["overallInfected"] = model.numNodes - model.numS[model.tidx] # total number of people infect (initial - susceptible)
+            if (model.nodeGroupData):
+                for groupName in model.nodeGroupData:
+                    groupData = model.nodeGroupData[groupName]
+                    d[groupName + "/overallInfected"] = len(groupData['nodes']) - groupData['numS'][model.tidx]
             log(d)
 
 
