@@ -19,6 +19,9 @@ def run_tti_sim(model, T,
                 isolation_lag_symptomatic=1, isolation_lag_positive=1, isolation_lag_contact=0, isolation_groups=None,
                 cadence_testing_days=None, cadence_cycle_length=28, temporal_falseneg_rates=None,
                 runTillEnd = False, # True: don't stop simulation if number of infected & isolated is zero, since more external infections may be introduced later
+                fraction_of_pool = False,
+                # True: number of daily tests is measured as fraction of eligible pool
+                # False (default): - measured as fraction of original number of nodes
                 test_priority = 'random',
                 # test_priority: how to to choose which nodes to test:
                 # 'random' - use test budget for random fraction of eligible population, 'last_tested' - sort according to the time passed since testing (breaking ties randomly)
@@ -214,6 +217,23 @@ def run_tti_sim(model, T,
                 nodeTestedStatuses               = model.tested.flatten()
                 nodeTestedInCurrentStateStatuses = model.testedInCurrentState.flatten()
                 nodePositiveStatuses             = model.positive.flatten()
+
+                log({"PositveStatuses" : sum(nodePositiveStatuses),
+                     "TestedStatuses" : sum(nodeTestedStatuses),
+                     "TestedInCurrentStateStatuses" : sum(nodeTestedInCurrentStateStatuses)
+                     })
+
+                # number of people that can be tested
+                poolSize =  numpy.sum((nodePositiveStatuses==False)
+                                    & (nodeStates != model.R)
+                                    & (nodeStates != model.Q_R)
+                                    & (nodeStates != model.H)
+                                    & (nodeStates != model.F))
+                log({"poolSize": poolSize})
+                if fraction_of_pool:
+                    tests_per_day = int(model.numNodes * poolSize)
+                    max_tracing_tests_per_day = int(tests_per_day * max_pct_tests_for_traces)
+                    max_symptomatic_tests_per_day = int(tests_per_day * max_pct_tests_for_symptomatics)
 
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
