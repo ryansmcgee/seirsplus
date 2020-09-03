@@ -97,8 +97,8 @@ def run(params_, keep_model = False):
             run_params[k] = v
         else:
             desc[k] = v
-    desc.update({key : str(val) for key,val in model_params.items() })
-    desc.update({key : str(val) for key,val in run_params.items() })
+    desc.update({key : val for key,val in model_params.items() })
+    desc.update({key : val for key,val in run_params.items() })
     model = ExtSEIRSNetworkModel(**model_params)
     hist = collections.OrderedDict()
     run_tti_sim(model, history=hist, **run_params)
