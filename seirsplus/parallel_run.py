@@ -12,7 +12,7 @@ from .networks import *
 from sim_loops import *
 from utilities import *
 import collections
-
+import random
 
 import pickle
 import inspect
@@ -87,7 +87,7 @@ def run(params_, keep_model = False):
 
     if ('G_Q' not in params) or (not params['G_Q']):
         params['G_Q'] = networkx.classes.function.create_empty_copy(params["G"]) # default quarantine graph is empty
-    desc= {}
+    desc= { "run_id" : random.choice(string.ascii_lowercase,8) } # unique id to help in aggregating
     model_params = {}
     run_params = {}
     for k, v in params.items():
@@ -97,8 +97,8 @@ def run(params_, keep_model = False):
             run_params[k] = v
         else:
             desc[k] = v
-    desc.update({key : val for key,val in model_params.items() })
-    desc.update({key : val for key,val in run_params.items() })
+    desc.update({key : make_compact(val) for key,val in model_params.items() })
+    desc.update({key : make_compact(val) for key,val in run_params.items() })
     model = ExtSEIRSNetworkModel(**model_params)
     hist = collections.OrderedDict()
     run_tti_sim(model, history=hist, **run_params)

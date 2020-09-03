@@ -93,8 +93,23 @@ try:
 
 
 
-
-
+    def make_compact(val):
+        """Take a potentially object and reduce it to smaller for logging.
+        If the object is number - return it
+        If the object is a long list or ndarray of numbers - return its average
+        Otherwise, stringify it
+        If the object is a string - return its first 30 characters
+        """
+        if isinstance(val, (int, float, numpy.number)):
+            return val
+        if isinstance(val, numpy.ndarray):
+            return val.flatten().mean()
+        if isinstance(val, (list, tuple)):
+            if len(val)<5:
+                return val
+            if isinstance(val[0], (int, float, numpy.number)):
+                return sum(val) / len(val)
+        return str(val)[:30]
 
 
     def hist2df(history , **kwargs):
@@ -141,12 +156,7 @@ try:
 
         if kwargs:
             for key,val in kwargs.items():
-                if isinstance(val,numpy.ndarray):
-                    val = val.mean()
-                elif isinstance(val,(list,tuple)) and (len(val)>5) and isinstance(val[0], (int, float, numpy.number)):
-                    val = sum(val)/len(val)
-                elif isinstance(val,str):
-                    val = val[:30]
+                val = make_compact(val)
                 df[key] = val
                 summary[key] = val
         return df, summary
