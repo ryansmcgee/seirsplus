@@ -231,7 +231,7 @@ def run_tti_sim(model, T,
                                     & (nodeStates != model.F))
                 log({"poolSize": poolSize})
                 if fraction_of_pool:
-                    tests_per_day = int(model.numNodes * poolSize)
+                    tests_per_day = int(poolSize * pct_tested_per_day)
                     max_tracing_tests_per_day = int(tests_per_day * max_pct_tests_for_traces)
                     max_symptomatic_tests_per_day = int(tests_per_day * max_pct_tests_for_symptomatics)
 
