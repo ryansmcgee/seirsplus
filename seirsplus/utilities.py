@@ -106,8 +106,10 @@ try:
         L = [{'time': t, **d} for t, d in history.items()]
         n = len(L)
         df = pd.DataFrame(L)
-        df = df.fillna(0)
         df['interval_length'] = (df['time'] - df['time'].shift(1)).fillna(0)
+        if 'numPositive' in df.columns:
+            df['overallPositive'] = df['numPositive'].cumsum()
+        df = df.fillna(0)
         df.set_index('time',inplace=True)
         df.sort_index(inplace=True)
         summary = summarize(df)
@@ -134,15 +136,17 @@ try:
             summary2 = summarize(temp)
             summary2.rename({col: col+"/1st" for col in summary2.index }, inplace=True)
             summary = summary.append(summary2)
-        summary.append(pd.Series([firstPositiveTestTime, test_lag, detectionTime],
+        summary = summary.append(pd.Series([firstPositiveTestTime, test_lag, detectionTime],
                                   index= ['firstPositiveTestTime', 'test_lag', 'detectionTime']))
 
         if kwargs:
             for key,val in kwargs.items():
                 if isinstance(val,numpy.ndarray):
                     val = val.mean()
-                elif isinstance(val,list) and val and isinstance(val[0],(int,float)):
+                elif isinstance(val,(list,tuple)) and (len(val)>5) and isinstance(val[0], (int, float, numpy.number)):
                     val = sum(val)/len(val)
+                elif isinstance(val,str):
+                    val = val[:30]
                 df[key] = val
                 summary[key] = val
         return df, summary
