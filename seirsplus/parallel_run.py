@@ -20,6 +20,7 @@ import networkx
 import argparse
 import string
 
+
 try:
     from p_tqdm import p_umap # https://github.com/swansonk14/p_tqdm
 except ImportError:
@@ -88,7 +89,7 @@ def run(params_, keep_model = False):
 
     if ('G_Q' not in params) or (not params['G_Q']):
         params['G_Q'] = networkx.classes.function.create_empty_copy(params["G"]) # default quarantine graph is empty
-    desc= { "run_id" : random.choice(string.ascii_lowercase,8) } # unique id to help in aggregating
+    desc= { "run_id" : random.choices(string.ascii_lowercase,k=8) } # unique id to help in aggregating
     model_params = {}
     run_params = {}
     for k, v in params.items():
