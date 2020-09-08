@@ -91,7 +91,6 @@ try:
         summary = temp.agg([last, numpy.sum])
         summary = summary.stack()
         summary.index = ['/'.join(reversed(col)).strip() for col in summary.index.values]
-        print(summary.index)
         summary.drop(todrop,inplace=True)
         summary.rename({col+"/scaled/sum": col+"/average" for col in orig_cols},inplace=True)
         return summary
