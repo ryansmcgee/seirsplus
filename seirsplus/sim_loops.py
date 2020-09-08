@@ -234,7 +234,7 @@ def run_tti_sim(model, T,
                 if budget_policy:
                     tests_per_day, max_tracing_tests_per_day, max_symptomatic_tests_per_day = budget_policy(
                         model,
-                        hist,
+                        history,
                         poolSize=poolSize,
                         pct_tested_per_day = pct_tested_per_day,
                         max_pct_tests_for_traces = max_pct_tests_for_traces,
