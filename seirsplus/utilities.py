@@ -85,12 +85,13 @@ try:
             tcol = temp[['time',col]].dropna()
             lengths = (tcol['time'] - tcol['time'].shift(1)).fillna(0)
             total  = sum(lengths)
-            temp.loc[col+"/scaled"] = tcol[col] * lengths / total if total else 0
+            temp = temp.assign(**{col+"/scaled": tcol[col] * lengths / total if total else 0})
             todrop.append(col+"/scaled/last")
         temp = temp.fillna(0)
         summary = temp.agg([last, numpy.sum])
         summary = summary.stack()
         summary.index = ['/'.join(reversed(col)).strip() for col in summary.index.values]
+        print(summary.index)
         summary.drop(todrop,inplace=True)
         summary.rename({col+"/scaled/sum": col+"/average" for col in orig_cols},inplace=True)
         return summary
