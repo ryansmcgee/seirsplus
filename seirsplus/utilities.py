@@ -84,7 +84,7 @@ try:
             len1 = temp[col].dropna().index
             len2 = temp[col].dropna().shift(1).index
             lengths = (len1-len2).fillna(0)
-            total  = lengths.astype(float).sum()
+            total  = sum(lengths)
             temp[col + "/scaled"] = (temp[col] * lengths / total) if total else 0
             todrop.append(col+"/scaled/last")
         summary = temp.agg([last, numpy.sum])
