@@ -19,9 +19,8 @@ def run_tti_sim(model, T,
                 isolation_lag_symptomatic=1, isolation_lag_positive=1, isolation_lag_contact=0, isolation_groups=None,
                 cadence_testing_days=None, cadence_cycle_length=28, temporal_falseneg_rates=None,
                 runTillEnd = False, # True: don't stop simulation if number of infected & isolated is zero, since more external infections may be introduced later
-                fraction_of_pool = False,
-                # True: number of daily tests is measured as fraction of eligible pool
-                # False (default): - measured as fraction of original number of nodes
+                budget_policy = None,
+                # policy to adjust number of daily tests based on initial values and current  circumstances
                 test_priority = 'random',
                 # test_priority: how to to choose which nodes to test:
                 # 'random' - use test budget for random fraction of eligible population, 'last_tested' - sort according to the time passed since testing (breaking ties randomly)
@@ -121,6 +120,8 @@ def run_tti_sim(model, T,
 
     model.tmax  = T
     model.runTillEnd = runTillEnd
+    if not hasattr(model,"lastPositive"):
+        model.lastPositive = -1
     running     = True
 
 
@@ -230,10 +231,18 @@ def run_tti_sim(model, T,
                                     & (nodeStates != model.H)
                                     & (nodeStates != model.F))
                 log({"poolSize": poolSize})
-                if fraction_of_pool:
-                    tests_per_day = int(poolSize * pct_tested_per_day)
-                    max_tracing_tests_per_day = int(tests_per_day * max_pct_tests_for_traces)
-                    max_symptomatic_tests_per_day = int(tests_per_day * max_pct_tests_for_symptomatics)
+                if budget_policy:
+                    tests_per_day, max_tracing_tests_per_day, max_symptomatic_tests_per_day = budget_policy(
+                        model,
+                        hist,
+                        poolSize=poolSize,
+                        pct_tested_per_day = pct_tested_per_day,
+                        max_pct_tests_for_traces = max_pct_tests_for_traces,
+                        max_pct_tests_for_symptomatics = max_pct_tests_for_symptomatics)
+                log({"tests_per_day": tests_per_day,
+                     "max_tracing_tests_per_day" : max_tracing_tests_per_day,
+                     "max_symptomatic_tests_per_day" : max_symptomatic_tests_per_day
+                })
 
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -505,6 +514,8 @@ def run_tti_sim(model, T,
                 log({"newTracingPool" : len(newTracingPool)})
                 tracingPoolQueue.append(newTracingPool)
 
+                if numPositive:
+                    model.lastPositive = model.t
 
                 vprint("\t"+str(numTested_symptomatic) +"\ttested due to symptoms  [+ "+str(numPositive_symptomatic)+" positive (%.2f %%) +]" % (numPositive_symptomatic/numTested_symptomatic*100 if numTested_symptomatic>0 else 0))
                 vprint("\t"+str(numTested_tracing)     +"\ttested as traces        [+ "+str(numPositive_tracing)+" positive (%.2f %%) +]" % (numPositive_tracing/numTested_tracing*100 if numTested_tracing>0 else 0))
@@ -565,3 +576,36 @@ def run_tti_sim(model, T,
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Policy generation functions
+
+def hammer_and_dance(lag=1,hammer_wait = 7, test_schedule = [0], frac_of_pool=True):
+    """Returns a budget policy function that will test everyone if there is a positive test result.
+    Otherwise go by the other budget parameters - if frac_of_pool=True then testing budget depends on eligible pool and
+    not on original number of nodes"""
+    def test_policy(model, hist, poolSize, pct_tested_per_day, max_pct_tests_for_symptomatics):
+        if not hasattr(model,"lastHammer"):
+            model.lastHammer = -hammer_wait
+        if (model.lastPositive>=0):
+            detectionTime = model.lastPositive + lag
+            if model.lastHammer < detectionTime - hammer_wait:
+                model.lastHammer = detectionTime
+                model.lastSchedule = [detectionTime + offset for offset in test_schedule]
+            for i,t in enumerate(model.lastSchedule):
+                if int(model.t) == int(t):
+                    model.lastSchedule[i] = -1
+                    # test everyone
+                    return model.numNodes,model.numNodes,model.numNodes
+
+        N = poolSize if frac_of_pool else model.numNodes
+        tests_per_day = int(N * pct_tested_per_day)
+        max_tracing_tests_per_day = int(tests_per_day * max_pct_tests_for_traces)
+        max_symptomatic_tests_per_day = int(tests_per_day * max_pct_tests_for_symptomatics)
+        return tests_per_day, max_tracing_tests_per_day, max_symptomatic_tests_per_day
+    return test_policy
+
+def stop_at_detection(lag=1):
+    """Returns stopping policy function that stops after the first positive result"""
+    def policy(model, hist):
+        # stop if there was a positive result after lag time
+        return (model.lastPositive>=0) and (model.lastPositive+lag <= model.t)
+    return policy
