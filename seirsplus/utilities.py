@@ -144,7 +144,7 @@ try:
         temp = df[df.numPositive>0]
         row = None
         if len(temp)>0:
-            firstPositiveTestTime = temp['time'][0]
+            firstPositiveTestTime = temp['time'].iloc[0]
             detectionTime = firstPositiveTestTime + test_lag
         temp = df[df['time']<= detectionTime]
         if len(temp):
