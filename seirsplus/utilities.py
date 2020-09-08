@@ -81,10 +81,11 @@ try:
         orig_cols = list(df.columns)
         todrop = []
         for col in orig_cols:
-            tempcol = temp[col].dropna().reset_index(name=col)
-            lengths = (tempcol.iloc[:,0] - tempcol.shift(1).iloc[:,0]).fillna(0)
+            if col == 'time': continue
+            tcol = temp[['time',col]].dropna()
+            lengths = (tcol['time'] - tcol['time'].shift(1)).fillna(0)
             total  = sum(lengths)
-            temp[col+"/scaled"] = tempcol[col] * lengths / total if total else 0
+            temp[col+"/scaled"] = tcol[col] * lengths / total if total else 0
             todrop.append(col+"/scaled/last")
         summary = temp.agg([last, numpy.sum])
         summary = summary.stack()
@@ -125,8 +126,6 @@ try:
         df = pd.DataFrame(L)
         if 'numPositive' in df.columns:
             df['overallPositive'] = df['numPositive'].fillna(0).cumsum()
-        df.set_index('time',inplace=True)
-        df.sort_index(inplace=True)
         summary = summarize(df)
 
         # add to summary statistics up to first detection
@@ -144,9 +143,9 @@ try:
         temp = df[df.numPositive>0]
         row = None
         if len(temp)>0:
-            firstPositiveTestTime = temp.index[0]
+            firstPositiveTestTime = temp['time'][0]
             detectionTime = firstPositiveTestTime + test_lag
-        temp = df[df.index<= detectionTime]
+        temp = df[df['time']<= detectionTime]
         if len(temp):
             summary2 = summarize(temp)
             summary2.rename({col: col+"/1st" for col in summary2.index }, inplace=True)
