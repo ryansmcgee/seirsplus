@@ -81,7 +81,9 @@ try:
         orig_cols = list(df.columns)
         todrop = []
         for col in orig_cols:
-            lengths = (temp[col].dropna().index - temp[col].dropna().index.shift(1)).fillna(0)
+            len1 = temp[col].dropna().index
+            len2 = temp[col].dropna().shift(1).index
+            lengths = (len1-len2).fillna(0)
             total  = lengths.sum()
             temp[col + "/scaled"] = (temp[col] * lengths / total) if total else 0
             todrop.append(col+"/scaled/last")
