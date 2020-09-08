@@ -582,7 +582,7 @@ def hammer_and_dance(lag=1,hammer_wait = 7, test_schedule = [0], frac_of_pool=Tr
     """Returns a budget policy function that will test everyone if there is a positive test result.
     Otherwise go by the other budget parameters - if frac_of_pool=True then testing budget depends on eligible pool and
     not on original number of nodes"""
-    def test_policy(model, hist, poolSize, pct_tested_per_day, max_pct_tests_for_symptomatics):
+    def test_policy(model, hist, poolSize, pct_tested_per_day,  max_pct_tests_for_symptomatics, max_pct_tests_for_traces):
         if not hasattr(model,"lastHammer"):
             model.lastHammer = -hammer_wait
         if (model.lastPositive>=0):
