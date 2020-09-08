@@ -78,11 +78,12 @@ try:
     def summarize(df):
         """Return a Series with last value, sum of values, and weighted average of values"""
         temp = df.copy()
-        tmax = df['interval_length'].sum()
         orig_cols = list(df.columns)
         todrop = []
         for col in orig_cols:
-            temp[col + "/scaled"] = (temp[col] * temp['interval_length'] / tmax) if tmax else 0
+            lengths = (temp[col].dropna().index - temp[col].dropna().index.shift(1)).fillna(0)
+            total  = lengths.sum()
+            temp[col + "/scaled"] = (temp[col] * lengths / total) if total else 0
             todrop.append(col+"/scaled/last")
         summary = temp.agg([last, numpy.sum])
         summary = summary.stack()
@@ -121,10 +122,8 @@ try:
         L = [{'time': t, **d} for t, d in history.items()]
         n = len(L)
         df = pd.DataFrame(L)
-        df['interval_length'] = (df['time'] - df['time'].shift(1)).fillna(0)
         if 'numPositive' in df.columns:
-            df['overallPositive'] = df['numPositive'].cumsum()
-        df = df.fillna(0)
+            df['overallPositive'] = df['numPositive'].fillna(0).cumsum()
         df.set_index('time',inplace=True)
         df.sort_index(inplace=True)
         summary = summarize(df)
