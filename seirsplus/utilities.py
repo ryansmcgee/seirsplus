@@ -180,7 +180,7 @@ try:
         ax.get_xaxis().set_tick_params(direction='out')
         ax.xaxis.set_ticks_position('bottom')
         ax.set_xticks(numpy.arange(1, len(labels) + 1))
-        ax.set_xticklabels(llabels, rotation=45, ha='right')
+        ax.set_xticklabels(labels, rotation=45, ha='right')
         ax.set_xlim(0.25, len(labels) + 0.75)
         ax.set_ylabel(ylabel)
         if title:
