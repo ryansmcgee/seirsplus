@@ -113,7 +113,8 @@ try:
                 return val
             if isinstance(val[0], (int, float, numpy.number)):
                 return sum(val) / len(val)
-        return str(val)[:30]
+        return str(val)[:64]
+
 
 
     def hist2df(history , **kwargs):
