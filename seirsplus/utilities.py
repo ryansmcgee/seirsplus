@@ -185,17 +185,17 @@ try:
         if title:
             ax.set_title(title)
         for tick in ax.get_xticklabels():
-            tick.set_rotation(45)
+            tick.set_rotation(45,ha="right")
         plt.show()
 
 
-    def show_violins(data, field, groupby = 'variant', ylabel=None,title=""):
+    def show_violins(data, field, groupby = 'variant', ylabel=None,title="", key = None):
         """Show 'violin graphs' of a certain field according to different variants"""
         plots = []
         labels = []
         if ylabel is None:
             ylabel = field
-        for v in sorted(data[groupby].unique()):
+        for v in sorted(data[groupby].unique(), key=key):
             plots.append(data[data[groupby] == v][field])
             labels.append(v)
         violin_plot(plots, labels, ylabel=ylabel, title=title)
