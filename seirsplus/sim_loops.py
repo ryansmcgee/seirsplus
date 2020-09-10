@@ -205,7 +205,7 @@ def run_tti_sim(model, T,
             currentPctInfected = model.total_num_infected()[model.tidx]/model.numNodes
             log({"currentNumInfected": currentNumInfected , "cadenceDayNumber": cadenceDayNumber })
 
-            if(currentPctInfected >= intervention_start_pct_infected and not interventionOn):
+            if(currentPctInfected >= intervention_start_pct_infected) and (not interventionOn):
                 interventionOn        = True
                 interventionStartTime = model.t
 
