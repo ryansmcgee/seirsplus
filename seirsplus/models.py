@@ -1979,7 +1979,7 @@ class ExtSEIRSNetworkModel():
         # Quarantine Adjacency matrix:
         if type(self.G_Q)==numpy.ndarray:
             self.A_Q = scipy.sparse.csr_matrix(self.G_Q)
-        elif type(self.G_Q)==networkx.classes.graph.Graph:
+        elif (type(self.G_Q)==networkx.classes.graph.Graph) or (type(self.G_Q)==networkx.classes.digraph.DiGraph):
             self.A_Q = networkx.adj_matrix(self.G_Q) # adj_matrix gives scipy.sparse csr_matrix
         else:
             raise BaseException("Input an adjacency matrix or networkx object only.")
