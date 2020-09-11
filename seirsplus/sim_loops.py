@@ -179,15 +179,16 @@ def run_tti_sim(model, T,
         if(int(model.t)!=int(timeOfLastIntroduction)):
 
             timeOfLastIntroduction = model.t
-            if introduction_days:
-                if int(model.t) in introduction_days:
-                    numNewExposures = 1 # introduce a single exposure in that day
+            baseline_exposure = 0
+            if introduction_days and (int(model.t) in introduction_days):
+                vprint("Introduced new exposure at time", model.t)
+                baseline_exposure = 1 # introduce a single exposure in that day
             if isinstance(average_introductions_per_day,dict):
                 numNewExposures = {}
                 for group,num in average_introductions_per_day.items():
-                    numNewExposures[group] = numpy.random.poisson(lam=num)
+                    numNewExposures[group] = baseline_exposure+numpy.random.poisson(lam=num)
             else:
-                numNewExposures = numpy.random.poisson(lam=average_introductions_per_day)
+                numNewExposures = baseline_exposure+numpy.random.poisson(lam=average_introductions_per_day)
             
             model.introduce_exposures(num_new_exposures=numNewExposures)
             log({"numNewExposures": numNewExposures})

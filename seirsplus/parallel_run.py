@@ -102,6 +102,8 @@ def run(params_, keep_model = False):
             desc[k] = v
     desc.update({key : make_compact(val) for key,val in model_params.items() })
     desc.update({key : make_compact(val) for key,val in run_params.items() })
+    if ("verbose" in params_) and params_["verbose"]:
+        print("Parameters :", desc)
     model = ExtSEIRSNetworkModel(**model_params)
     hist = collections.OrderedDict()
     run_tti_sim(model, history=hist, **run_params)
