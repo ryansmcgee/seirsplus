@@ -19,6 +19,7 @@ import inspect
 import networkx
 import argparse
 import string
+from networkx import *
 
 
 try:
