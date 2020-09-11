@@ -110,7 +110,7 @@ try:
             return val.flatten().mean()
         if isinstance(val, (list, tuple)):
             if len(val)<5:
-                return val
+                return str(val)
             if isinstance(val[0], (int, float, numpy.number)):
                 return sum(val) / len(val)
         return str(val)[:64]
