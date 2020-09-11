@@ -18,6 +18,7 @@ def run_tti_sim(model, T,
                 isolation_compliance_positive_contact=[None], isolation_compliance_positive_contactgroupmate=[None],
                 isolation_lag_symptomatic=1, isolation_lag_positive=1, isolation_lag_contact=0, isolation_groups=None,
                 cadence_testing_days=None, cadence_cycle_length=28, temporal_falseneg_rates=None,
+                introduction_days = [], # introduce a single exposure in these days
                 runTillEnd = False, # True: don't stop simulation if number of infected & isolated is zero, since more external infections may be introduced later
                 budget_policy = None,
                 # policy to adjust number of daily tests based on initial values and current  circumstances
@@ -62,6 +63,7 @@ def run_tti_sim(model, T,
     isolation_compliance_positive_groupmate = sample(isolation_compliance_positive_groupmate)
     isolation_compliance_positive_contact = sample(isolation_compliance_positive_contact)
     isolation_compliance_positive_contactgroupmate = sample(isolation_compliance_positive_contactgroupmate)
+
 
 
 
@@ -177,7 +179,9 @@ def run_tti_sim(model, T,
         if(int(model.t)!=int(timeOfLastIntroduction)):
 
             timeOfLastIntroduction = model.t
-
+            if introduction_days:
+                if int(model.t) in introduction_days:
+                    numNewExposures = 1 # introduce a single exposure in that day
             if isinstance(average_introductions_per_day,dict):
                 numNewExposures = {}
                 for group,num in average_introductions_per_day.items():
@@ -609,3 +613,8 @@ def stop_at_detection(lag=1):
         # stop if there was a positive result after lag time
         return (model.lastPositive>=0) and (model.lastPositive+lag <= model.t)
     return policy
+
+
+def single_introduction(end):
+    """Single return a single introduction day for the introduction_days parameter"""
+    return [random.randint(0,end)]
