@@ -181,7 +181,7 @@ def run_tti_sim(model, T,
             timeOfLastIntroduction = model.t
             baseline_exposure = 0
             if introduction_days and (int(model.t) in introduction_days):
-                vprint("Introduced new exposure at time", model.t)
+                vprint("introduced new exposure at time "+ str(model.t))
                 baseline_exposure = 1 # introduce a single exposure in that day
             if isinstance(average_introductions_per_day,dict):
                 numNewExposures = {}
