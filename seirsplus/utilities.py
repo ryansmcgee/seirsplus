@@ -163,7 +163,7 @@ try:
         return df, summary
 
 
-    def violin_plot(lists, labels, title="", ylabel=""):
+    def violin_plot(lists, labels, title="", ylabel="", xlabel=""):
         sns.set()
         fig, ax = plt.subplots(figsize=(16, 8))
 
@@ -183,6 +183,8 @@ try:
         ax.set_xticklabels(labels, rotation=45, ha='right')
         ax.set_xlim(0.25, len(labels) + 0.75)
         ax.set_ylabel(ylabel)
+        if xlabel:
+            ax.set_xlabel(xlabel)
         if title:
             ax.set_title(title)
         plt.show()

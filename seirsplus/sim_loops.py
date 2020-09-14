@@ -631,4 +631,5 @@ def test_frequency(frequency):
     testing_cadence = f"every {frequency}"
     offset = random.randint(0,frequency-1)
     cadence_testing_days = { testing_cadence : [offset+i for i in range(MAX_TIME) if (i % frequency ==0)]  }
-    return testing_cadence, cadence_testing_days
+    cadence_cycle_length = MAX_TIME
+    return testing_cadence, cadence_testing_days, cadence_cycle_length
