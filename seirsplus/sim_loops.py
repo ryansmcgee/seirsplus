@@ -582,6 +582,12 @@ def run_tti_sim(model, T,
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Policy generation functions
+def scale_to_pool(model, hist, poolSize, pct_tested_per_day,  max_pct_tests_for_symptomatics, max_pct_tests_for_traces):
+    N = poolSize
+    tests_per_day = int(N * pct_tested_per_day)
+    max_tracing_tests_per_day = int(tests_per_day * max_pct_tests_for_traces)
+    max_symptomatic_tests_per_day = int(tests_per_day * max_pct_tests_for_symptomatics)
+    return tests_per_day, max_tracing_tests_per_day, max_symptomatic_tests_per_day
 
 def hammer_and_dance(lag=1,hammer_wait = 7, test_schedule = [0], frac_of_pool=True):
     """Returns a budget policy function that will test everyone if there is a positive test result.
@@ -619,3 +625,10 @@ def stop_at_detection(lag=1):
 def single_introduction(end):
     """Single return a single introduction day for the introduction_days parameter"""
     return [random.randint(0,end)]
+
+def test_frequency(frequency):
+    MAX_TIME = 365
+    testing_cadence = f"every {frequency}"
+    offset = random.randint(0,frequency-1)
+    cadence_testing_days = { testing_cadence : [offset+i for i in range(MAX_TIME) if (i % frequency ==0)]  }
+    return testing_cadence, cadence_testing_days
