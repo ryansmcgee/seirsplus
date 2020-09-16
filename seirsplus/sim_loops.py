@@ -161,6 +161,7 @@ def run_tti_sim(model, T,
                             d[groupName+"/"+att] = groupData[att][model.tidx]
             d["numInfectious"] = sum( getattr(model,att)[model.tidx] for att in ["numI_pre","numI_sym","numI_asym"]) # number of infectionus non quaranteened people
             d["overallInfected"] = model.numNodes - model.numS[model.tidx] # total number of people infect (initial - susceptible)
+            d["numNodes"] = model.numNodes
             if (model.nodeGroupData):
                 for groupName in model.nodeGroupData:
                     groupData = model.nodeGroupData[groupName]
