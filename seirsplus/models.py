@@ -1093,13 +1093,17 @@ class SEIRSNetworkModel():
         if(isolate == True):
             if(self.X[node] == self.E):
                 self.X[node] = self.Q_E
+                self.timer_state = 0
             elif(self.X[node] == self.I):
                 self.X[node] = self.Q_I
+                self.timer_state = 0
         elif(isolate == False):
             if(self.X[node] == self.Q_E):
                 self.X[node] = self.E
+                self.timer_state = 0
             elif(self.X[node] == self.Q_I):
                 self.X[node] = self.I
+                self.timer_state = 0
         # Reset the isolation timer:
         self.timer_isolation[node] = 0
 
@@ -2622,8 +2626,6 @@ class ExtSEIRSNetworkModel():
                 # If the time to next event exceeds the max allowed interval,
                 # advance the system time by the max allowed interval,
                 # but do not execute any events (recalculate Gillespie interval/event next iteration)
-                print("WHOA NELLIE")
-                print(tau)
                 self.t += max_dt
                 self.timer_state += max_dt
                 return True
