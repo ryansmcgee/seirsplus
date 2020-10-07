@@ -2,7 +2,7 @@ from __future__ import division
 import numpy
 import scipy
 import networkx
-from .FARZ import *
+from . import FARZ
 from .models import *
 
 import matplotlib.pyplot as pyplot
