@@ -2,8 +2,8 @@ from __future__ import division
 import numpy
 import scipy
 import networkx
-import FARZ
-# from .models import *
+from .FARZ
+from .models import *
 
 import matplotlib.pyplot as pyplot
 
