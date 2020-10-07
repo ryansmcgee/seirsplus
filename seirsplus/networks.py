@@ -2,8 +2,8 @@ from __future__ import division
 import numpy
 import scipy
 import networkx
-from . import FARZ
-from .models import *
+import FARZ
+# from .models import *
 
 import matplotlib.pyplot as pyplot
 
@@ -605,6 +605,155 @@ def generate_demographic_contact_network(N, demographic_data, layer_generator='F
     return graphs, individualAgeBracketLabels, households
 
 
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+def generate_K5_school_contact_network(num_grades, num_classrooms_per_grade, class_sizes, 
+                                        student_household_connections=True, 
+                                        num_staff=0, num_teacher_staff_communities=1, teacher_staff_degree=10,
+                                        farz_params={'alpha':5.0, 'gamma':5.0, 'beta':0.5, 'r':1, 'q':0.0, 'phi':10, 
+                                                     'b':0, 'epsilon':1e-6, 'directed': False, 'weighted': False},):
+
+    grades_studentIDs     = {}
+    classrooms_studentIDs = {}
+    classrooms_teacherIDs = {}
+    node_labels           = []
+
+    ######################################
+    # Generate the student network layer #
+    ######################################
+
+    gradeSubnetworks = []
+
+    curStudentID = 0
+    curClassID   = 0
+
+    for g in range(num_grades):
+
+        numClassrooms = num_classrooms_per_grade[g] if isinstance(num_classrooms_per_grade, list) else num_classrooms_per_grade
+        classSizes    = class_sizes[g] if isinstance(class_sizes, list) else class_sizes
+
+        classroomSubnetworks = []
+
+        grades_studentIDs[g] = []
+
+        for c in range(numClassrooms):
+
+            classSize = classSizes[c] if isinstance(classSizes, list) else classSizes
+
+            # Create a strongly connected subnetwork of student nodes representing each classroom:
+            classroomSubnetwork = numpy.ones(shape=(classSize, classSize))
+            numpy.fill_diagonal(classroomSubnetwork, 0)
+
+            classroomSubnetworks.append(classroomSubnetwork)
+
+            classroom_studentIDs = list(range(curStudentID, curStudentID+classSize))
+            classrooms_studentIDs[curClassID] = classroom_studentIDs
+            grades_studentIDs[g] += classroom_studentIDs
+
+            curStudentID += classSize
+            curClassID   += 1
+
+            node_labels  += ['student']*classSize
+
+        gradeSubnetwork = scipy.sparse.block_diag(classroomSubnetworks)
+
+        gradeSubnetworks.append(gradeSubnetwork)
+
+    studentNetwork = scipy.sparse.block_diag(gradeSubnetworks)
+
+
+    ############################################
+    # Generate the teacher/staff network layer #
+    ############################################
+
+    totalNumStudents   = curStudentID
+    totalNumClassrooms = curClassID
+
+    numTeachers = totalNumClassrooms
+    numStaff    = num_staff
+
+    # Label all teacher/staff nodes as 'staff' for now, will overwrite teacher nodes with 'teacher'
+    node_labels += ['teacher']*numTeachers
+    node_labels += ['staff']*numStaff
+
+    # Create the teacher/staff subnetwork, empty for now:
+    # teacherstaffNetwork = numpy.zeros(shape=(numTeachers+numStaff, numTeachers+numStaff))
+    farz_params.update({'n':numTeachers+numStaff, 'k':num_teacher_staff_communities, 'm':teacher_staff_degree})
+    teacherstaffNetwork, teacherstaffCommunityLabels = FARZ.generate(farz_params=farz_params)
+
+    # Combine the teacher/staff network block with the student network block:
+    schoolNetwork = scipy.sparse.block_diag([studentNetwork, networkx.adjacency_matrix(teacherstaffNetwork)])
+
+    # Generate a networkx Graph for the overall network:
+    schoolNetwork = networkx.Graph(schoolNetwork)
+
+    # The first <numClassrooms> number of teacher/staff nodes will be assigned as teachers, the rest assumed to be staff
+
+    #####################################################
+    # Connect teachers with students in their classroom #
+    #####################################################
+
+    curTeacherID = curStudentID # pick up teacher IDs where student IDs left off
+    for classroomID, studentIDs in classrooms_studentIDs.items():
+        for studentID in studentIDs:
+            schoolNetwork.add_edge(curTeacherID, studentID)
+            print("add_edge("+str(curTeacherID)+", "+str(studentID)+")")
+            classrooms_teacherIDs[classroomID] = curTeacherID
+        curTeacherID += 1
+
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Convenience for visualization:
+    networkx.set_edge_attributes(schoolNetwork, 1, 'layout_weight')
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    ##############################################
+    # Connect students within the same household #
+    ##############################################
+    if(student_household_connections):
+        
+        # Using 2016 (latest) census data: https://www2.census.gov/programs-surveys/demo/tables/families/2016/cps-2016/tabf1-all.xls
+        # Of US households with at least 1 child age 6-11 (K-5 age)...
+        #   11,295 (69%) have 1 child age 6-11
+        #   4,277  (26%) have 2 children age 6-11
+        #   809    (5%)  have 3+ children age 6-11
+
+        # For each student, determine how many other K-5 students are in their household,
+        # and strongly connect K-5 students in the same household.
+        studentsNeedingHousehold = list(range(totalNumStudents))
+        numpy.random.shuffle(studentsNeedingHousehold)
+
+        while(len(studentsNeedingHousehold) > 0):
+
+            focalStudentID = studentsNeedingHousehold.pop()
+
+            numK5Housemates = min( numpy.random.choice([0, 1, 2], p=[0.69, 0.26, 0.05]), len(studentsNeedingHousehold) )
+
+            # Draw another student from the school, ensuring housemates (siblings) aren't in same grade:
+            k5Housemates = []
+            attempts     = 0
+            while(len(k5Housemates) < numK5Housemates and attempts < 10):
+                otherStudentID    = studentsNeedingHousehold.pop()
+                focalStudentGrade = [key for key, value in grades_studentIDs.items() if focalStudentID in value][0]
+                otherStudentGrade = [key for key, value in grades_studentIDs.items() if otherStudentID in value][0]
+                if(focalStudentGrade != otherStudentGrade):
+                    # Create an edge between focal student and their K-5 housemates:
+                    schoolNetwork.add_edge(focalStudentID, otherStudentID, layout_weight=0)
+                    k5Housemates.append(otherStudentID)
+                else:
+                    # Put this otherStudent back in the studentsNeedingHousehold list:
+                    studentsNeedingHousehold.append(otherStudentID)
+                attempts += 1
+            # If 3 students in household, connect the 2nd and 3rd drawn housemates
+            if(len(k5Housemates) == 2):
+                schoolNetwork.add_edge(k5Housemates[0], k5Housemates[-1], layout_weight=0)
+
+    return schoolNetwork, grades_studentIDs, classrooms_studentIDs, classrooms_teacherIDs, node_labels
+
+
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 def household_country_data(country):
 
     if(country=='US'):
@@ -693,6 +842,31 @@ def plot_degree_distn(graph, max_degree=None, show=True, use_seaborn=True):
 
 
 
+
+
+
+
+# G, b, c, d, e = generate_K5_school_contact_network(num_grades=6, num_classrooms_per_grade=4, class_sizes=20, 
+#                                                 student_household_connections=True, 
+#                                                 num_staff=24, num_teacher_staff_communities=3, teacher_staff_degree=5)
+# print(G)
+# print()
+# print(b)
+# print()
+# print(c)
+# print()
+# print(d)
+# print()
+# print(e)
+# print()
+
+# node_colors = ['tab:green' if label=='teacher' else 'tab:orange' if label=='staff' else 'tab:blue' for label in e]
+# print(node_colors)
+
+# networkx.draw(G, pos=networkx.spring_layout(G, weight='layout_weight'), node_size=20, node_color=node_colors, edge_color='lightgray', alpha=0.5)
+# pyplot.show()
+
+# print(G.edges(data=True))
 
 
 
