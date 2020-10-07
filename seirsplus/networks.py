@@ -846,28 +846,6 @@ def plot_degree_distn(graph, max_degree=None, show=True, use_seaborn=True):
 
 
 
-# G, b, c, d, e = generate_K5_school_contact_network(num_grades=6, num_classrooms_per_grade=4, class_sizes=20, 
-#                                                 student_household_connections=True, 
-#                                                 num_staff=24, num_teacher_staff_communities=3, teacher_staff_degree=5)
-# print(G)
-# print()
-# print(b)
-# print()
-# print(c)
-# print()
-# print(d)
-# print()
-# print(e)
-# print()
-
-# node_colors = ['tab:green' if label=='teacher' else 'tab:orange' if label=='staff' else 'tab:blue' for label in e]
-# print(node_colors)
-
-# networkx.draw(G, pos=networkx.spring_layout(G, weight='layout_weight'), node_size=20, node_color=node_colors, edge_color='lightgray', alpha=0.5)
-# pyplot.show()
-
-# print(G.edges(data=True))
-
 
 
 
