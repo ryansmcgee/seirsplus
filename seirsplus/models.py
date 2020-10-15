@@ -1967,7 +1967,7 @@ class ExtSEIRSNetworkModel():
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def update_parameters(self):
-        self.skip_pre = parameters['skip_pre'] # skip from pre-symptomatic state to H/R directly
+        self.skip_pre = self.parameters['skip_pre'] # skip from pre-symptomatic state to H/R directly
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Model graphs:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
