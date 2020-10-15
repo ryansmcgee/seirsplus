@@ -1724,7 +1724,8 @@ class ExtSEIRSNetworkModel():
             initQ_sym       Initial number of isolated infectious symptomatic individuals
             initQ_asym      Initial number of isolated infectious asymptomatic individuals
             initQ_R         Initial number of isolated recovered individuals
-                            (all remaining nodes initialized susceptible)   
+                            (all remaining nodes initialized susceptible)
+            skip_pre        Skip from pre symptomatic state to H or R state
     """
     def __init__(self, G, beta, sigma, lamda, gamma, 
                     gamma_asym=None, eta=0, gamma_H=None, mu_H=0, alpha=1.0, xi=0, mu_0=0, nu=0, a=0, h=0, f=0, p=0,             
@@ -1735,7 +1736,7 @@ class ExtSEIRSNetworkModel():
                     initE=0, initI_pre=0, initI_sym=0, initI_asym=0, initH=0, initR=0, initF=0,        
                     initQ_S=0, initQ_E=0, initQ_pre=0, initQ_sym=0, initQ_asym=0, initQ_R=0,
                     o=0, prevalence_ext=0,
-                    transition_mode='exponential_rates', node_groups=None, store_Xseries=False, seed=None):
+                    transition_mode='exponential_rates', node_groups=None, store_Xseries=False, seed=None, skip_pre = False):
 
         if(seed is not None):
             numpy.random.seed(seed)
@@ -1759,7 +1760,7 @@ class ExtSEIRSNetworkModel():
                             'initH':initH, 'initR':initR, 'initF':initF, 
                             'initQ_S':initQ_S, 'initQ_E':initQ_E, 'initQ_pre':initQ_pre, 
                             'initQ_sym':initQ_sym, 'initQ_asym':initQ_asym, 'initQ_R':initQ_R,
-                            'o':o, 'prevalence_ext':prevalence_ext}
+                            'o':o, 'prevalence_ext':prevalence_ext, 'skip_pre':skip_pre }
         self.update_parameters()
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1880,6 +1881,15 @@ class ExtSEIRSNetworkModel():
                                 '_toS':         {'currentState':True,         'newState':self.S},
                             }
 
+
+        if self.skip_pre:
+            self.transitions.update(
+            {
+                'IPREtoH': {'currentState': self.I_pre, 'newState': self.H },
+                'IPREtoR': {'currentState': self.I_pre, 'newState': self.R }
+            }
+        )
+
         self.transition_mode = transition_mode
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1957,7 +1967,7 @@ class ExtSEIRSNetworkModel():
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def update_parameters(self):
-
+        self.skip_pre = parameters['skip_pre'] # skip from pre-symptomatic state to H/R directly
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Model graphs:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2355,6 +2365,12 @@ class ExtSEIRSNetworkModel():
 
             propensities_IPREtoIASYM = 1e5 * ((self.X==self.I_pre) & numpy.greater(self.timer_state, 1/self.lamda) & numpy.less(self.rand_a, self.a))
 
+            if self.skip_pre:
+                propensities_IPREtoISYM = numpy.zeros_like(propensities_StoE)
+                propensities_IPREtoASYM = numpy.zeros_like(propensities_StoE)
+                propensities_IPREtoR = 1e5 * ((self.X == self.I_pre) & numpy.greater(self.timer_state, 1 / self.gamma) & numpy.greater_equal( self.rand_h, self.h))
+                propensities_ISYMtoH = 1e5 * ( (self.X == self.I_pre) & numpy.greater(self.timer_state, 1 / self.eta) & numpy.less(self.rand_h, self.h))
+
             propensities_ISYMtoR     = 1e5 * ((self.X==self.I_sym) & numpy.greater(self.timer_state, 1/self.gamma) & numpy.greater_equal(self.rand_h, self.h))
 
             propensities_ISYMtoH     = 1e5 * ((self.X==self.I_sym) & numpy.greater(self.timer_state, 1/self.eta) & numpy.less(self.rand_h, self.h))
@@ -2401,6 +2417,12 @@ class ExtSEIRSNetworkModel():
 
             propensities_IPREtoIASYM = self.lamda * ((self.X==self.I_pre) & (numpy.less(self.rand_a, self.a)))
 
+            if self.skip_pre:
+                propensities_IPREtoISYM = numpy.zeros_like(propensities_StoE)
+                propensities_IPREtoASYM = numpy.zeros_like(propensities_StoE)
+                propensities_IPREtoR = self.gamma * ((self.X == self.I_pre) & (numpy.greater_equal(self.rand_h, self.h)))
+                propensities_IPREtoH = self.eta * ((self.X == self.I_pre) & (numpy.less(self.rand_h, self.h)))
+
             propensities_ISYMtoR     = self.gamma * ((self.X==self.I_sym) & (numpy.greater_equal(self.rand_h, self.h)))
 
             propensities_ISYMtoH     = self.eta * ((self.X==self.I_sym) & (numpy.less(self.rand_h, self.h)))
@@ -2438,18 +2460,21 @@ class ExtSEIRSNetworkModel():
             propensities__toS        = self.nu * (self.X!=self.F)
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-        propensities = numpy.hstack([propensities_StoE, propensities_EtoIPRE, propensities_IPREtoISYM, propensities_IPREtoIASYM,
-                                     propensities_ISYMtoR, propensities_ISYMtoH, propensities_IASYMtoR, propensities_HtoR, propensities_HtoF, 
-                                     propensities_StoQS, propensities_EtoQE, propensities_IPREtoQPRE, propensities_ISYMtoQSYM, propensities_IASYMtoQASYM, 
-                                     propensities_QStoQE, propensities_QEtoQPRE, propensities_QPREtoQSYM, propensities_QPREtoQASYM, 
-                                     propensities_QSYMtoQR, propensities_QSYMtoH, propensities_QASYMtoQR, propensities_RtoS, propensities__toS])
+        propensities_list = [propensities_StoE, propensities_EtoIPRE, propensities_IPREtoISYM, propensities_IPREtoIASYM, propensities_ISYMtoR, propensities_ISYMtoH, propensities_IASYMtoR, propensities_HtoR, propensities_HtoF,
+                            propensities_StoQS, propensities_EtoQE, propensities_IPREtoQPRE, propensities_ISYMtoQSYM, propensities_IASYMtoQASYM,
+                            propensities_QStoQE, propensities_QEtoQPRE, propensities_QPREtoQSYM, propensities_QPREtoQASYM,
+                            propensities_QSYMtoQR, propensities_QSYMtoH, propensities_QASYMtoQR, propensities_RtoS, propensities__toS]
+        if self.skip_pre:
+            propensities_list += [propensities_IPREtoR, propensities_IPREtoH ]
+        propensities = numpy.hstack(propensities_list)
 
         columns = [ 'StoE', 'EtoIPRE', 'IPREtoISYM', 'IPREtoIASYM',
                     'ISYMtoR', 'ISYMtoH', 'IASYMtoR', 'HtoR', 'HtoF', 
                     'StoQS', 'EtoQE', 'IPREtoQPRE', 'ISYMtoQSYM', 'IASYMtoQASYM', 
                     'QStoQE', 'QEtoQPRE', 'QPREtoQSYM', 'QPREtoQASYM', 
                     'QSYMtoQR', 'QSYMtoH', 'QASYMtoQR', 'RtoS', '_toS' ]
+        if self.skip_pre:
+            columns += ['IPREtoR','IPREtoH']
 
         return propensities, columns
 
