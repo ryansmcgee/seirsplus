@@ -2367,7 +2367,7 @@ class ExtSEIRSNetworkModel():
 
             if self.skip_pre:
                 propensities_IPREtoISYM = numpy.zeros_like(propensities_StoE)
-                propensities_IPREtoASYM = numpy.zeros_like(propensities_StoE)
+                propensities_IPREtoIASYM = numpy.zeros_like(propensities_StoE)
                 propensities_IPREtoR = 1e5 * ((self.X == self.I_pre) & numpy.greater(self.timer_state, 1 / self.gamma) & numpy.greater_equal( self.rand_h, self.h))
                 propensities_ISYMtoH = 1e5 * ( (self.X == self.I_pre) & numpy.greater(self.timer_state, 1 / self.eta) & numpy.less(self.rand_h, self.h))
 
@@ -2419,7 +2419,7 @@ class ExtSEIRSNetworkModel():
 
             if self.skip_pre:
                 propensities_IPREtoISYM = numpy.zeros_like(propensities_StoE)
-                propensities_IPREtoASYM = numpy.zeros_like(propensities_StoE)
+                propensities_IPREtoIASYM = numpy.zeros_like(propensities_StoE)
                 propensities_IPREtoR = self.gamma * ((self.X == self.I_pre) & (numpy.greater_equal(self.rand_h, self.h)))
                 propensities_IPREtoH = self.eta * ((self.X == self.I_pre) & (numpy.less(self.rand_h, self.h)))
 
