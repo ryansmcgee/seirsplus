@@ -2484,6 +2484,7 @@ class ExtSEIRSNetworkModel():
                                  propensities_StoQS, propensities_EtoQE, propensities_IPREtoQPRE,
                                  propensities_QStoQE, propensities_QEtoQPRE, propensities_QPREtoQR, propensities_QPREtoH, propensities_RtoS,
                                  propensities__toS]
+            propensities = numpy.hstack(propensities_list)
             columns = [ 'StoE', 'EtoIPRE', 'IPREtoH', 'IPREtoR', 'HtoR', 'HtoF',
                         'StoQS', 'EtoQE', 'IPREtoQPRE',
                         'QStoQE', 'QEtoQPRE', 'QPREtoR', 'QPREtoH',
