@@ -2482,7 +2482,7 @@ class ExtSEIRSNetworkModel():
             propensities_list = [propensities_StoE, propensities_EtoIPRE, propensities_IPREtoH, propensities_IPREtoR,
                                  propensities_HtoR, propensities_HtoF,
                                  propensities_StoQS, propensities_EtoQE, propensities_IPREtoQPRE,
-                                 propensities_QStoQE, propensities_QEtoQPRE, propensities_QPREtoQR, propensities_QPREtoQH, propensities_RtoS,
+                                 propensities_QStoQE, propensities_QEtoQPRE, propensities_QPREtoQR, propensities_QPREtoH, propensities_RtoS,
                                  propensities__toS]
             columns = [ 'StoE', 'EtoIPRE', 'IPREtoH', 'IPREtoR', 'HtoR', 'HtoF',
                         'StoQS', 'EtoQE', 'IPREtoQPRE',
