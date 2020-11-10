@@ -2628,13 +2628,6 @@ class ExtSEIRSNetworkModel():
                 # but do not execute any events (recalculate Gillespie interval/event next iteration)
                 self.t += max_dt
                 self.timer_state += max_dt
-                # Update testing and isolation timers/statuses
-                isolatedNodes = numpy.argwhere((self.X==self.Q_S)|(self.X==self.Q_E)|(self.X==self.Q_pre)|(self.X==self.Q_sym)|(self.X==self.Q_asym)|(self.X==self.Q_R))[:,0].flatten()
-                self.timer_isolation[isolatedNodes] = self.timer_isolation[isolatedNodes] + tau
-                nodesExitingIsolation = numpy.argwhere(self.timer_isolation >= self.isolationTime)
-                for isoNode in nodesExitingIsolation:
-                    self.set_isolation(node=isoNode, isolate=False)
-                # return without any further event execution
                 return True
             else:
                 self.t += tau
