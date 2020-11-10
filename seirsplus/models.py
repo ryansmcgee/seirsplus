@@ -2630,7 +2630,7 @@ class ExtSEIRSNetworkModel():
                 self.timer_state += max_dt
                 # Update testing and isolation timers/statuses
                 isolatedNodes = numpy.argwhere((self.X==self.Q_S)|(self.X==self.Q_E)|(self.X==self.Q_pre)|(self.X==self.Q_sym)|(self.X==self.Q_asym)|(self.X==self.Q_R))[:,0].flatten()
-                self.timer_isolation[isolatedNodes] = self.timer_isolation[isolatedNodes] + tau
+                self.timer_isolation[isolatedNodes] = self.timer_isolation[isolatedNodes] + max_dt
                 nodesExitingIsolation = numpy.argwhere(self.timer_isolation >= self.isolationTime)
                 for isoNode in nodesExitingIsolation:
                     self.set_isolation(node=isoNode, isolate=False)
@@ -3219,7 +3219,6 @@ class ExtSEIRSNetworkModel():
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 
 
