@@ -17,7 +17,8 @@ def run_tti_sim(model, T, max_dt=None,
                 isolation_compliance_positive_individual=[None], isolation_compliance_positive_groupmate=[None],
                 isolation_compliance_positive_contact=[None], isolation_compliance_positive_contactgroupmate=[None],
                 isolation_lag_symptomatic=1, isolation_lag_positive=1, isolation_lag_contact=0, isolation_groups=None,
-                cadence_testing_days=None, cadence_cycle_length=28, temporal_falseneg_rates=None, backlog_skipped_intervals=False
+                cadence_testing_days=None, cadence_cycle_length=28, temporal_falseneg_rates=None, backlog_skipped_intervals=False,
+                parameter_cadences=None
                 ):
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -58,8 +59,9 @@ def run_tti_sim(model, T, max_dt=None,
     interventionOn         = False
     interventionStartTime  = None
 
-    timeOfLastIntervention = -1
-    timeOfLastIntroduction = -1
+    timeOfLastIntervention  = -1
+    timeOfLastIntroduction  = -1
+    timeOfLastParameterUpdate = -1
 
     testingDays            = cadence_testing_days[testing_cadence]
     cadenceDayNumber       = 0
@@ -78,6 +80,26 @@ def run_tti_sim(model, T, max_dt=None,
     while running:
 
         running = model.run_iteration(max_dt=max_dt)
+
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        # Update underlying network structure:
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        if(int(model.t)!=int(timeOfLastParameterUpdate) and parameter_cadences is not None):
+
+            timeOfLastParameterUpdate = model.t
+
+            for param, param_cadence in parameter_cadences.items():
+                if(len(param_cadence) > 0):      
+                    parameterCadenceDayNumber = int(model.t % len(param_cadence))
+                    model.parameters.update({param: param_cadence[parameterCadenceDayNumber]})
+                    model.update_parameters()
+
+            # import networkx
+            # import matplotlib.pyplot as pyplot
+            # print(model.t)
+            # print(model.p.flatten())
+            # networkx.draw(model.G, pos=networkx.spring_layout(model.G, weight='layout_weight'), node_size=20, node_color='tab:blue', edge_color='lightgray', alpha=0.5)#, node_shape='s')
+            # pyplot.show()
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Introduce exogenous exposures randomly:
@@ -152,11 +174,12 @@ def run_tti_sim(model, T, max_dt=None,
                                 #----------------------------------------
                                 if(isolation_groups is not None and any(isolation_compliance_symptomatic_groupmate)):
                                     isolationGroupmates = next((group for group in isolation_groups if symptomaticNode in group), None)
-                                    for isolationGroupmate in isolationGroupmates:
-                                        if(isolationGroupmate != symptomaticNode):
-                                            if(isolation_compliance_symptomatic_groupmate[isolationGroupmate]):
-                                                numSelfIsolated_symptomaticGroupmate += 1
-                                                newIsolationGroup_symptomatic.append(isolationGroupmate)
+                                    if(isolationGroupmates is not None):
+                                        for isolationGroupmate in isolationGroupmates:
+                                            if(isolationGroupmate != symptomaticNode):
+                                                if(isolation_compliance_symptomatic_groupmate[isolationGroupmate]):
+                                                    numSelfIsolated_symptomaticGroupmate += 1
+                                                    newIsolationGroup_symptomatic.append(isolationGroupmate)
 
 
                     #----------------------------------------
@@ -176,12 +199,13 @@ def run_tti_sim(model, T, max_dt=None,
                             #----------------------------------------
                             if(isolation_groups is not None and any(isolation_compliance_positive_contactgroupmate)):
                                 isolationGroupmates = next((group for group in isolation_groups if contactNode in group), None)
-                                for isolationGroupmate in isolationGroupmates:
-                                    # if(isolationGroupmate != contactNode):
-                                    if(isolation_compliance_positive_contactgroupmate[isolationGroupmate]):
-                                        newIsolationGroup_contact.append(isolationGroupmate)
-                                        numSelfIsolated_positiveContactGroupmate += 1
-                                        
+                                if(isolationGroupmates is not None):
+                                    for isolationGroupmate in isolationGroupmates:
+                                        # if(isolationGroupmate != contactNode):
+                                        if(isolation_compliance_positive_contactgroupmate[isolationGroupmate]):
+                                            newIsolationGroup_contact.append(isolationGroupmate)
+                                            numSelfIsolated_positiveContactGroupmate += 1
+                                            
 
                     #----------------------------------------
                     # Update the nodeStates list after self-isolation updates to model.X:
@@ -348,11 +372,12 @@ def run_tti_sim(model, T, max_dt=None,
                                 #----------------------------------------  
                                 if(isolation_groups is not None and any(isolation_compliance_positive_groupmate)):
                                     isolationGroupmates = next((group for group in isolation_groups if testNode in group), None)
-                                    for isolationGroupmate in isolationGroupmates:
-                                        if(isolationGroupmate != testNode):
-                                            if(isolation_compliance_positive_groupmate[isolationGroupmate]):
-                                                numIsolated_positiveGroupmate += 1
-                                                newIsolationGroup_positive.append(isolationGroupmate)
+                                    if(isolationGroupmates is not None):
+                                        for isolationGroupmate in isolationGroupmates:
+                                            if(isolationGroupmate != testNode):
+                                                if(isolation_compliance_positive_groupmate[isolationGroupmate]):
+                                                    numIsolated_positiveGroupmate += 1
+                                                    newIsolationGroup_positive.append(isolationGroupmate)
 
                                 #----------------------------------------  
                                 # Add this node's neighbors to the contact tracing pool:
