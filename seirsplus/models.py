@@ -1093,13 +1093,17 @@ class SEIRSNetworkModel():
         if(isolate == True):
             if(self.X[node] == self.E):
                 self.X[node] = self.Q_E
+                self.timer_state = 0
             elif(self.X[node] == self.I):
                 self.X[node] = self.Q_I
+                self.timer_state = 0
         elif(isolate == False):
             if(self.X[node] == self.Q_E):
                 self.X[node] = self.E
+                self.timer_state = 0
             elif(self.X[node] == self.Q_I):
                 self.X[node] = self.I
+                self.timer_state = 0
         # Reset the isolation timer:
         self.timer_isolation[node] = 0
 
@@ -2585,7 +2589,9 @@ class ExtSEIRSNetworkModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     
 
-    def run_iteration(self):
+    def run_iteration(self, max_dt=None):
+
+        max_dt = self.tmax if max_dt is None else max_dt
 
         if(self.tidx >= len(self.tseries)-1):
             # Room has run out in the timeseries storage arrays; double the size of these arrays:
@@ -2615,8 +2621,24 @@ class ExtSEIRSNetworkModel():
             # Compute the time until the next event takes place
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             tau = (1/alpha)*numpy.log(float(1/r1))
-            self.t += tau
-            self.timer_state += tau
+
+            if(tau > max_dt):
+                # If the time to next event exceeds the max allowed interval,
+                # advance the system time by the max allowed interval,
+                # but do not execute any events (recalculate Gillespie interval/event next iteration)
+                self.t += max_dt
+                self.timer_state += max_dt
+                # Update testing and isolation timers/statuses
+                isolatedNodes = numpy.argwhere((self.X==self.Q_S)|(self.X==self.Q_E)|(self.X==self.Q_pre)|(self.X==self.Q_sym)|(self.X==self.Q_asym)|(self.X==self.Q_R))[:,0].flatten()
+                self.timer_isolation[isolatedNodes] = self.timer_isolation[isolatedNodes] + tau
+                nodesExitingIsolation = numpy.argwhere(self.timer_isolation >= self.isolationTime)
+                for isoNode in nodesExitingIsolation:
+                    self.set_isolation(node=isoNode, isolate=False)
+                # return without any further event execution
+                return True
+            else:
+                self.t += tau
+                self.timer_state += tau
 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             # Compute which event takes place
@@ -2739,7 +2761,7 @@ class ExtSEIRSNetworkModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    def run(self, T, checkpoints=None, print_interval=10, verbose='t'):
+    def run(self, T, checkpoints=None, max_dt=None, min_dt=None, print_interval=10, verbose='t'):
         if(T>0):
             self.tmax += T
         else:
