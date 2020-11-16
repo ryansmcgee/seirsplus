@@ -1,5 +1,5 @@
 
-This is a fork of [the SEIRS+ package]((https://github.com/ryansmcgee/seirsplus) by Ryan McGee.
+This is a fork of [the SEIRS+ package](https://github.com/ryansmcgee/seirsplus) by Ryan Seamus McGee.
 
 The main additions to the package are the following:
 
