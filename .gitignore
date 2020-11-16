@@ -2,3 +2,6 @@
 *.swp
 
 .DS_Store
+
+/seirsplus/.ipynb_checkpoints/
+*.pyc

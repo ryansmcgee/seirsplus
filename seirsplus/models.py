@@ -1724,7 +1724,8 @@ class ExtSEIRSNetworkModel():
             initQ_sym       Initial number of isolated infectious symptomatic individuals
             initQ_asym      Initial number of isolated infectious asymptomatic individuals
             initQ_R         Initial number of isolated recovered individuals
-                            (all remaining nodes initialized susceptible)   
+                            (all remaining nodes initialized susceptible)
+            skip_pre        Skip from pre symptomatic state to H or R state
     """
     def __init__(self, G, beta, sigma, lamda, gamma, 
                     gamma_asym=None, eta=0, gamma_H=None, mu_H=0, alpha=1.0, xi=0, mu_0=0, nu=0, a=0, h=0, f=0, p=0,             
@@ -1735,7 +1736,7 @@ class ExtSEIRSNetworkModel():
                     initE=0, initI_pre=0, initI_sym=0, initI_asym=0, initH=0, initR=0, initF=0,        
                     initQ_S=0, initQ_E=0, initQ_pre=0, initQ_sym=0, initQ_asym=0, initQ_R=0,
                     o=0, prevalence_ext=0,
-                    transition_mode='exponential_rates', node_groups=None, store_Xseries=False, seed=None):
+                    transition_mode='exponential_rates', node_groups=None, store_Xseries=False, seed=None, skip_pre = False):
 
         if(seed is not None):
             numpy.random.seed(seed)
@@ -1759,7 +1760,7 @@ class ExtSEIRSNetworkModel():
                             'initH':initH, 'initR':initR, 'initF':initF, 
                             'initQ_S':initQ_S, 'initQ_E':initQ_E, 'initQ_pre':initQ_pre, 
                             'initQ_sym':initQ_sym, 'initQ_asym':initQ_asym, 'initQ_R':initQ_R,
-                            'o':o, 'prevalence_ext':prevalence_ext}
+                            'o':o, 'prevalence_ext':prevalence_ext, 'skip_pre':skip_pre }
         self.update_parameters()
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1791,11 +1792,17 @@ class ExtSEIRSNetworkModel():
         self.tidx       = 0
         self.tseries[0] = 0
 
+        self.blankEvent = False # if blankEvent = True then we run a blank event until we reach "wait_until_t"
+        # this ensures that we don't skip a day of doing randomized testing or any other intervention
+        self.wait_until_t = 0
+
+        self.runTillEnd = False # if True then don't stop when infetions = 0 - makes sense if external infections may be introduced later
+
         # Vectors holding the time that each node has been in a given state or in isolation:
         self.timer_state     = numpy.zeros((self.numNodes,1))
         self.timer_isolation = numpy.zeros(self.numNodes)
         self.isolationTime   = isolation_time
-        
+
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Initialize Counts of inidividuals with each state:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1874,6 +1881,17 @@ class ExtSEIRSNetworkModel():
                                 '_toS':         {'currentState':True,         'newState':self.S},
                             }
 
+
+        if self.skip_pre:
+            self.transitions.update(
+            {
+                'IPREtoH': {'currentState': self.I_pre, 'newState': self.H },
+                'IPREtoR': {'currentState': self.I_pre, 'newState': self.R },
+                'QPREtoQR': {'currentState': self.Q_pre, 'newState': self.Q_R},
+                'QPREtoH': {'currentState': self.Q_pre, 'newState': self.H}
+            }
+        )
+
         self.transition_mode = transition_mode
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1934,9 +1952,24 @@ class ExtSEIRSNetworkModel():
          
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    # Two helper functions to get the node list and mask for a group
+    # If groupName is `all` then returns this for all vertices,
+    # even if nodeGroups were not set.
+    def get_nodes(self,groupName='all'):
+        if groupName=='all':
+            return range(self.numNodes)
+        return self.nodeGroupData[groupName]['nodes']
+
+    def get_mask(self,groupName='all'):
+        if groupName=='all':
+            return numpy.ones(shape=(self.numNodes,1))
+        return self.nodeGroupData[groupName]['mask']
+
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def update_parameters(self):
-
+        self.skip_pre = self.parameters['skip_pre'] # skip from pre-symptomatic state to H/R directly
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Model graphs:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1944,7 +1977,7 @@ class ExtSEIRSNetworkModel():
         # Adjacency matrix:
         if type(self.G)==numpy.ndarray:
             self.A = scipy.sparse.csr_matrix(self.G)
-        elif type(self.G)==networkx.classes.graph.Graph:
+        elif (type(self.G)==networkx.classes.graph.Graph) or (type(self.G)==networkx.classes.digraph.DiGraph):
             self.A = networkx.adj_matrix(self.G) # adj_matrix gives scipy.sparse csr_matrix
         else:
             raise BaseException("Input an adjacency matrix or networkx object only.")
@@ -1958,7 +1991,7 @@ class ExtSEIRSNetworkModel():
         # Quarantine Adjacency matrix:
         if type(self.G_Q)==numpy.ndarray:
             self.A_Q = scipy.sparse.csr_matrix(self.G_Q)
-        elif type(self.G_Q)==networkx.classes.graph.Graph:
+        elif (type(self.G_Q)==networkx.classes.graph.Graph) or (type(self.G_Q)==networkx.classes.digraph.DiGraph):
             self.A_Q = networkx.adj_matrix(self.G_Q) # adj_matrix gives scipy.sparse csr_matrix
         else:
             raise BaseException("Input an adjacency matrix or networkx object only.")
@@ -2138,7 +2171,7 @@ class ExtSEIRSNetworkModel():
         # Degree-based transmission scaling parameters:
         #----------------------------------------
         self.delta_pairwise_mode = self.parameters['delta_pairwise_mode']
-        with numpy.errstate(divide='ignore'): # ignore log(0) warning, then convert log(0) = -inf -> 0.0
+        with numpy.errstate(divide='ignore', invalid='ignore'): # ignore log(0) warning, then convert log(0) = -inf -> 0.0
             self.delta               = numpy.log(self.degree)/numpy.log(numpy.mean(self.degree))     if self.parameters['delta'] is None   else numpy.array(self.parameters['delta'])   if isinstance(self.parameters['delta'], (list, numpy.ndarray))   else numpy.full(fill_value=self.parameters['delta'], shape=(self.numNodes,1))
             self.delta_Q             = numpy.log(self.degree_Q)/numpy.log(numpy.mean(self.degree_Q)) if self.parameters['delta_Q'] is None else numpy.array(self.parameters['delta_Q']) if isinstance(self.parameters['delta_Q'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['delta_Q'], shape=(self.numNodes,1))
         self.delta[numpy.isneginf(self.delta)] = 0.0
@@ -2334,11 +2367,14 @@ class ExtSEIRSNetworkModel():
 
             propensities_IPREtoIASYM = 1e5 * ((self.X==self.I_pre) & numpy.greater(self.timer_state, 1/self.lamda) & numpy.less(self.rand_a, self.a))
 
+
             propensities_ISYMtoR     = 1e5 * ((self.X==self.I_sym) & numpy.greater(self.timer_state, 1/self.gamma) & numpy.greater_equal(self.rand_h, self.h))
 
             propensities_ISYMtoH     = 1e5 * ((self.X==self.I_sym) & numpy.greater(self.timer_state, 1/self.eta) & numpy.less(self.rand_h, self.h))
 
             propensities_IASYMtoR    = 1e5 * ((self.X==self.I_asym) & numpy.greater(self.timer_state, 1/self.gamma))
+
+
 
             propensities_HtoR        = 1e5 * ((self.X==self.H) & numpy.greater(self.timer_state, 1/self.gamma_H) & numpy.greater_equal(self.rand_f, self.f))
 
@@ -2370,6 +2406,19 @@ class ExtSEIRSNetworkModel():
 
             propensities__toS        = 1e5 * ((self.X!=self.F) & numpy.greater(self.timer_state, 1/self.nu))
 
+            if self.skip_pre:
+                propensities_IPREtoISYM = numpy.zeros_like(propensities_StoE)
+                propensities_IPREtoIASYM = numpy.zeros_like(propensities_StoE)
+                propensities_IPREtoR = 1e5 * ((self.X == self.I_pre) & numpy.greater(self.timer_state, 1 / self.gamma) & numpy.greater_equal( self.rand_h, self.h))
+                propensities_IPREtoH = 1e5 * ( (self.X == self.I_pre) & numpy.greater(self.timer_state, 1 / self.eta) & numpy.less(self.rand_h, self.h))
+                propensities_QPREtoH = 1e5 * (
+                            (self.X == self.Q_pre) & numpy.greater(self.timer_state, 1 / self.eta_Q) & numpy.less(
+                        self.rand_h, self.h))
+
+                propensities_QASYMtoQR = 1e5 * (
+                            (self.X == self.Q_pre) & numpy.greater(self.timer_state, 1 / self.gamma_Q_asym))
+
+
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
         else: # exponential_rates
@@ -2379,6 +2428,7 @@ class ExtSEIRSNetworkModel():
             propensities_IPREtoISYM  = self.lamda * ((self.X==self.I_pre) & (numpy.greater_equal(self.rand_a, self.a)))
 
             propensities_IPREtoIASYM = self.lamda * ((self.X==self.I_pre) & (numpy.less(self.rand_a, self.a)))
+
 
             propensities_ISYMtoR     = self.gamma * ((self.X==self.I_sym) & (numpy.greater_equal(self.rand_h, self.h)))
 
@@ -2416,19 +2466,45 @@ class ExtSEIRSNetworkModel():
 
             propensities__toS        = self.nu * (self.X!=self.F)
 
+            if self.skip_pre:
+                propensities_IPREtoISYM = numpy.zeros_like(propensities_StoE)
+                propensities_IPREtoIASYM = numpy.zeros_like(propensities_StoE)
+                propensities_IPREtoR = self.gamma * ((self.X == self.I_pre) & (numpy.greater_equal(self.rand_h, self.h)))
+                propensities_IPREtoH = self.eta * ((self.X == self.I_pre) & (numpy.less(self.rand_h, self.h)))
+                propensities_QPREtoQR = self.gamma_Q_sym * (
+                            (self.X == self.Q_pre) & (numpy.greater_equal(self.rand_h, self.h)))
+
+                propensities_QPREtoH = self.eta_Q * ((self.X == self.Q_pre) & (numpy.less(self.rand_h, self.h)))
+
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        propensities = numpy.hstack([propensities_StoE, propensities_EtoIPRE, propensities_IPREtoISYM, propensities_IPREtoIASYM,
-                                     propensities_ISYMtoR, propensities_ISYMtoH, propensities_IASYMtoR, propensities_HtoR, propensities_HtoF, 
-                                     propensities_StoQS, propensities_EtoQE, propensities_IPREtoQPRE, propensities_ISYMtoQSYM, propensities_IASYMtoQASYM, 
-                                     propensities_QStoQE, propensities_QEtoQPRE, propensities_QPREtoQSYM, propensities_QPREtoQASYM, 
-                                     propensities_QSYMtoQR, propensities_QSYMtoH, propensities_QASYMtoQR, propensities_RtoS, propensities__toS])
+        if self.skip_pre:
+            propensities_list = [propensities_StoE, propensities_EtoIPRE, propensities_IPREtoH, propensities_IPREtoR,
+                                 propensities_HtoR, propensities_HtoF,
+                                 propensities_StoQS, propensities_EtoQE, propensities_IPREtoQPRE,
+                                 propensities_QStoQE, propensities_QEtoQPRE, propensities_QPREtoQR, propensities_QPREtoH, propensities_RtoS,
+                                 propensities__toS]
+            propensities = numpy.hstack(propensities_list)
+            columns = [ 'StoE', 'EtoIPRE', 'IPREtoH', 'IPREtoR', 'HtoR', 'HtoF',
+                        'StoQS', 'EtoQE', 'IPREtoQPRE',
+                        'QStoQE', 'QEtoQPRE', 'QPREtoR', 'QPREtoH',
+                        'RtoS', '_toS' ]
 
-        columns = [ 'StoE', 'EtoIPRE', 'IPREtoISYM', 'IPREtoIASYM',
-                    'ISYMtoR', 'ISYMtoH', 'IASYMtoR', 'HtoR', 'HtoF', 
-                    'StoQS', 'EtoQE', 'IPREtoQPRE', 'ISYMtoQSYM', 'IASYMtoQASYM', 
-                    'QStoQE', 'QEtoQPRE', 'QPREtoQSYM', 'QPREtoQASYM', 
-                    'QSYMtoQR', 'QSYMtoH', 'QASYMtoQR', 'RtoS', '_toS' ]
+
+        else:
+
+            propensities_list = [propensities_StoE, propensities_EtoIPRE, propensities_IPREtoISYM, propensities_IPREtoIASYM, propensities_ISYMtoR, propensities_ISYMtoH, propensities_IASYMtoR, propensities_HtoR, propensities_HtoF,
+                            propensities_StoQS, propensities_EtoQE, propensities_IPREtoQPRE, propensities_ISYMtoQSYM, propensities_IASYMtoQASYM,
+                            propensities_QStoQE, propensities_QEtoQPRE, propensities_QPREtoQSYM, propensities_QPREtoQASYM,
+                            propensities_QSYMtoQR, propensities_QSYMtoH, propensities_QASYMtoQR, propensities_RtoS, propensities__toS]
+            propensities = numpy.hstack(propensities_list)
+
+            columns = [ 'StoE', 'EtoIPRE', 'IPREtoISYM', 'IPREtoIASYM',
+                        'ISYMtoR', 'ISYMtoH', 'IASYMtoR', 'HtoR', 'HtoF',
+                        'StoQS', 'EtoQE', 'IPREtoQPRE', 'ISYMtoQSYM', 'IASYMtoQASYM',
+                        'QStoQE', 'QEtoQPRE', 'QPREtoQSYM', 'QPREtoQASYM',
+                        'QSYMtoQR', 'QSYMtoH', 'QASYMtoQR', 'RtoS', '_toS' ]
+
 
         return propensities, columns
 
@@ -2483,12 +2559,17 @@ class ExtSEIRSNetworkModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def introduce_exposures(self, num_new_exposures):
-        exposedNodes = numpy.random.choice(range(self.numNodes), size=num_new_exposures, replace=False)
-        for exposedNode in exposedNodes:
-            if(self.X[exposedNode]==self.S):
-                self.X[exposedNode] = self.E
-            elif(self.X[exposedNode]==self.Q_S):
-                self.X[exposedNode] = self.Q_E
+        # If num_new_exposure is dictionary of the form {"group_1": num_1, "group_2": num_2 , ... }
+        # then introduce num_i exposures to group_i
+        if not isinstance(num_new_exposures,dict):
+            num_new_exposures = {"all": num_new_exposures }
+        for group,num in num_new_exposures.items():
+            exposedNodes = numpy.random.choice(self.get_nodes(group), size=num, replace=False)
+            for exposedNode in exposedNodes:
+                if(self.X[exposedNode]==self.S):
+                    self.X[exposedNode] = self.E
+                elif(self.X[exposedNode]==self.Q_S):
+                    self.X[exposedNode] = self.Q_E
 
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -2605,7 +2686,7 @@ class ExtSEIRSNetworkModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         propensities, transitionTypes = self.calc_propensities()
 
-        if(propensities.sum() > 0):
+        if (not self.blankEvent) and (propensities.sum() > 0):
 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             # Calculate alpha
@@ -2618,8 +2699,17 @@ class ExtSEIRSNetworkModel():
             # Compute the time until the next event takes place
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             tau = (1/alpha)*numpy.log(float(1/r1))
-            self.t += tau
-            self.timer_state += tau
+            if int(self.t + tau) > int(self.t)+1:
+                # if next event will skip a day
+                delta = int(self.t) - self.t  + 1.0
+                self.wait_until_t = self.t + tau
+                self.blankEvent = True
+                self.t += delta
+                self.timer_state += delta
+            else:
+                self.blankEvent = False
+                self.t += tau
+                self.timer_state += tau
 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             # Compute which event takes place
@@ -2655,14 +2745,23 @@ class ExtSEIRSNetworkModel():
 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-            if(transitionType in ['EtoQE', 'IPREtoQPRE', 'ISYMtoQSYM', 'IASYMtoQASYM', 'ISYMtoH']):
+            if(transitionType in ['EtoQE', 'IPREtoQPRE', 'ISYMtoQSYM', 'IASYMtoQASYM', 'ISYMtoH', 'IPREtoH']):
                 self.set_positive(node=transitionNode, positive=True)
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
         else:
 
-            tau = 0.01
+            if self.blankEvent:
+                # if this is a blank event then either go to the time we're waiting for or the next day
+                # the goal is to verify we have at least one event every day
+                if int(self.t) >= int( self.wait_until_t)-1:
+                    tau = self.wait_until_t - self.t
+                    self.blankEvent = False
+                else:
+                    tau = int(self.t)+1 - self.t
+            else:
+                tau = 0.01
             self.t += tau
             self.timer_state += tau
 
@@ -2730,7 +2829,8 @@ class ExtSEIRSNetworkModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Terminate if tmax reached or num infections is 0:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if(self.t >= self.tmax or (self.total_num_infected(self.tidx) < 1 and self.total_num_isolated(self.tidx) < 1)):
+        # if self.runTillEnd is true then only terminate when tmax is reached
+        if(self.t >= self.tmax) or ((not self.runTillEnd) and (self.total_num_infected(self.tidx) < 1 and self.total_num_isolated(self.tidx) < 1)):
             self.finalize_data_series()
             return False
 
