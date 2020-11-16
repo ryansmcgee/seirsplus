@@ -1,3 +1,19 @@
+
+This is a fork of [the SEIRS+ package]((https://github.com/ryansmcgee/seirsplus) by Ryan McGee.
+
+The main additions to the package are the following:
+
+* Support for running multiple simulations in parallel using the file `parallel_run.py`
+
+* More support for logging results of simulations as `pandas` DataFrames.
+
+* more flexiblity in testing policies, in particular for asymptomatic testing of sub-groups
+
+* Some fixes for low prevalence situations, ensuring that there is an event in the simulation loop every day even when there few or no infected people.
+
+The remainder of this readme file below is taken from the original SEIRS+ package.
+
+
 # SEIRS+ Model Framework
 
 This package implements models of generalized SEIRS infectious disease dynamics with extensions that allow us to study the effect of social contact network structures, heterogeneities, stochasticity, and interventions, such as social distancing, testing, contact tracing, and isolation. 
