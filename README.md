@@ -11,6 +11,9 @@ The main additions to the package are the following:
 
 * Some fixes for low prevalence situations, ensuring that there is an event in the simulation loop every day even when there few or no infected people.
 
+This fork was made by Boaz Barak for the paper "Optimizing testing policies for detecting COVID-19 outbreaks" by  Janni Yuval, Mor Nitzan, Neta Ravid Tannenbaum, and Boaz Barak.
+See [the repository boazbk/testingstrategies](https://github.com/boazbk/testingstrategies) for examples how to use it.
+
 The remainder of this readme file below is taken from the original SEIRS+ package.
 
 
