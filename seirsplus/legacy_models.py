@@ -84,7 +84,7 @@ class SEIRSModel():
         self.tseries = numpy.array([0])
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        # Initialize Counts of inidividuals with each state:
+        # Initialize Counts of individuals with each state:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         self.N          = numpy.array([int(initN)])
         self.numE       = numpy.array([int(initE)])
@@ -104,7 +104,7 @@ class SEIRSModel():
     def system_dfes(t, variables, beta, sigma, gamma, xi, mu_I, mu_0, nu,
                                   beta_D, sigma_D, gamma_D, mu_D, theta_E, theta_I, psi_E, psi_I, q):
 
-        S, E, I, D_E, D_I, R, F = variables    # varibles is a list with compartment counts as elements
+        S, E, I, D_E, D_I, R, F = variables    # variables is a list with compartment counts as elements
 
         N   = S + E + I + D_E + D_I + R
 
@@ -132,7 +132,7 @@ class SEIRSModel():
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Create a list of times at which the ODE solver should output system values.
-        # Append this list of times as the model's timeseries
+        # Append this list of times as the model's time series
         t_eval    = numpy.arange(start=self.t, stop=self.t+runtime, step=dt)
 
         # Define the range of time values for the integration:

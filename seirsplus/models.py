@@ -103,7 +103,7 @@ class SEIRSModel():
     def system_dfes(t, variables, beta, sigma, gamma, xi, mu_I, mu_0, nu,
                                   beta_Q, sigma_Q, gamma_Q, mu_Q, theta_E, theta_I, psi_E, psi_I, q):
 
-        S, E, I, Q_E, Q_I, R, F = variables    # varibles is a list with compartment counts as elements
+        S, E, I, Q_E, Q_I, R, F = variables    # variables is a list with compartment counts as elements
 
         N   = S + E + I + Q_E + Q_I + R
 
@@ -131,7 +131,7 @@ class SEIRSModel():
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Create a list of times at which the ODE solver should output system values.
-        # Append this list of times as the model's timeseries
+        # Append this list of times as the model's time series
         t_eval    = numpy.arange(start=self.t, stop=self.t+runtime, step=dt)
 
         # Define the range of time values for the integration:
@@ -619,7 +619,7 @@ class SEIRSNetworkModel():
         self.isolationTime   = isolation_time
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        # Initialize Counts of inidividuals with each state:
+        # Initialize Counts of individuals with each state:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         self.numE[0]        = int(initE)
         self.numI[0]        = int(initI)
