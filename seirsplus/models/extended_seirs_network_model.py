@@ -188,7 +188,7 @@ class ExtSEIRSNetworkModel():
         numpy.random.shuffle(self.X)
 
         self.store_Xseries = store_Xseries
-        if (store_Xseries):
+        if store_Xseries:
             self.Xseries        = numpy.zeros(shape=(6*self.numNodes, self.numNodes), dtype='uint8')
             self.Xseries[0,:]   = self.X.T
 
@@ -236,7 +236,7 @@ class ExtSEIRSNetworkModel():
         # Initialize node subgroup data series:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         self.nodeGroupData = None
-        if (node_groups):
+        if node_groups:
             self.nodeGroupData = {}
             for groupName, nodeList in node_groups.items():
                 self.nodeGroupData[groupName] = {'nodes':   numpy.array(nodeList),
@@ -294,7 +294,7 @@ class ExtSEIRSNetworkModel():
         self.numNodes   = int(self.A.shape[1])
         self.degree     = numpy.asarray(self.node_degrees(self.A)).astype(float)
         #----------------------------------------
-        if (self.parameters['G_Q'] is None):
+        if self.parameters['G_Q'] is None:
             self.G_Q = self.G # If no Q graph is provided, use G in its place
         else:
             self.G_Q = self.parameters['G_Q']
@@ -379,19 +379,19 @@ class ExtSEIRSNetworkModel():
             self.beta_global         = numpy.full_like(self.beta, fill_value=numpy.mean(self.beta))
             self.beta_Q_global       = numpy.full_like(self.beta_Q, fill_value=numpy.mean(self.beta_Q))
             self.beta_asym_global    = numpy.full_like(self.beta_asym, fill_value=numpy.mean(self.beta_asym))
-        elif (self.beta_pairwise_mode == 'infectee'):
+        elif self.beta_pairwise_mode == 'infectee':
             self.beta_global         = self.beta
             self.beta_Q_global       = self.beta_Q
             self.beta_asym_global    = self.beta_asym
-        elif (self.beta_pairwise_mode == 'min'):
+        elif self.beta_pairwise_mode == 'min':
             self.beta_global         = numpy.minimum(self.beta, numpy.mean(beta))
             self.beta_Q_global       = numpy.minimum(self.beta_Q, numpy.mean(beta_Q))
             self.beta_asym_global    = numpy.minimum(self.beta_asym, numpy.mean(beta_asym))
-        elif (self.beta_pairwise_mode == 'max'):
+        elif self.beta_pairwise_mode == 'max':
             self.beta_global         = numpy.maximum(self.beta, numpy.mean(beta))
             self.beta_Q_global       = numpy.maximum(self.beta_Q, numpy.mean(beta_Q))
             self.beta_asym_global    = numpy.maximum(self.beta_asym, numpy.mean(beta_asym))
-        elif (self.beta_pairwise_mode == 'mean'):
+        elif self.beta_pairwise_mode == 'mean':
             self.beta_global         = (self.beta + numpy.full_like(self.beta, fill_value=numpy.mean(self.beta)))/2
             self.beta_Q_global       = (self.beta_Q + numpy.full_like(self.beta_Q, fill_value=numpy.mean(self.beta_Q)))/2
             self.beta_asym_global    = (self.beta_asym + numpy.full_like(self.beta_asym, fill_value=numpy.mean(self.beta_asym)))/2
@@ -412,13 +412,13 @@ class ExtSEIRSNetworkModel():
             A_beta_pairwise_byInfectee = scipy.sparse.csr_matrix.multiply(self.A, self.beta_local).tocsr()
             #------------------------------
             # Compute the effective pairwise beta values as a function of the infected/infectee pair:
-            if (self.beta_pairwise_mode == 'infected'):
+            if self.beta_pairwise_mode == 'infected':
                 self.A_beta_pairwise = A_beta_pairwise_byInfected
-            elif (self.beta_pairwise_mode == 'infectee'):
+            elif self.beta_pairwise_mode == 'infectee':
                 self.A_beta_pairwise = A_beta_pairwise_byInfectee
-            elif (self.beta_pairwise_mode == 'min'):
+            elif self.beta_pairwise_mode == 'min':
                 self.A_beta_pairwise = scipy.sparse.csr_matrix.minimum(A_beta_pairwise_byInfected, A_beta_pairwise_byInfectee)
-            elif (self.beta_pairwise_mode == 'max'):
+            elif self.beta_pairwise_mode == 'max':
                 self.A_beta_pairwise = scipy.sparse.csr_matrix.maximum(A_beta_pairwise_byInfected, A_beta_pairwise_byInfectee)
             elif (self.beta_pairwise_mode == 'mean' or self.beta_pairwise_mode is None):
                 self.A_beta_pairwise = (A_beta_pairwise_byInfected + A_beta_pairwise_byInfectee)/2
@@ -436,13 +436,13 @@ class ExtSEIRSNetworkModel():
             A_Q_beta_Q_pairwise_byInfectee      = scipy.sparse.csr_matrix.multiply(self.A_Q, self.beta_Q_local).tocsr()
             #------------------------------
             # Compute the effective pairwise beta values as a function of the infected/infectee pair:
-            if (self.beta_pairwise_mode == 'infected'):
+            if self.beta_pairwise_mode == 'infected':
                 self.A_Q_beta_Q_pairwise = A_Q_beta_Q_pairwise_byInfected
-            elif (self.beta_pairwise_mode == 'infectee'):
+            elif self.beta_pairwise_mode == 'infectee':
                 self.A_Q_beta_Q_pairwise = A_Q_beta_Q_pairwise_byInfectee
-            elif (self.beta_pairwise_mode == 'min'):
+            elif self.beta_pairwise_mode == 'min':
                 self.A_Q_beta_Q_pairwise = scipy.sparse.csr_matrix.minimum(A_Q_beta_Q_pairwise_byInfected, A_Q_beta_Q_pairwise_byInfectee)
-            elif (self.beta_pairwise_mode == 'max'):
+            elif self.beta_pairwise_mode == 'max':
                 self.A_Q_beta_Q_pairwise = scipy.sparse.csr_matrix.maximum(A_Q_beta_Q_pairwise_byInfected, A_Q_beta_Q_pairwise_byInfectee)
             elif (self.beta_pairwise_mode == 'mean' or self.beta_pairwise_mode is None):
                 self.A_Q_beta_Q_pairwise = (A_Q_beta_Q_pairwise_byInfected + A_Q_beta_Q_pairwise_byInfectee)/2
@@ -451,7 +451,7 @@ class ExtSEIRSNetworkModel():
         else:
             print("Invalid values given for beta_Q_local (expected 1xN list/array or NxN 2d array)")
         #----------------------------------------
-        if (self.beta_asym_local is None):
+        if self.beta_asym_local is None:
             self.A_beta_asym_pairwise = None
         elif (self.beta_asym_local.ndim == 2 and self.beta_asym_local.shape[0] == self.numNodes and self.beta_asym_local.shape[1] == self.numNodes):
             self.A_beta_asym_pairwise = self.beta_asym_local
@@ -462,13 +462,13 @@ class ExtSEIRSNetworkModel():
             A_beta_asym_pairwise_byInfectee      = scipy.sparse.csr_matrix.multiply(self.A, self.beta_asym_local).tocsr()
             #------------------------------
             # Compute the effective pairwise beta values as a function of the infected/infectee pair:
-            if (self.beta_pairwise_mode == 'infected'):
+            if self.beta_pairwise_mode == 'infected':
                 self.A_beta_asym_pairwise = A_beta_asym_pairwise_byInfected
-            elif (self.beta_pairwise_mode == 'infectee'):
+            elif self.beta_pairwise_mode == 'infectee':
                 self.A_beta_asym_pairwise = A_beta_asym_pairwise_byInfectee
-            elif (self.beta_pairwise_mode == 'min'):
+            elif self.beta_pairwise_mode == 'min':
                 self.A_beta_asym_pairwise = scipy.sparse.csr_matrix.minimum(A_beta_asym_pairwise_byInfected, A_beta_asym_pairwise_byInfectee)
-            elif (self.beta_pairwise_mode == 'max'):
+            elif self.beta_pairwise_mode == 'max':
                 self.A_beta_asym_pairwise = scipy.sparse.csr_matrix.maximum(A_beta_asym_pairwise_byInfected, A_beta_asym_pairwise_byInfectee)
             elif (self.beta_pairwise_mode == 'mean' or self.beta_pairwise_mode is None):
                 self.A_beta_asym_pairwise = (A_beta_asym_pairwise_byInfected + A_beta_asym_pairwise_byInfectee)/2
@@ -496,17 +496,17 @@ class ExtSEIRSNetworkModel():
             A_delta_pairwise_byInfectee = scipy.sparse.csr_matrix.multiply(self.A, self.delta).tocsr()
             #------------------------------
             # Compute the effective pairwise delta values as a function of the infected/infectee pair:
-            if (self.delta_pairwise_mode == 'infected'):
+            if self.delta_pairwise_mode == 'infected':
                 self.A_delta_pairwise = A_delta_pairwise_byInfected
-            elif (self.delta_pairwise_mode == 'infectee'):
+            elif self.delta_pairwise_mode == 'infectee':
                 self.A_delta_pairwise = A_delta_pairwise_byInfectee
-            elif (self.delta_pairwise_mode == 'min'):
+            elif self.delta_pairwise_mode == 'min':
                 self.A_delta_pairwise = scipy.sparse.csr_matrix.minimum(A_delta_pairwise_byInfected, A_delta_pairwise_byInfectee)
-            elif (self.delta_pairwise_mode == 'max'):
+            elif self.delta_pairwise_mode == 'max':
                 self.A_delta_pairwise = scipy.sparse.csr_matrix.maximum(A_delta_pairwise_byInfected, A_delta_pairwise_byInfectee)
-            elif (self.delta_pairwise_mode == 'mean'):
+            elif self.delta_pairwise_mode == 'mean':
                 self.A_delta_pairwise = (A_delta_pairwise_byInfected + A_delta_pairwise_byInfectee)/2
-            elif (self.delta_pairwise_mode is None):
+            elif self.delta_pairwise_mode is None:
                 self.A_delta_pairwise = self.A
             else:
                 print("Unrecognized delta_pairwise_mode value (support for 'infected', 'infectee', 'min', 'max', and 'mean').")
@@ -522,17 +522,17 @@ class ExtSEIRSNetworkModel():
             A_Q_delta_Q_pairwise_byInfectee      = scipy.sparse.csr_matrix.multiply(self.A_Q, self.delta_Q.T).tocsr()
             #------------------------------
             # Compute the effective pairwise delta values as a function of the infected/infectee pair:
-            if (self.delta_pairwise_mode == 'infected'):
+            if self.delta_pairwise_mode == 'infected':
                 self.A_Q_delta_Q_pairwise = A_Q_delta_Q_pairwise_byInfected
-            elif (self.delta_pairwise_mode == 'infectee'):
+            elif self.delta_pairwise_mode == 'infectee':
                 self.A_Q_delta_Q_pairwise = A_Q_delta_Q_pairwise_byInfectee
-            elif (self.delta_pairwise_mode == 'min'):
+            elif self.delta_pairwise_mode == 'min':
                 self.A_Q_delta_Q_pairwise = scipy.sparse.csr_matrix.minimum(A_Q_delta_Q_pairwise_byInfected, A_Q_delta_Q_pairwise_byInfectee)
-            elif (self.delta_pairwise_mode == 'max'):
+            elif self.delta_pairwise_mode == 'max':
                 self.A_Q_delta_Q_pairwise = scipy.sparse.csr_matrix.maximum(A_Q_delta_Q_pairwise_byInfected, A_Q_delta_Q_pairwise_byInfectee)
-            elif (self.delta_pairwise_mode == 'mean'):
+            elif self.delta_pairwise_mode == 'mean':
                 self.A_Q_delta_Q_pairwise = (A_Q_delta_Q_pairwise_byInfected + A_Q_delta_Q_pairwise_byInfectee)/2
-            elif (self.delta_pairwise_mode is None):
+            elif self.delta_pairwise_mode is None:
                 self.A_Q_delta_Q_pairwise = self.A
             else:
                 print("Unrecognized delta_pairwise_mode value (support for 'infected', 'infectee', 'min', 'max', and 'mean').")
@@ -544,7 +544,7 @@ class ExtSEIRSNetworkModel():
         #----------------------------------------
         self.A_deltabeta          = scipy.sparse.csr_matrix.multiply(self.A_delta_pairwise, self.A_beta_pairwise)
         self.A_Q_deltabeta_Q      = scipy.sparse.csr_matrix.multiply(self.A_Q_delta_Q_pairwise, self.A_Q_beta_Q_pairwise)
-        if (self.A_beta_asym_pairwise is not None):
+        if self.A_beta_asym_pairwise is not None:
             self.A_deltabeta_asym = scipy.sparse.csr_matrix.multiply(self.A_delta_pairwise, self.A_beta_asym_pairwise)
         else:
             self.A_deltabeta_asym = None
@@ -561,15 +561,15 @@ class ExtSEIRSNetworkModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def total_num_susceptible(self, t_idx=None):
-        if (t_idx is None):
-            return (self.numS[:] + self.numQ_S[:])
+        if t_idx is None:
+            return self.numS[:] + self.numQ_S[:]
         else:
-            return (self.numS[t_idx] + self.numQ_S[t_idx])
+            return self.numS[t_idx] + self.numQ_S[t_idx]
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def total_num_infected(self, t_idx=None):
-        if (t_idx is None):
+        if t_idx is None:
             return (self.numE[:] + self.numI_pre[:] + self.numI_sym[:] + self.numI_asym[:] + self.numH[:]
                     + self.numQ_E[:] + self.numQ_pre[:] + self.numQ_sym[:] + self.numQ_asym[:])
         else:
@@ -579,34 +579,34 @@ class ExtSEIRSNetworkModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def total_num_isolated(self, t_idx=None):
-        if (t_idx is None):
-            return (self.numQ_S[:] + self.numQ_E[:] + self.numQ_pre[:] + self.numQ_sym[:] + self.numQ_asym[:] + self.numQ_R[:])
+        if t_idx is None:
+            return self.numQ_S[:] + self.numQ_E[:] + self.numQ_pre[:] + self.numQ_sym[:] + self.numQ_asym[:] + self.numQ_R[:]
         else:
-            return (self.numQ_S[t_idx] + self.numQ_E[t_idx] + self.numQ_pre[t_idx] + self.numQ_sym[t_idx] + self.numQ_asym[t_idx] + self.numQ_R[t_idx])
+            return self.numQ_S[t_idx] + self.numQ_E[t_idx] + self.numQ_pre[t_idx] + self.numQ_sym[t_idx] + self.numQ_asym[t_idx] + self.numQ_R[t_idx]
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def total_num_tested(self, t_idx=None):
-        if (t_idx is None):
-            return (self.numTested[:])
+        if t_idx is None:
+            return self.numTested[:]
         else:
-            return (self.numTested[t_idx])
+            return self.numTested[t_idx]
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def total_num_positive(self, t_idx=None):
-        if (t_idx is None):
-            return (self.numPositive[:])
+        if t_idx is None:
+            return self.numPositive[:]
         else:
-            return (self.numPositive[t_idx])
+            return self.numPositive[t_idx]
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def total_num_recovered(self, t_idx=None):
-        if (t_idx is None):
-            return (self.numR[:] + self.numQ_R[:])
+        if t_idx is None:
+            return self.numR[:] + self.numQ_R[:]
         else:
-            return (self.numR[t_idx] + self.numQ_R[t_idx])
+            return self.numR[t_idx] + self.numQ_R[t_idx]
 
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -621,7 +621,7 @@ class ExtSEIRSNetworkModel():
 
         self.transmissionTerms_I = numpy.zeros(shape=(self.numNodes,1))
         if (numpy.any(self.numI_sym[self.tidx]) or numpy.any(self.numI_asym[self.tidx]) or numpy.any(self.numI_pre[self.tidx])):
-            if (self.A_deltabeta_asym is not None):
+            if self.A_deltabeta_asym is not None:
                 self.transmissionTerms_sym  = numpy.asarray(scipy.sparse.csr_matrix.dot(self.A_deltabeta, self.X==self.I_sym))
                 self.transmissionTerms_asym = numpy.asarray(scipy.sparse.csr_matrix.dot(self.A_deltabeta_asym, ((self.X==self.I_pre)|(self.X==self.I_asym))))
                 self.transmissionTerms_I    = self.transmissionTerms_sym+self.transmissionTerms_asym
@@ -658,7 +658,7 @@ class ExtSEIRSNetworkModel():
                                   )*(self.X==self.S)
 
         propensities_QStoQE = numpy.zeros_like(propensities_StoE)
-        if (numpy.any(self.X==self.Q_S)):
+        if numpy.any(self.X==self.Q_S):
             propensities_QStoQE = ( self.alpha_Q *
                                         (self.o*(self.q*self.beta_global*self.prevalence_ext)
                                         + (1-self.o)*(
@@ -669,7 +669,7 @@ class ExtSEIRSNetworkModel():
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        if (self.transition_mode == 'time_in_state'):
+        if self.transition_mode == 'time_in_state':
 
             propensities_EtoIPRE     = 1e5 * ((self.X==self.E) & numpy.greater(self.timer_state, 1/self.sigma))
 
@@ -781,31 +781,31 @@ class ExtSEIRSNetworkModel():
 
     def set_isolation(self, node, isolate):
         # Move this node in/out of the appropriate isolation state:
-        if (isolate == True):
-            if (self.X[node] == self.S):
+        if isolate == True:
+            if self.X[node] == self.S:
                 self.X[node] = self.Q_S
-            elif (self.X[node] == self.E):
+            elif self.X[node] == self.E:
                 self.X[node] = self.Q_E
-            elif (self.X[node] == self.I_pre):
+            elif self.X[node] == self.I_pre:
                 self.X[node] = self.Q_pre
-            elif (self.X[node] == self.I_sym):
+            elif self.X[node] == self.I_sym:
                 self.X[node] = self.Q_sym
-            elif (self.X[node] == self.I_asym):
+            elif self.X[node] == self.I_asym:
                 self.X[node] = self.Q_asym
-            elif (self.X[node] == self.R):
+            elif self.X[node] == self.R:
                 self.X[node] = self.Q_R
-        elif (isolate == False):
-            if (self.X[node] == self.Q_S):
+        elif isolate == False:
+            if self.X[node] == self.Q_S:
                 self.X[node] = self.S
-            elif (self.X[node] == self.Q_E):
+            elif self.X[node] == self.Q_E:
                 self.X[node] = self.E
-            elif (self.X[node] == self.Q_pre):
+            elif self.X[node] == self.Q_pre:
                 self.X[node] = self.I_pre
-            elif (self.X[node] == self.Q_sym):
+            elif self.X[node] == self.Q_sym:
                 self.X[node] = self.I_sym
-            elif (self.X[node] == self.Q_asym):
+            elif self.X[node] == self.Q_asym:
                 self.X[node] = self.I_asym
-            elif (self.X[node] == self.Q_R):
+            elif self.X[node] == self.Q_R:
                 self.X[node] = self.R
         # Reset the isolation timer:
         self.timer_isolation[node] = 0
@@ -826,9 +826,9 @@ class ExtSEIRSNetworkModel():
     def introduce_exposures(self, num_new_exposures):
         exposedNodes = numpy.random.choice(range(self.numNodes), size=num_new_exposures, replace=False)
         for exposedNode in exposedNodes:
-            if (self.X[exposedNode]==self.S):
+            if self.X[exposedNode] == self.S:
                 self.X[exposedNode] = self.E
-            elif (self.X[exposedNode]==self.Q_S):
+            elif self.X[exposedNode] == self.Q_S:
                 self.X[exposedNode] = self.Q_E
 
 
@@ -855,10 +855,10 @@ class ExtSEIRSNetworkModel():
         self.numTested   = numpy.pad(self.numTested, [(0, 6*self.numNodes)], mode='constant', constant_values=0)
         self.numPositive = numpy.pad(self.numPositive, [(0, 6*self.numNodes)], mode='constant', constant_values=0)
 
-        if (self.store_Xseries):
+        if self.store_Xseries:
             self.Xseries = numpy.pad(self.Xseries, [(0, 6*self.numNodes), (0,0)], mode='constant', constant_values=0)
 
-        if (self.nodeGroupData):
+        if self.nodeGroupData:
             for groupName in self.nodeGroupData:
                 self.nodeGroupData[groupName]['numS']        = numpy.pad(self.nodeGroupData[groupName]['numS'], [(0, 6*self.numNodes)], mode='constant', constant_values=0)
                 self.nodeGroupData[groupName]['numE']        = numpy.pad(self.nodeGroupData[groupName]['numE'], [(0, 6*self.numNodes)], mode='constant', constant_values=0)
@@ -902,10 +902,10 @@ class ExtSEIRSNetworkModel():
         self.numTested   = numpy.array(self.numTested, dtype=float)[:self.tidx+1]
         self.numPositive = numpy.array(self.numPositive, dtype=float)[:self.tidx+1]
 
-        if (self.store_Xseries):
+        if self.store_Xseries:
             self.Xseries = self.Xseries[:self.tidx+1, :]
 
-        if (self.nodeGroupData):
+        if self.nodeGroupData:
             for groupName in self.nodeGroupData:
                 self.nodeGroupData[groupName]['numS']        = numpy.array(self.nodeGroupData[groupName]['numS'], dtype=float)[:self.tidx+1]
                 self.nodeGroupData[groupName]['numE']        = numpy.array(self.nodeGroupData[groupName]['numE'], dtype=float)[:self.tidx+1]
@@ -933,7 +933,7 @@ class ExtSEIRSNetworkModel():
 
         max_dt = self.tmax if max_dt is None else max_dt
 
-        if (self.tidx >= len(self.tseries)-1):
+        if self.tidx >= len(self.tseries) - 1:
             # Room has run out in the timeseries storage arrays; double the size of these arrays:
             self.increase_data_series_length()
 
@@ -948,7 +948,7 @@ class ExtSEIRSNetworkModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         propensities, transitionTypes = self.calc_propensities()
 
-        if (propensities.sum() > 0):
+        if propensities.sum() > 0:
 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             # Calculate alpha
@@ -962,7 +962,7 @@ class ExtSEIRSNetworkModel():
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             tau = (1/alpha)*numpy.log(float(1/r1))
 
-            if (tau > max_dt):
+            if tau > max_dt:
                 # If the time to next event exceeds the max allowed interval,
                 # advance the system time by the max allowed interval,
                 # but do not execute any events (recalculate Gillespie interval/event next iteration)
@@ -1063,10 +1063,10 @@ class ExtSEIRSNetworkModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Store system states
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if (self.store_Xseries):
+        if self.store_Xseries:
             self.Xseries[self.tidx,:] = self.X.T
 
-        if (self.nodeGroupData):
+        if self.nodeGroupData:
             for groupName in self.nodeGroupData:
                 self.nodeGroupData[groupName]['numS'][self.tidx]        = numpy.count_nonzero(self.nodeGroupData[groupName]['mask']*self.X==self.S)
                 self.nodeGroupData[groupName]['numE'][self.tidx]        = numpy.count_nonzero(self.nodeGroupData[groupName]['mask']*self.X==self.E)
@@ -1102,7 +1102,7 @@ class ExtSEIRSNetworkModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def run(self, T, checkpoints=None, max_dt=None, min_dt=None, print_interval=10, verbose='t'):
-        if (T>0):
+        if T > 0:
             self.tmax += T
         else:
             return False
@@ -1110,12 +1110,12 @@ class ExtSEIRSNetworkModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Pre-process checkpoint values:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if (checkpoints):
+        if checkpoints:
             numCheckpoints = len(checkpoints['t'])
             for chkpt_param, chkpt_values in checkpoints.items():
                 assert(isinstance(chkpt_values, (list, numpy.ndarray)) and len(chkpt_values)==numCheckpoints), "Expecting a list of values with length equal to number of checkpoint times ("+str(numCheckpoints)+") for each checkpoint parameter."
             checkpointIdx  = numpy.searchsorted(checkpoints['t'], self.t) # Finds 1st index in list greater than given val
-            if (checkpointIdx >= numCheckpoints):
+            if checkpointIdx >= numCheckpoints:
                 # We are out of checkpoints, stop checking them:
                 checkpoints = None
             else:
@@ -1132,19 +1132,19 @@ class ExtSEIRSNetworkModel():
 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             # Handle checkpoints if applicable:
-            if (checkpoints):
-                if (self.t >= checkpointTime):
-                    if (verbose is not False):
+            if checkpoints:
+                if self.t >= checkpointTime:
+                    if verbose is not False:
                         print("[Checkpoint: Updating parameters]")
                     # A checkpoint has been reached, update param values:
                     for param in list(self.parameters.keys()):
-                        if (param in list(checkpoints.keys())):
+                        if param in list(checkpoints.keys()):
                             self.parameters.update({param: checkpoints[param][checkpointIdx]})
                     # Update parameter data structures and scenario flags:
                     self.update_parameters()
                     # Update the next checkpoint time:
                     checkpointIdx  = numpy.searchsorted(checkpoints['t'], self.t) # Finds 1st index in list greater than given val
-                    if (checkpointIdx >= numCheckpoints):
+                    if checkpointIdx >= numCheckpoints:
                         # We are out of checkpoints, stop checking them:
                         checkpoints = None
                     else:
@@ -1153,11 +1153,11 @@ class ExtSEIRSNetworkModel():
 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-            if (print_interval):
+            if print_interval:
                 if (print_reset and (int(self.t) % print_interval == 0)):
-                    if (verbose=="t"):
+                    if verbose == "t":
                         print("t = %.2f" % self.t)
-                    if (verbose==True):
+                    if verbose == True:
                         print("t = %.2f" % self.t)
                         print("\t S      = " + str(self.numS[self.tidx]))
                         print("\t E      = " + str(self.numE[self.tidx]))
@@ -1203,7 +1203,7 @@ class ExtSEIRSNetworkModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Create an Axes object if None provided:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if (not ax):
+        if not ax:
             fig, ax = pyplot.subplots()
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1228,11 +1228,11 @@ class ExtSEIRSNetworkModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Draw the reference data:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if (dashed_reference_results):
+        if dashed_reference_results:
             dashedReference_tseries       = dashed_reference_results.tseries[::int(self.numNodes/100)]
             dashedReference_infectedStack = dashed_reference_results.total_num_infected()[::int(self.numNodes/100)] / (self.numNodes if plot_percentages else 1)
             ax.plot(dashedReference_tseries, dashedReference_infectedStack, color='#E0E0E0', linestyle='--', label='Total infections ('+dashed_reference_label+')', zorder=0)
-        if (shaded_reference_results):
+        if shaded_reference_results:
             shadedReference_tseries       = shaded_reference_results.tseries
             shadedReference_infectedStack = shaded_reference_results.total_num_infected() / (self.numNodes if plot_percentages else 1)
             ax.fill_between(shaded_reference_results.tseries, shadedReference_infectedStack, 0, color='#EFEFEF', label='Total infections ('+shaded_reference_label+')', zorder=0)
@@ -1439,7 +1439,7 @@ class ExtSEIRSNetworkModel():
         if (len(vlines)>0 and len(vline_styles)==0):
             vline_styles = [':']*len(vlines)
         for vline_x, vline_color, vline_style, vline_label in zip(vlines, vline_colors, vline_styles, vline_labels):
-            if (vline_x is not None):
+            if vline_x is not None:
                 ax.axvline(x=vline_x, color=vline_color, linestyle=vline_style, alpha=1, label=vline_label)
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1449,14 +1449,14 @@ class ExtSEIRSNetworkModel():
         ax.set_ylabel('percent of population' if plot_percentages else 'number of individuals')
         ax.set_xlim(0, (max(self.tseries) if not xlim else xlim))
         ax.set_ylim(0, ylim)
-        if (plot_percentages):
+        if plot_percentages:
             ax.set_yticklabels(['{:,.0%}'.format(y) for y in ax.get_yticks()])
-        if (legend):
+        if legend:
             legend_handles, legend_labels = ax.get_legend_handles_labels()
             ax.legend(legend_handles[::-1], legend_labels[::-1], loc='upper right', facecolor='white', edgecolor='none', framealpha=0.9, prop={'size': 8})
-        if (title):
+        if title:
             ax.set_title(title, size=12)
-        if (side_title):
+        if side_title:
             ax.annotate(side_title, (0, 0.5), xytext=(-45, 0), ha='right', va='center',
                 size=12, rotation=90, xycoords='axes fraction', textcoords='offset points')
 
@@ -1485,7 +1485,7 @@ class ExtSEIRSNetworkModel():
 
         fig, ax = pyplot.subplots(figsize=figsize)
 
-        if (use_seaborn):
+        if use_seaborn:
             import seaborn
             seaborn.set_style('ticks')
             seaborn.despine()
@@ -1504,7 +1504,7 @@ class ExtSEIRSNetworkModel():
                         vlines=vlines, vline_colors=vline_colors, vline_styles=vline_styles, vline_labels=vline_labels,
                         ylim=ylim, xlim=xlim, legend=legend, title=title, side_title=side_title, plot_percentages=plot_percentages)
 
-        if (show):
+        if show:
             pyplot.show()
 
         return fig, ax
@@ -1532,7 +1532,7 @@ class ExtSEIRSNetworkModel():
 
         fig, ax = pyplot.subplots(figsize=figsize)
 
-        if (use_seaborn):
+        if use_seaborn:
             import seaborn
             seaborn.set_style('ticks')
             seaborn.despine()
@@ -1551,7 +1551,7 @@ class ExtSEIRSNetworkModel():
                         vlines=vlines, vline_colors=vline_colors, vline_styles=vline_styles, vline_labels=vline_labels,
                         ylim=ylim, xlim=xlim, legend=legend, title=title, side_title=side_title, plot_percentages=plot_percentages)
 
-        if (show):
+        if show:
             pyplot.show()
 
         return fig, ax
