@@ -172,7 +172,7 @@ class SEIRSModel():
 
     def run(self, T, dt=0.1, checkpoints=None, verbose=False):
 
-        if (T>0):
+        if T > 0:
             self.tmax += T
         else:
             return False
@@ -180,7 +180,7 @@ class SEIRSModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Pre-process checkpoint values:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if (checkpoints):
+        if checkpoints:
             numCheckpoints = len(checkpoints['t'])
             paramNames = ['beta', 'sigma', 'gamma', 'xi', 'mu_I', 'mu_0', 'nu',
                           'beta_Q', 'sigma_Q', 'gamma_Q', 'mu_Q',
@@ -196,13 +196,13 @@ class SEIRSModel():
         #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         # Run the simulation loop:
         #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        if (not checkpoints):
+        if not checkpoints:
             self.run_epoch(runtime=self.tmax, dt=dt)
 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
             print("t = %.2f" % self.t)
-            if (verbose):
+            if verbose:
                 print("\t S   = " + str(self.numS[-1]))
                 print("\t E   = " + str(self.numE[-1]))
                 print("\t I   = " + str(self.numI[-1]))
@@ -224,7 +224,7 @@ class SEIRSModel():
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
                 print("t = %.2f" % self.t)
-                if (verbose):
+                if verbose:
                     print("\t S   = " + str(self.numS[-1]))
                     print("\t E   = " + str(self.numE[-1]))
                     print("\t I   = " + str(self.numI[-1]))
@@ -233,7 +233,7 @@ class SEIRSModel():
                     print("\t R   = " + str(self.numR[-1]))
                     print("\t F   = " + str(self.numF[-1]))
 
-            if (self.t < self.tmax):
+            if self.t < self.tmax:
                 self.run_epoch(runtime=self.tmax-self.t, dt=dt)
 
         return True
@@ -242,7 +242,7 @@ class SEIRSModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def total_num_susceptible(self, t_idx=None):
-        if (t_idx is None):
+        if t_idx is None:
             return (self.numS[:])
         else:
             return (self.numS[t_idx])
@@ -250,26 +250,26 @@ class SEIRSModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def total_num_infected(self, t_idx=None):
-        if (t_idx is None):
-            return (self.numE[:] + self.numI[:] + self.numQ_E[:] + self.numQ_I[:])
+        if t_idx is None:
+            return self.numE[:] + self.numI[:] + self.numQ_E[:] + self.numQ_I[:]
         else:
-            return (self.numE[t_idx] + self.numI[t_idx] + self.numQ_E[t_idx] + self.numQ_I[t_idx])
+            return self.numE[t_idx] + self.numI[t_idx] + self.numQ_E[t_idx] + self.numQ_I[t_idx]  
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def total_num_isolated(self, t_idx=None):
-        if (t_idx is None):
-            return (self.numQ_E[:] + self.numQ_I[:])
+        if t_idx is None:
+            return self.numQ_E[:] + self.numQ_I[:]
         else:
-            return (self.numQ_E[t_idx] + self.numQ_I[t_idx])
+            return self.numQ_E[t_idx] + self.numQ_I[t_idx]
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def total_num_recovered(self, t_idx=None):
-        if (t_idx is None):
-            return (self.numR[:])
+        if t_idx is None:
+            return self.numR[:]
         else:
-            return (self.numR[t_idx])
+            return self.numR[t_idx]
 
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -289,7 +289,7 @@ class SEIRSModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Create an Axes object if None provided:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if (not ax):
+        if not ax:
             fig, ax = pyplot.subplots()
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -307,11 +307,11 @@ class SEIRSModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Draw the reference data:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if (dashed_reference_results):
+        if dashed_reference_results:
             dashedReference_tseries  = dashed_reference_results.tseries[::int(self.N/100)]
             dashedReference_IDEstack = (dashed_reference_results.numI + dashed_reference_results.numQ_I + dashed_reference_results.numQ_E + dashed_reference_results.numE)[::int(self.N/100)] / (self.N if plot_percentages else 1)
             ax.plot(dashedReference_tseries, dashedReference_IDEstack, color='#E0E0E0', linestyle='--', label='$I+D+E$ ('+dashed_reference_label+')', zorder=0)
-        if (shaded_reference_results):
+        if shaded_reference_results:
             shadedReference_tseries  = shaded_reference_results.tseries
             shadedReference_IDEstack = (shaded_reference_results.numI + shaded_reference_results.numQ_I + shaded_reference_results.numQ_E + shaded_reference_results.numE) / (self.N if plot_percentages else 1)
             ax.fill_between(shaded_reference_results.tseries, shadedReference_IDEstack, 0, color='#EFEFEF', label='$I+D+E$ ('+shaded_reference_label+')', zorder=0)
@@ -416,7 +416,7 @@ class SEIRSModel():
         if (len(vlines)>0 and len(vline_styles)==0):
             vline_styles = [':']*len(vlines)
         for vline_x, vline_color, vline_style, vline_label in zip(vlines, vline_colors, vline_styles, vline_labels):
-            if (vline_x is not None):
+            if vline_x is not None:
                 ax.axvline(x=vline_x, color=vline_color, linestyle=vline_style, alpha=1, label=vline_label)
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -426,14 +426,14 @@ class SEIRSModel():
         ax.set_ylabel('percent of population' if plot_percentages else 'number of individuals')
         ax.set_xlim(0, (max(self.tseries) if not xlim else xlim))
         ax.set_ylim(0, ylim)
-        if (plot_percentages):
+        if plot_percentages:
             ax.set_yticklabels(['{:,.0%}'.format(y) for y in ax.get_yticks()])
-        if (legend):
+        if legend:
             legend_handles, legend_labels = ax.get_legend_handles_labels()
             ax.legend(legend_handles[::-1], legend_labels[::-1], loc='upper right', facecolor='white', edgecolor='none', framealpha=0.9, prop={'size': 8})
-        if (title):
+        if title:
             ax.set_title(title, size=12)
-        if (side_title):
+        if side_title:
             ax.annotate(side_title, (0, 0.5), xytext=(-45, 0), ha='right', va='center',
                 size=12, rotation=90, xycoords='axes fraction', textcoords='offset points')
 
@@ -457,7 +457,7 @@ class SEIRSModel():
 
         fig, ax = pyplot.subplots(figsize=figsize)
 
-        if (use_seaborn):
+        if use_seaborn:
             import seaborn
             seaborn.set_style('ticks')
             seaborn.despine()
@@ -471,7 +471,7 @@ class SEIRSModel():
                         vlines=vlines, vline_colors=vline_colors, vline_styles=vline_styles, vline_labels=vline_labels,
                         ylim=ylim, xlim=xlim, legend=legend, title=title, side_title=side_title, plot_percentages=plot_percentages)
 
-        if (show):
+        if show:
             pyplot.show()
 
         return fig, ax
@@ -508,7 +508,7 @@ class SEIRSModel():
                         vlines=vlines, vline_colors=vline_colors, vline_styles=vline_styles, vline_labels=vline_labels,
                         ylim=ylim, xlim=xlim, legend=legend, title=title, side_title=side_title, plot_percentages=plot_percentages)
 
-        if (show):
+        if show:
             pyplot.show()
 
         return fig, ax
@@ -571,7 +571,7 @@ class SEIRSNetworkModel():
                     initE=0, initI=0, initR=0, initF=0, initQ_E=0, initQ_I=0,
                     transition_mode='exponential_rates', node_groups=None, store_Xseries=False, seed=None):
 
-        if (seed is not None):
+        if seed is not None:
             numpy.random.seed(seed)
             self.seed = seed
 
@@ -648,7 +648,7 @@ class SEIRSNetworkModel():
         numpy.random.shuffle(self.X)
 
         self.store_Xseries = store_Xseries
-        if (store_Xseries):
+        if store_Xseries:
             self.Xseries        = numpy.zeros(shape=(6*self.numNodes, self.numNodes), dtype='uint8')
             self.Xseries[0,:]   = self.X.T
 
@@ -684,7 +684,7 @@ class SEIRSNetworkModel():
         # Initialize node subgroup data series:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         self.nodeGroupData = None
-        if (node_groups):
+        if node_groups:
             self.nodeGroupData = {}
             for groupName, nodeList in node_groups.items():
                 self.nodeGroupData[groupName] = {'nodes':   numpy.array(nodeList),
@@ -728,7 +728,7 @@ class SEIRSNetworkModel():
         self.numNodes   = int(self.A.shape[1])
         self.degree     = numpy.asarray(self.node_degrees(self.A)).astype(float)
         #----------------------------------------
-        if (self.parameters['G_Q'] is None):
+        if self.parameters['G_Q'] is None:
             self.G_Q = self.G # If no Q graph is provided, use G in its place
         else:
             self.G_Q = self.parameters['G_Q']
@@ -786,16 +786,16 @@ class SEIRSNetworkModel():
         if (self.beta_pairwise_mode == 'infected' or self.beta_pairwise_mode is None):
             self.beta_global         = numpy.full_like(self.beta, fill_value=numpy.mean(self.beta))
             self.beta_Q_global       = numpy.full_like(self.beta_Q, fill_value=numpy.mean(self.beta_Q))
-        elif (self.beta_pairwise_mode == 'infectee'):
+        elif self.beta_pairwise_mode == 'infectee':
             self.beta_global         = self.beta
             self.beta_Q_global       = self.beta_Q
-        elif (self.beta_pairwise_mode == 'min'):
+        elif self.beta_pairwise_mode == 'min':
             self.beta_global         = numpy.minimum(self.beta, numpy.mean(beta))
             self.beta_Q_global       = numpy.minimum(self.beta_Q, numpy.mean(beta_Q))
-        elif (self.beta_pairwise_mode == 'max'):
+        elif self.beta_pairwise_mode == 'max':
             self.beta_global         = numpy.maximum(self.beta, numpy.mean(beta))
             self.beta_Q_global       = numpy.maximum(self.beta_Q, numpy.mean(beta_Q))
-        elif (self.beta_pairwise_mode == 'mean'):
+        elif self.beta_pairwise_mode == 'mean':
             self.beta_global         = (self.beta + numpy.full_like(self.beta, fill_value=numpy.mean(self.beta)))/2
             self.beta_Q_global       = (self.beta_Q + numpy.full_like(self.beta_Q, fill_value=numpy.mean(self.beta_Q)))/2
 
@@ -815,15 +815,15 @@ class SEIRSNetworkModel():
             A_beta_pairwise_byInfectee = scipy.sparse.csr_matrix.multiply(self.A, self.beta_local).tocsr()
             #------------------------------
             # Compute the effective pairwise beta values as a function of the infected/infectee pair:
-            if (self.beta_pairwise_mode == 'infected'):
+            if self.beta_pairwise_mode == 'infected':
                 self.A_beta_pairwise = A_beta_pairwise_byInfected
-            elif (self.beta_pairwise_mode == 'infectee'):
+            elif self.beta_pairwise_mode == 'infectee':
                 self.A_beta_pairwise = A_beta_pairwise_byInfectee
-            elif (self.beta_pairwise_mode == 'min'):
+            elif self.beta_pairwise_mode == 'min':
                 self.A_beta_pairwise = scipy.sparse.csr_matrix.minimum(A_beta_pairwise_byInfected, A_beta_pairwise_byInfectee)
-            elif (self.beta_pairwise_mode == 'max'):
+            elif self.beta_pairwise_mode == 'max':
                 self.A_beta_pairwise = scipy.sparse.csr_matrix.maximum(A_beta_pairwise_byInfected, A_beta_pairwise_byInfectee)
-            elif (self.beta_pairwise_mode == 'mean' or self.beta_pairwise_mode is None):
+            elif self.beta_pairwise_mode == 'mean' or self.beta_pairwise_mode is None:
                 self.A_beta_pairwise = (A_beta_pairwise_byInfected + A_beta_pairwise_byInfectee)/2
             else:
                 print("Unrecognized beta_pairwise_mode value (support for 'infected', 'infectee', 'min', 'max', and 'mean').")
@@ -839,13 +839,13 @@ class SEIRSNetworkModel():
             A_Q_beta_Q_pairwise_byInfectee      = scipy.sparse.csr_matrix.multiply(self.A_Q, self.beta_Q_local).tocsr()
             #------------------------------
             # Compute the effective pairwise beta values as a function of the infected/infectee pair:
-            if (self.beta_pairwise_mode == 'infected'):
+            if self.beta_pairwise_mode == 'infected':
                 self.A_Q_beta_Q_pairwise = A_Q_beta_Q_pairwise_byInfected
-            elif (self.beta_pairwise_mode == 'infectee'):
+            elif self.beta_pairwise_mode == 'infectee':
                 self.A_Q_beta_Q_pairwise = A_Q_beta_Q_pairwise_byInfectee
-            elif (self.beta_pairwise_mode == 'min'):
+            elif self.beta_pairwise_mode == 'min':
                 self.A_Q_beta_Q_pairwise = scipy.sparse.csr_matrix.minimum(A_Q_beta_Q_pairwise_byInfected, A_Q_beta_Q_pairwise_byInfectee)
-            elif (self.beta_pairwise_mode == 'max'):
+            elif self.beta_pairwise_mode == 'max':
                 self.A_Q_beta_Q_pairwise = scipy.sparse.csr_matrix.maximum(A_Q_beta_Q_pairwise_byInfected, A_Q_beta_Q_pairwise_byInfectee)
             elif (self.beta_pairwise_mode == 'mean' or self.beta_pairwise_mode is None):
                 self.A_Q_beta_Q_pairwise = (A_Q_beta_Q_pairwise_byInfected + A_Q_beta_Q_pairwise_byInfectee)/2
@@ -874,17 +874,17 @@ class SEIRSNetworkModel():
             A_delta_pairwise_byInfectee = scipy.sparse.csr_matrix.multiply(self.A, self.delta).tocsr()
             #------------------------------
             # Compute the effective pairwise delta values as a function of the infected/infectee pair:
-            if (self.delta_pairwise_mode == 'infected'):
+            if self.delta_pairwise_mode == 'infected':
                 self.A_delta_pairwise = A_delta_pairwise_byInfected
-            elif (self.delta_pairwise_mode == 'infectee'):
+            elif self.delta_pairwise_mode == 'infectee':
                 self.A_delta_pairwise = A_delta_pairwise_byInfectee
-            elif (self.delta_pairwise_mode == 'min'):
+            elif self.delta_pairwise_mode == 'min':
                 self.A_delta_pairwise = scipy.sparse.csr_matrix.minimum(A_delta_pairwise_byInfected, A_delta_pairwise_byInfectee)
-            elif (self.delta_pairwise_mode == 'max'):
+            elif self.delta_pairwise_mode == 'max':
                 self.A_delta_pairwise = scipy.sparse.csr_matrix.maximum(A_delta_pairwise_byInfected, A_delta_pairwise_byInfectee)
-            elif (self.delta_pairwise_mode == 'mean'):
+            elif self.delta_pairwise_mode == 'mean':
                 self.A_delta_pairwise = (A_delta_pairwise_byInfected + A_delta_pairwise_byInfectee)/2
-            elif (self.delta_pairwise_mode is None):
+            elif self.delta_pairwise_mode is None:
                 self.A_delta_pairwise = self.A
             else:
                 print("Unrecognized delta_pairwise_mode value (support for 'infected', 'infectee', 'min', 'max', and 'mean').")
@@ -900,15 +900,15 @@ class SEIRSNetworkModel():
             A_Q_delta_Q_pairwise_byInfectee      = scipy.sparse.csr_matrix.multiply(self.A_Q, self.delta_Q.T).tocsr()
             #------------------------------
             # Compute the effective pairwise delta values as a function of the infected/infectee pair:
-            if (self.delta_pairwise_mode == 'infected'):
+            if self.delta_pairwise_mode == 'infected':
                 self.A_Q_delta_Q_pairwise = A_Q_delta_Q_pairwise_byInfected
-            elif (self.delta_pairwise_mode == 'infectee'):
+            elif self.delta_pairwise_mode == 'infectee':
                 self.A_Q_delta_Q_pairwise = A_Q_delta_Q_pairwise_byInfectee
-            elif (self.delta_pairwise_mode == 'min'):
+            elif self.delta_pairwise_mode == 'min':
                 self.A_Q_delta_Q_pairwise = scipy.sparse.csr_matrix.minimum(A_Q_delta_Q_pairwise_byInfected, A_Q_delta_Q_pairwise_byInfectee)
-            elif (self.delta_pairwise_mode == 'max'):
+            elif self.delta_pairwise_mode == 'max':
                 self.A_Q_delta_Q_pairwise = scipy.sparse.csr_matrix.maximum(A_Q_delta_Q_pairwise_byInfected, A_Q_delta_Q_pairwise_byInfectee)
-            elif (self.delta_pairwise_mode == 'mean'):
+            elif self.delta_pairwise_mode == 'mean':
                 self.A_Q_delta_Q_pairwise = (A_Q_delta_Q_pairwise_byInfected + A_Q_delta_Q_pairwise_byInfectee)/2
             elif (self.delta_pairwise_mode is None):
                 self.A_Q_delta_Q_pairwise = self.A

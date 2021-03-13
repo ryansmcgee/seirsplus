@@ -16,10 +16,10 @@ def dist_info(dists, names=None, plot=False, bin_size=1, colors=None, reverse_pl
         print((name+": " if name else "")+" mean = %.2f, std = %.2f, 95%% CI = (%.2f, %.2f)" % (numpy.mean(dist), numpy.std(dist), numpy.percentile(dist, 2.5), numpy.percentile(dist, 97.5)))
         print()
 
-        if (plot):
+        if plot:
             pyplot.hist(dist, bins=numpy.arange(0, int(max(dist)+1), step=bin_size), label=(name if name else False), color=colors[i], edgecolor='white', alpha=0.6, zorder=(-1*i if reverse_plot else i))
 
-    if (plot):
+    if plot:
         pyplot.ylabel('num nodes')
         pyplot.legend(loc='upper right')
         pyplot.show()
@@ -35,7 +35,7 @@ def network_info(networks, names=None, plot=False, bin_size=1, colors=None, reve
 
         degree        = [d[1] for d in network.degree()]
 
-        if (name):
+        if name:
             print(name+":")
         print("Degree: mean = %.2f, std = %.2f, 95%% CI = (%.2f, %.2f)\n        coeff var = %.2f"
               % (numpy.mean(degree), numpy.std(degree), numpy.percentile(degree, 2.5), numpy.percentile(degree, 97.5),
@@ -46,10 +46,10 @@ def network_info(networks, names=None, plot=False, bin_size=1, colors=None, reve
         print("Clustering coeff: %.2f" % (c))
         print()
 
-        if (plot):
+        if plot:
             pyplot.hist(degree, bins=numpy.arange(0, int(max(degree)+1), step=bin_size), label=(name+" degree" if name else False), color=colors[i], edgecolor='white', alpha=0.6, zorder=(-1*i if reverse_plot else i))
 
-    if (plot):
+    if plot:
         pyplot.ylabel('num nodes')
         pyplot.legend(loc='upper right')
         pyplot.show()

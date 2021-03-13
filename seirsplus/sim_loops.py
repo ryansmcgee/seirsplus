@@ -26,7 +26,7 @@ def run_tti_sim(model, T, max_dt=None,
     # (0:Mon, 1:Tue, 2:Wed, 3:Thu, 4:Fri, 5:Sat, 6:Sun, 7:Mon, 8:Tues, ...)
     # For each cadence, testing is done on the day numbers included in the associated list.
 
-    if (cadence_testing_days is None):
+    if cadence_testing_days is None:
         cadence_testing_days    = {
                                     'everyday':     [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27],
                                     'workday':      [0, 1, 2, 3, 4, 7, 8, 9, 10, 11, 14, 15, 16, 17, 18, 21, 22, 23, 24, 25],
@@ -39,7 +39,7 @@ def run_tti_sim(model, T, max_dt=None,
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    if (temporal_falseneg_rates is None):
+    if temporal_falseneg_rates is None:
         temporal_falseneg_rates = {
                                     model.E:        {0: 1.00, 1: 1.00, 2: 1.00, 3: 1.00},
                                     model.I_pre:    {0: 0.25, 1: 0.25, 2: 0.22},
@@ -82,7 +82,7 @@ def run_tti_sim(model, T, max_dt=None,
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Introduce exogenous exposures randomly:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if (int(model.t)!=int(timeOfLastIntroduction)):
+        if int(model.t) != int(timeOfLastIntroduction):
 
             timeOfLastIntroduction = model.t
 
@@ -90,18 +90,18 @@ def run_tti_sim(model, T, max_dt=None,
 
             model.introduce_exposures(num_new_exposures=numNewExposures)
 
-            if (numNewExposures > 0):
+            if numNewExposures > 0:
                 print("[NEW EXPOSURE @ t = %.2f (%d exposed)]" % (model.t, numNewExposures))
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Execute testing policy at designated intervals:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        if (int(model.t)!=int(timeOfLastIntervention)):
+        if int(model.t) != int(timeOfLastIntervention):
 
             cadenceDayNumbers = [int(model.t % cadence_cycle_length)]
 
-            if (backlog_skipped_intervals):
+            if backlog_skipped_intervals:
                 cadenceDayNumbers = [int(i % cadence_cycle_length) for i in numpy.arange(start=timeOfLastIntervention, stop=int(model.t), step=1.0)[1:]] + cadenceDayNumbers
 
             timeOfLastIntervention = model.t
@@ -115,7 +115,7 @@ def run_tti_sim(model, T, max_dt=None,
                     interventionOn        = True
                     interventionStartTime = model.t
 
-                if (interventionOn):
+                if interventionOn:
 
                     print("[INTERVENTIONS @ t = %.2f (%d (%.2f%%) infected)]" % (model.t, currentNumInfected, currentPctInfected*100))
 
@@ -139,11 +139,11 @@ def run_tti_sim(model, T, max_dt=None,
                     numSelfIsolated_symptoms = 0
                     numSelfIsolated_symptomaticGroupmate = 0
 
-                    if (any(isolation_compliance_symptomatic_individual)):
+                    if any(isolation_compliance_symptomatic_individual):
                         symptomaticNodes = numpy.argwhere((nodeStates==model.I_sym)).flatten()
                         for symptomaticNode in symptomaticNodes:
-                            if (isolation_compliance_symptomatic_individual[symptomaticNode]):
-                                if (model.X[symptomaticNode] == model.I_sym):
+                            if isolation_compliance_symptomatic_individual[symptomaticNode]:
+                                if model.X[symptomaticNode] == model.I_sym:
                                     numSelfIsolated_symptoms += 1
                                     newIsolationGroup_symptomatic.append(symptomaticNode)
 
@@ -153,8 +153,8 @@ def run_tti_sim(model, T, max_dt=None,
                                 if (isolation_groups is not None and any(isolation_compliance_symptomatic_groupmate)):
                                     isolationGroupmates = next((group for group in isolation_groups if symptomaticNode in group), None)
                                     for isolationGroupmate in isolationGroupmates:
-                                        if (isolationGroupmate != symptomaticNode):
-                                            if (isolation_compliance_symptomatic_groupmate[isolationGroupmate]):
+                                        if isolationGroupmate != symptomaticNode:
+                                            if isolation_compliance_symptomatic_groupmate[isolationGroupmate]:
                                                 numSelfIsolated_symptomaticGroupmate += 1
                                                 newIsolationGroup_symptomatic.append(isolationGroupmate)
 
@@ -167,7 +167,7 @@ def run_tti_sim(model, T, max_dt=None,
 
                     if (any(isolation_compliance_positive_contact) or any(isolation_compliance_positive_contactgroupmate)):
                         for contactNode in tracingPoolQueue[0]:
-                            if (isolation_compliance_positive_contact[contactNode]):
+                            if isolation_compliance_positive_contact[contactNode]:
                                 newIsolationGroup_contact.append(contactNode)
                                 numSelfIsolated_positiveContact += 1
 
@@ -178,7 +178,7 @@ def run_tti_sim(model, T, max_dt=None,
                                 isolationGroupmates = next((group for group in isolation_groups if contactNode in group), None)
                                 for isolationGroupmate in isolationGroupmates:
                                     # if (isolationGroupmate != contactNode):
-                                    if (isolation_compliance_positive_contactgroupmate[isolationGroupmate]):
+                                    if isolation_compliance_positive_contactgroupmate[isolationGroupmate]:
                                         newIsolationGroup_contact.append(isolationGroupmate)
                                         numSelfIsolated_positiveContactGroupmate += 1
 
@@ -198,7 +198,7 @@ def run_tti_sim(model, T, max_dt=None,
                     #----------------------------------------
                     symptomaticSelection = []
 
-                    if (any(testing_compliance_symptomatic)):
+                    if any(testing_compliance_symptomatic):
 
                         symptomaticPool = numpy.argwhere((testing_compliance_symptomatic==True)
                                                          & (nodeTestedInCurrentStateStatuses==False)
@@ -208,7 +208,7 @@ def run_tti_sim(model, T, max_dt=None,
 
                         numSymptomaticTests  = min(len(symptomaticPool), max_symptomatic_tests_per_day)
 
-                        if (len(symptomaticPool) > 0):
+                        if len(symptomaticPool) > 0:
                             symptomaticSelection = symptomaticPool[numpy.random.choice(len(symptomaticPool), min(numSymptomaticTests, len(symptomaticPool)), replace=False)]
 
 
@@ -220,7 +220,7 @@ def run_tti_sim(model, T, max_dt=None,
                     tracingSelection = []
                     randomSelection = []
 
-                    if (cadenceDayNumber in testingDays):
+                    if cadenceDayNumber in testingDays:
 
                         #----------------------------------------
                         # Apply a designated portion of this day's tests
@@ -229,7 +229,7 @@ def run_tti_sim(model, T, max_dt=None,
 
                         tracingPool = tracingPoolQueue.pop(0)
 
-                        if (any(testing_compliance_traced)):
+                        if any(testing_compliance_traced):
 
                             numTracingTests = min(len(tracingPool), min(tests_per_day-len(symptomaticSelection), max_tracing_tests_per_day))
 
@@ -247,7 +247,7 @@ def run_tti_sim(model, T, max_dt=None,
                         # Apply the remainder of this day's tests to random testing:
                         #----------------------------------------
 
-                        if (any(testing_compliance_random)):
+                        if any(testing_compliance_random):
 
                             testingPool = numpy.argwhere((testing_compliance_random==True)
                                                          & (nodePositiveStatuses==False)
@@ -262,7 +262,7 @@ def run_tti_sim(model, T, max_dt=None,
                             testingPool_degrees       = model.degree.flatten()[testingPool]
                             testingPool_degreeWeights = numpy.power(testingPool_degrees,random_testing_degree_bias)/numpy.sum(numpy.power(testingPool_degrees,random_testing_degree_bias))
 
-                            if (len(testingPool) > 0):
+                            if len(testingPool) > 0:
                                 randomSelection = testingPool[numpy.random.choice(len(testingPool), numRandomTests, p=testingPool_degreeWeights, replace=False)]
 
 
@@ -294,9 +294,9 @@ def run_tti_sim(model, T, max_dt=None,
                         model.set_tested(testNode, True)
 
                         numTested += 1
-                        if (i < len(symptomaticSelection)):
+                        if i < len(symptomaticSelection):
                             numTested_symptomatic  += 1
-                        elif (i < len(symptomaticSelection)+len(tracingSelection)):
+                        elif i < len(symptomaticSelection)+len(tracingSelection):
                             numTested_tracing += 1
                         else:
                             numTested_random += 1
@@ -312,24 +312,24 @@ def run_tti_sim(model, T, max_dt=None,
                              or model.X[testNode] == model.I_sym or model.X[testNode] == model.Q_sym
                              or model.X[testNode] == model.I_asym or model.X[testNode] == model.Q_asym):
 
-                            if (test_falseneg_rate == 'temporal'):
+                            if test_falseneg_rate == 'temporal':
                                 testNodeState       = model.X[testNode][0]
                                 testNodeTimeInState = model.timer_state[testNode][0]
-                                if (testNodeState in list(temporal_falseneg_rates.keys())):
+                                if testNodeState in list(temporal_falseneg_rates.keys()):
                                     falseneg_prob = temporal_falseneg_rates[testNodeState][ int(min(testNodeTimeInState, max(list(temporal_falseneg_rates[testNodeState].keys())))) ]
                                 else:
                                     falseneg_prob = 1.00
                             else:
                                 falseneg_prob = test_falseneg_rate
 
-                            if (numpy.random.rand() < (1-falseneg_prob)):
+                            if numpy.random.rand() < (1-falseneg_prob):
                                 # +++++++++++++++++++++++++++++++++++++++++++++
                                 # The tested node has returned a positive test
                                 # +++++++++++++++++++++++++++++++++++++++++++++
                                 numPositive += 1
-                                if (i < len(symptomaticSelection)):
+                                if i < len(symptomaticSelection):
                                     numPositive_symptomatic  += 1
-                                elif (i < len(symptomaticSelection)+len(tracingSelection)):
+                                elif i < len(symptomaticSelection)+len(tracingSelection):
                                     numPositive_tracing += 1
                                 else:
                                     numPositive_random += 1
@@ -340,7 +340,7 @@ def run_tti_sim(model, T, max_dt=None,
                                 #----------------------------------------
                                 # Add this positive node to the isolation group:
                                 #----------------------------------------
-                                if (isolation_compliance_positive_individual[testNode]):
+                                if isolation_compliance_positive_individual[testNode]:
                                     newIsolationGroup_positive.append(testNode)
 
                                 #----------------------------------------
@@ -349,8 +349,8 @@ def run_tti_sim(model, T, max_dt=None,
                                 if (isolation_groups is not None and any(isolation_compliance_positive_groupmate)):
                                     isolationGroupmates = next((group for group in isolation_groups if testNode in group), None)
                                     for isolationGroupmate in isolationGroupmates:
-                                        if (isolationGroupmate != testNode):
-                                            if (isolation_compliance_positive_groupmate[isolationGroupmate]):
+                                        if isolationGroupmate != testNode:
+                                            if isolation_compliance_positive_groupmate[isolationGroupmate]:
                                                 numIsolated_positiveGroupmate += 1
                                                 newIsolationGroup_positive.append(isolationGroupmate)
 
@@ -358,10 +358,10 @@ def run_tti_sim(model, T, max_dt=None,
                                 # Add this node's neighbors to the contact tracing pool:
                                 #----------------------------------------
                                 if (any(tracing_compliance) or any(isolation_compliance_positive_contact) or any(isolation_compliance_positive_contactgroupmate)):
-                                    if (tracing_compliance[testNode]):
+                                    if tracing_compliance[testNode]:
                                         testNodeContacts = list(model.G[testNode].keys())
                                         numpy.random.shuffle(testNodeContacts)
-                                        if (num_contacts_to_trace is None):
+                                        if num_contacts_to_trace is None:
                                             numContactsToTrace = int(pct_contacts_to_trace*len(testNodeContacts))
                                         else:
                                             numContactsToTrace = num_contacts_to_trace

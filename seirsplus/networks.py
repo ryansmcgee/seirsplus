@@ -64,14 +64,14 @@ def generate_workplace_contact_network(num_cohorts=1, num_nodes_per_cohort=100, 
         cohorts_indices['c'+str(c)] = list(range(cohortStartIdx, cohortFinalIdx))
 
         for team, indices in teams_indices.items():
-            if ('c'+str(c) in team):
+            if 'c' + str(c) in team:
                 teams_indices[team] = [idx+cohortStartIdx for idx in indices]
 
         for i in list(range(cohortNetwork.number_of_nodes())):
             i_intraCohortDegree = cohortNetwork.degree[i]
             i_interCohortDegree = int( ((1/(1-pct_contacts_intercohort))*i_intraCohortDegree)-i_intraCohortDegree )
             # Add intercohort edges:
-            if (len(cohortNetworks) > 1):
+            if len(cohortNetworks) > 1:
                 for d in list(range(i_interCohortDegree)):
                     j = numpy.random.choice(list(range(0, cohortStartIdx))+list(range(cohortFinalIdx+1, N)))
                     workplaceNetwork.add_edge(i, j)
@@ -165,7 +165,7 @@ def generate_demographic_contact_network(N, demographic_data, layer_generator='F
     households     = []    # List of dicts storing household data structures and metadata
     homelessNodes  = N     # Number of individuals to place in households
     curMemberIndex = 0
-    while(homelessNodes > 0):
+    while homelessNodes > 0:
 
         household = {}
 
@@ -173,7 +173,7 @@ def generate_demographic_contact_network(N, demographic_data, layer_generator='F
 
         household['ageBrackets'] = []
 
-        if (household['situation'] == 'NOTu20_o60_eq1'):
+        if household['situation'] == 'NOTu20_o60_eq1':
 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             # Household size is definitely 1
@@ -183,7 +183,7 @@ def generate_demographic_contact_network(N, demographic_data, layer_generator='F
             # There is only 1 member in this household, and they are OVER 60; add them:
             household['ageBrackets'].append( numpy.random.choice(list(age_distn_givenO60.keys()), p=list(age_distn_givenO60.values())) )
 
-        elif (household['situation'] == 'NOTu20_NOTo60_eq1'):
+        elif household['situation'] == 'NOTu20_NOTo60_eq1':
 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             # Household size is definitely 1
@@ -192,7 +192,7 @@ def generate_demographic_contact_network(N, demographic_data, layer_generator='F
             # There is only 1 member in this household, and they are BETWEEN 20-60; add them:
             household['ageBrackets'].append( numpy.random.choice(list(age_distn_given20to60.keys()), p=list(age_distn_given20to60.values())) )
 
-        elif (household['situation'] == 'u20_o60_gt1'):
+        elif household['situation'] == 'u20_o60_gt1':
 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             # Draw a household size (given the situation, there's at least 2 members):
@@ -216,7 +216,7 @@ def generate_demographic_contact_network(N, demographic_data, layer_generator='F
             for m in range(household['size'] - len(household['ageBrackets'])):
                 household['ageBrackets'].append( numpy.random.choice(list(age_distn_givenNOTU20.keys()), p=list(age_distn_givenNOTU20.values())) )
 
-        elif (household['situation'] == 'u20_NOTo60_gt1'):
+        elif household['situation'] == 'u20_NOTo60_gt1':
 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             # Draw a household size (given the situation, there's at least 2 members):
@@ -240,7 +240,7 @@ def generate_demographic_contact_network(N, demographic_data, layer_generator='F
             for m in range(household['size'] - len(household['ageBrackets'])):
                 household['ageBrackets'].append( numpy.random.choice(list(age_distn_given20to60.keys()), p=list(age_distn_given20to60.values())) )
 
-        elif (household['situation'] == 'NOTu20_o60_gt1'):
+        elif household['situation'] == 'NOTu20_o60_gt1':
 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             # Draw a household size (given the situation, there's at least 2 members):
@@ -258,7 +258,7 @@ def generate_demographic_contact_network(N, demographic_data, layer_generator='F
             for m in range(household['size'] - len(household['ageBrackets'])):
                 household['ageBrackets'].append( numpy.random.choice(list(age_distn_givenNOTU20.keys()), p=list(age_distn_givenNOTU20.values())) )
 
-        elif (household['situation'] == 'NOTu20_NOTo60_gt1'):
+        elif household['situation'] == 'NOTu20_NOTo60_gt1':
 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             # Draw a household size (given the situation, there's at least 2 members):
@@ -280,7 +280,7 @@ def generate_demographic_contact_network(N, demographic_data, layer_generator='F
         # elif (household['situation'] == 'u20_o60_eq1'):
         #    impossible
 
-        if (len(household['ageBrackets']) == household['size']):
+        if len(household['ageBrackets']) == household['size']:
 
             homelessNodes -= household['size']
 
@@ -311,7 +311,7 @@ def generate_demographic_contact_network(N, demographic_data, layer_generator='F
     print("mean household size: " + str(meanHouseholdSize))
     print()
 
-    if (verbose):
+    if verbose:
         print("Generated percent households with at least one member Under 20:")
         checkval = len([household for household in households if not set(household['ageBrackets']).isdisjoint(ageBrackets_U20)])/numHouseholds
         target   = pctHouseholdsWithMember_U20
@@ -352,7 +352,7 @@ def generate_demographic_contact_network(N, demographic_data, layer_generator='F
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Define the age groups and desired mean degree for each graph layer:
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    if (layer_info is None):
+    if layer_info is None:
         # Use the following default data if none is provided:
         # Data source: https://www.medrxiv.org/content/10.1101/2020.03.19.20039107v1
         layer_info  = { '0-9':   {'ageBrackets': ['0-9'],                   'meanDegree': 8.6, 'meanDegree_CI': (0.0, 17.7) },
@@ -397,9 +397,9 @@ def generate_demographic_contact_network(N, demographic_data, layer_generator='F
         targetMeanDegreeRange = (targetMeanDegree+meanHouseholdSize-0.75, targetMeanDegree+meanHouseholdSize+0.75) if layer_generator=='FARZ' else layerInfo['meanDegree_CI']
         # targetMeanDegreeRange = (targetMeanDegree+meanHouseholdSize-1, targetMeanDegree+meanHouseholdSize+1)
 
-        while(not graph_generated):
+        while not graph_generated:
             try:
-                if (layer_generator == 'LFR'):
+                if layer_generator == 'LFR':
 
                     # print "TARGET MEAN DEGREE     = " + str(targetMeanDegree)
 
@@ -409,7 +409,7 @@ def generate_demographic_contact_network(N, demographic_data, layer_generator='F
                                             average_degree=int(targetMeanDegree),
                                             tol=1e-01, max_iters=200, seed=(None if graph_gen_attempts<10 else int(numpy.random.rand()*1000)))
 
-                elif (layer_generator == 'FARZ'):
+                elif layer_generator == 'FARZ':
 
                     # https://github.com/rabbanyk/FARZ
                     layerInfo['graph'], layerInfo['communities'] = FARZ.generate(farz_params={
@@ -424,7 +424,7 @@ def generate_demographic_contact_network(N, demographic_data, layer_generator='F
                                                                     'phi': 1, 'b': 0.0, 'epsilon': 0.0000001,
                                                                     'directed': False, 'weighted': False})
 
-                elif (layer_generator == 'BA'):
+                elif layer_generator == 'BA':
                     pass
 
                 else:
@@ -438,7 +438,7 @@ def generate_demographic_contact_network(N, demographic_data, layer_generator='F
                 if (meanDegree+meanHouseholdSize >= targetMeanDegreeRange[0] and meanDegree+meanHouseholdSize <= targetMeanDegreeRange[1]):
                 # if (meanDegree+meanHouseholdSize >= targetMeanDegree+meanHouseholdSize-1 and meanDegree+meanHouseholdSize <= targetMeanDegree+meanHouseholdSize+1):
 
-                    if (verbose):
+                    if verbose:
                         print(layerGroup+" public mean degree = "+str((meanDegree)))
                         print(layerGroup+" public max degree  = "+str((maxDegree)))
 
@@ -446,7 +446,7 @@ def generate_demographic_contact_network(N, demographic_data, layer_generator='F
 
                     # Create an adjacency matrix mask that will zero out all public edges
                     # for any isolation groups but allow all public edges for other groups:
-                    if (layerGroup in isolation_groups):
+                    if layerGroup in isolation_groups:
                         adjMatrices_isolation_mask.append(numpy.zeros(shape=networkx.adj_matrix(layerInfo['graph']).shape))
                     else:
                         # adjMatrices_isolation_mask.append(numpy.ones(shape=networkx.adj_matrix(layerInfo['graph']).shape))
@@ -460,13 +460,13 @@ def generate_demographic_contact_network(N, demographic_data, layer_generator='F
 
                 else:
                     graph_gen_attempts += 1
-                    if (graph_gen_attempts >= 1):# and graph_gen_attempts % 2):
-                        if (meanDegree+meanHouseholdSize < targetMeanDegreeRange[0]):
+                    if graph_gen_attempts >= 1:# and graph_gen_attempts % 2):
+                        if meanDegree+meanHouseholdSize < targetMeanDegreeRange[0]:
                             targetMeanDegree += 1 if layer_generator=='FARZ' else 0.05
-                        elif (meanDegree+meanHouseholdSize > targetMeanDegreeRange[1]):
+                        elif meanDegree+meanHouseholdSize > targetMeanDegreeRange[1]:
                             targetMeanDegree -= 1 if layer_generator=='FARZ' else 0.05
                         # reload(networkx)
-                    if (verbose):
+                    if verbose:
                         # print("Try again... (mean degree = "+str(meanDegree)+"+"+str(meanHouseholdSize)+" is outside the target range for mean degree "+str(targetMeanDegreeRange)+")")
                         print("\tTry again... (mean degree = %.2f+%.2f=%.2f is outside the target range for mean degree (%.2f, %.2f)" % (meanDegree, meanHouseholdSize, meanDegree+meanHouseholdSize, targetMeanDegreeRange[0], targetMeanDegreeRange[1]))
 
@@ -477,7 +477,7 @@ def generate_demographic_contact_network(N, demographic_data, layer_generator='F
                 graph_gen_attempts += 1
                 # if (graph_gen_attempts >= 10 and graph_gen_attempts % 10):
                 #     reload(networkx)
-                if (verbose):
+                if verbose:
                     print("\tTry again... (networkx failed to converge on a graph)")
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -504,7 +504,7 @@ def generate_demographic_contact_network(N, demographic_data, layer_generator='F
     for dist_scale in distancing_scales:
         graphs['distancingScale'+str(dist_scale)] = custom_exponential_graph(G_baseline_NODIST, scale=dist_scale)
 
-        if (verbose):
+        if verbose:
             nodeDegrees_baseline_public_DIST    = [d[1] for d in graphs['distancingScale'+str(dist_scale)].degree()]
             print("Distancing Public Degree Pcts:")
             (unique, counts) = numpy.unique(nodeDegrees_baseline_public_DIST, return_counts=True)
@@ -521,7 +521,7 @@ def generate_demographic_contact_network(N, demographic_data, layer_generator='F
     #########################################
     # Generate modifications to the contact network representing isolation of individuals in specified groups:
     #########################################
-    if (len(isolation_groups) > 0):
+    if len(isolation_groups) > 0:
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Assemble an adjacency matrix mask (from layer generation step) that will zero out
@@ -576,7 +576,7 @@ def generate_demographic_contact_network(N, demographic_data, layer_generator='F
     #########################################
     # Check the connectivity of the fully constructed contacts graphs for each age group's layer:
     #########################################
-    if (verbose):
+    if verbose:
         for graphName, graph in graphs.items():
             nodeDegrees    = [d[1] for d in graph.degree()]
             meanDegree= numpy.mean(nodeDegrees)
@@ -607,7 +607,7 @@ def generate_demographic_contact_network(N, demographic_data, layer_generator='F
 
 def household_country_data(country):
 
-    if (country=='US'):
+    if country == 'US':
         household_data = {
                             'household_size_distn':{ 1: 0.283708848,
                                                     2: 0.345103011,
@@ -646,7 +646,7 @@ def household_country_data(country):
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def custom_exponential_graph(base_graph=None, scale=100, min_num_edges=0, m=9, n=None):
     # If no base graph is provided, generate a random preferential attachment power law graph as a starting point.
-    if (base_graph):
+    if base_graph:
         graph = base_graph.copy()
     else:
         assert(n is not None), "Argument n (number of nodes) must be provided when no base graph is given."
@@ -655,11 +655,11 @@ def custom_exponential_graph(base_graph=None, scale=100, min_num_edges=0, m=9, n
     # We modify the graph by probabilistically dropping some edges from each node.
     for node in graph:
         neighbors = list(graph[node].keys())
-        if (len(neighbors) > 0):
+        if len(neighbors) > 0:
             quarantineEdgeNum = int( max(min(numpy.random.exponential(scale=scale, size=1), len(neighbors)), min_num_edges) )
             quarantineKeepNeighbors = numpy.random.choice(neighbors, size=quarantineEdgeNum, replace=False)
             for neighbor in neighbors:
-                if (neighbor not in quarantineKeepNeighbors):
+                if neighbor not in quarantineKeepNeighbors:
                     graph.remove_edge(node, neighbor)
 
     return graph
@@ -669,7 +669,7 @@ def custom_exponential_graph(base_graph=None, scale=100, min_num_edges=0, m=9, n
 
 def plot_degree_distn(graph, max_degree=None, show=True, use_seaborn=True):
     import matplotlib.pyplot as pyplot
-    if (use_seaborn):
+    if use_seaborn:
         import seaborn
         seaborn.set_style('ticks')
         seaborn.despine()
@@ -688,5 +688,5 @@ def plot_degree_distn(graph, max_degree=None, show=True, use_seaborn=True):
     pyplot.xlabel('degree')
     pyplot.ylabel('num nodes')
     pyplot.legend(loc='upper right')
-    if (show):
+    if show:
         pyplot.show()

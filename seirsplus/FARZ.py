@@ -10,7 +10,7 @@ import os
 def random_choice(values, weights=None , size = 1, replace = True):
     if weights is None:
         i = int(random.random() * len(values))
-    else :
+    else:
         total = 0
         cum_weights = []
         for w in weights:
@@ -198,7 +198,7 @@ def choose_node(i,c, G, C, alpha, beta, gamma, epsilon):
             j = trim_ids[ind]
             p[ind] = (cn[j]**alpha )/ ((dd[ind]+1)** gamma)
 
-        if (sum(p)==0): return  None
+        if sum(p) == 0: return  None
         tmp = random_choice(range(len(p)), p ) #, size=1, replace = False)
         # TODO add weights /direction/attributes
         if tmp is None: return  None
@@ -237,7 +237,7 @@ def assign(i, C, e=1, r=1, q = 0.5):
     id = random_choice(range(C.k),p )
     C.add(id, i)
     for j in range(1,r): #todo add strength for fuzzy
-        if (random.random()<q):
+        if random.random() < q:
               id = random_choice(range(C.k),p )
               C.add(id, i)
     return
@@ -403,7 +403,7 @@ def main(argv):
 
         elif opt in ("-o", "--output"):
             batch_setting['net_name'] = arg
-        elif opt in ("--path"):
+        elif opt in ("--path",):
             batch_setting['path'] = arg
         elif opt in ("-f", "--format"):
             if arg in supported_formats:
@@ -417,7 +417,7 @@ def main(argv):
                 print('Invalid Number , try -h to see the usage and options')
                 sys.exit(2)
         elif opt in ("-v", "--vary"):
-            if (arg in list(default_ranges.keys())):
+            if arg in list(default_ranges.keys()):
                 batch_setting['vari'] = arg
             else:
                 print('Invalid variable, choose form :', list(default_ranges.keys()), ', try -h to see the usage and options')
@@ -429,17 +429,17 @@ def main(argv):
             except Error:
                 print('Invalid range, should have the following form : [start,end,incrementBy], try -h to see the usage and options ')
                 sys.exit(2)
-        elif opt in ("-n"):
+        elif opt in ("-n",):
             try: FARZsetting['n'] = int(arg)
             except ValueError:
                 print('Invalid Number , try -h to see the usage and options')
                 sys.exit(2)
-        elif opt in ("-k"):
+        elif opt in ("-k",):
             try: FARZsetting['k'] = int(arg)
             except ValueError:
                 print('Invalid Number , try -h to see the usage and options')
                 sys.exit(2)
-        elif opt in ("-m"):
+        elif opt in ("-m",):
             try: FARZsetting['m'] = int(arg)
             except ValueError:
                 print('Invalid Number , try -h to see the usage and options')
