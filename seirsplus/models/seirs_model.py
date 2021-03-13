@@ -484,7 +484,7 @@ class SEIRSModel():
 
         fig, ax = pyplot.subplots(figsize=figsize)
 
-        if (use_seaborn):
+        if use_seaborn:
             import seaborn
             seaborn.set_style('ticks')
             seaborn.despine()
