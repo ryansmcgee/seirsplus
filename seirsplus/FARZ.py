@@ -198,7 +198,7 @@ def choose_node(i,c, G, C, alpha, beta, gamma, epsilon):
             j = trim_ids[ind]
             p[ind] = (cn[j]**alpha )/ ((dd[ind]+1)** gamma)
 
-        if(sum(p)==0): return  None
+        if (sum(p)==0): return  None
         tmp = random_choice(range(len(p)), p ) #, size=1, replace = False)
         # TODO add weights /direction/attributes
         if tmp is None: return  None

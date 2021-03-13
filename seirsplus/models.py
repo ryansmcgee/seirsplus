@@ -172,7 +172,7 @@ class SEIRSModel():
 
     def run(self, T, dt=0.1, checkpoints=None, verbose=False):
 
-        if(T>0):
+        if (T>0):
             self.tmax += T
         else:
             return False
@@ -180,7 +180,7 @@ class SEIRSModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Pre-process checkpoint values:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if(checkpoints):
+        if (checkpoints):
             numCheckpoints = len(checkpoints['t'])
             paramNames = ['beta', 'sigma', 'gamma', 'xi', 'mu_I', 'mu_0', 'nu',
                           'beta_Q', 'sigma_Q', 'gamma_Q', 'mu_Q',
@@ -188,7 +188,7 @@ class SEIRSModel():
             for param in paramNames:
                 # For params that don't have given checkpoint values (or bad value given),
                 # set their checkpoint values to the value they have now for all checkpoints.
-                if(param not in list(checkpoints.keys())
+                if (param not in list(checkpoints.keys())
                     or not isinstance(checkpoints[param], (list, numpy.ndarray))
                     or len(checkpoints[param])!=numCheckpoints):
                     checkpoints[param] = [getattr(self, param)]*numCheckpoints
@@ -196,13 +196,13 @@ class SEIRSModel():
         #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         # Run the simulation loop:
         #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        if(not checkpoints):
+        if (not checkpoints):
             self.run_epoch(runtime=self.tmax, dt=dt)
 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
             print("t = %.2f" % self.t)
-            if(verbose):
+            if (verbose):
                 print("\t S   = " + str(self.numS[-1]))
                 print("\t E   = " + str(self.numE[-1]))
                 print("\t I   = " + str(self.numI[-1]))
@@ -224,7 +224,7 @@ class SEIRSModel():
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
                 print("t = %.2f" % self.t)
-                if(verbose):
+                if (verbose):
                     print("\t S   = " + str(self.numS[-1]))
                     print("\t E   = " + str(self.numE[-1]))
                     print("\t I   = " + str(self.numI[-1]))
@@ -233,7 +233,7 @@ class SEIRSModel():
                     print("\t R   = " + str(self.numR[-1]))
                     print("\t F   = " + str(self.numF[-1]))
 
-            if(self.t < self.tmax):
+            if (self.t < self.tmax):
                 self.run_epoch(runtime=self.tmax-self.t, dt=dt)
 
         return True
@@ -242,7 +242,7 @@ class SEIRSModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def total_num_susceptible(self, t_idx=None):
-        if(t_idx is None):
+        if (t_idx is None):
             return (self.numS[:])
         else:
             return (self.numS[t_idx])
@@ -250,7 +250,7 @@ class SEIRSModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def total_num_infected(self, t_idx=None):
-        if(t_idx is None):
+        if (t_idx is None):
             return (self.numE[:] + self.numI[:] + self.numQ_E[:] + self.numQ_I[:])
         else:
             return (self.numE[t_idx] + self.numI[t_idx] + self.numQ_E[t_idx] + self.numQ_I[t_idx])
@@ -258,7 +258,7 @@ class SEIRSModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def total_num_isolated(self, t_idx=None):
-        if(t_idx is None):
+        if (t_idx is None):
             return (self.numQ_E[:] + self.numQ_I[:])
         else:
             return (self.numQ_E[t_idx] + self.numQ_I[t_idx])
@@ -266,7 +266,7 @@ class SEIRSModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def total_num_recovered(self, t_idx=None):
-        if(t_idx is None):
+        if (t_idx is None):
             return (self.numR[:])
         else:
             return (self.numR[t_idx])
@@ -289,7 +289,7 @@ class SEIRSModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Create an Axes object if None provided:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if(not ax):
+        if (not ax):
             fig, ax = pyplot.subplots()
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -307,11 +307,11 @@ class SEIRSModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Draw the reference data:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if(dashed_reference_results):
+        if (dashed_reference_results):
             dashedReference_tseries  = dashed_reference_results.tseries[::int(self.N/100)]
             dashedReference_IDEstack = (dashed_reference_results.numI + dashed_reference_results.numQ_I + dashed_reference_results.numQ_E + dashed_reference_results.numE)[::int(self.N/100)] / (self.N if plot_percentages else 1)
             ax.plot(dashedReference_tseries, dashedReference_IDEstack, color='#E0E0E0', linestyle='--', label='$I+D+E$ ('+dashed_reference_label+')', zorder=0)
-        if(shaded_reference_results):
+        if (shaded_reference_results):
             shadedReference_tseries  = shaded_reference_results.tseries
             shadedReference_IDEstack = (shaded_reference_results.numI + shaded_reference_results.numQ_I + shaded_reference_results.numQ_E + shaded_reference_results.numE) / (self.N if plot_percentages else 1)
             ax.fill_between(shaded_reference_results.tseries, shadedReference_IDEstack, 0, color='#EFEFEF', label='$I+D+E$ ('+shaded_reference_label+')', zorder=0)
@@ -321,36 +321,36 @@ class SEIRSModel():
         # Draw the stacked variables:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         topstack = numpy.zeros_like(self.tseries)
-        if(any(Fseries) and plot_F=='stacked'):
+        if (any(Fseries) and plot_F=='stacked'):
             ax.fill_between(numpy.ma.masked_where(Fseries<=0, self.tseries), numpy.ma.masked_where(Fseries<=0, topstack+Fseries), topstack, color=color_F, alpha=0.5, label='$F$', zorder=2)
             ax.plot(        numpy.ma.masked_where(Fseries<=0, self.tseries), numpy.ma.masked_where(Fseries<=0, topstack+Fseries),           color=color_F, zorder=3)
             topstack = topstack+Fseries
-        if(any(Eseries) and plot_E=='stacked'):
+        if (any(Eseries) and plot_E=='stacked'):
             ax.fill_between(numpy.ma.masked_where(Eseries<=0, self.tseries), numpy.ma.masked_where(Eseries<=0, topstack+Eseries), topstack, color=color_E, alpha=0.5, label='$E$', zorder=2)
             ax.plot(        numpy.ma.masked_where(Eseries<=0, self.tseries), numpy.ma.masked_where(Eseries<=0, topstack+Eseries),           color=color_E, zorder=3)
             topstack = topstack+Eseries
-        if(combine_Q and plot_Q_E=='stacked' and plot_Q_I=='stacked'):
+        if (combine_Q and plot_Q_E=='stacked' and plot_Q_I=='stacked'):
             ax.fill_between(numpy.ma.masked_where(Dseries<=0, self.tseries), numpy.ma.masked_where(Dseries<=0, topstack+Dseries), topstack, color=color_Q_E, alpha=0.5, label='$Q_{all}$', zorder=2)
             ax.plot(        numpy.ma.masked_where(Dseries<=0, self.tseries), numpy.ma.masked_where(Dseries<=0, topstack+Dseries),           color=color_Q_E, zorder=3)
             topstack = topstack+Dseries
         else:
-            if(any(Q_Eseries) and plot_Q_E=='stacked'):
+            if (any(Q_Eseries) and plot_Q_E=='stacked'):
                 ax.fill_between(numpy.ma.masked_where(Q_Eseries<=0, self.tseries), numpy.ma.masked_where(Q_Eseries<=0, topstack+Q_Eseries), topstack, color=color_Q_E, alpha=0.5, label='$Q_E$', zorder=2)
                 ax.plot(        numpy.ma.masked_where(Q_Eseries<=0, self.tseries), numpy.ma.masked_where(Q_Eseries<=0, topstack+Q_Eseries),           color=color_Q_E, zorder=3)
                 topstack = topstack+Q_Eseries
-            if(any(Q_Iseries) and plot_Q_I=='stacked'):
+            if (any(Q_Iseries) and plot_Q_I=='stacked'):
                 ax.fill_between(numpy.ma.masked_where(Q_Iseries<=0, self.tseries), numpy.ma.masked_where(Q_Iseries<=0, topstack+Q_Iseries), topstack, color=color_Q_I, alpha=0.5, label='$Q_I$', zorder=2)
                 ax.plot(        numpy.ma.masked_where(Q_Iseries<=0, self.tseries), numpy.ma.masked_where(Q_Iseries<=0, topstack+Q_Iseries),           color=color_Q_I, zorder=3)
                 topstack = topstack+Q_Iseries
-        if(any(Iseries) and plot_I=='stacked'):
+        if (any(Iseries) and plot_I=='stacked'):
             ax.fill_between(numpy.ma.masked_where(Iseries<=0, self.tseries), numpy.ma.masked_where(Iseries<=0, topstack+Iseries), topstack, color=color_I, alpha=0.5, label='$I$', zorder=2)
             ax.plot(        numpy.ma.masked_where(Iseries<=0, self.tseries), numpy.ma.masked_where(Iseries<=0, topstack+Iseries),           color=color_I, zorder=3)
             topstack = topstack+Iseries
-        if(any(Rseries) and plot_R=='stacked'):
+        if (any(Rseries) and plot_R=='stacked'):
             ax.fill_between(numpy.ma.masked_where(Rseries<=0, self.tseries), numpy.ma.masked_where(Rseries<=0, topstack+Rseries), topstack, color=color_R, alpha=0.5, label='$R$', zorder=2)
             ax.plot(        numpy.ma.masked_where(Rseries<=0, self.tseries), numpy.ma.masked_where(Rseries<=0, topstack+Rseries),           color=color_R, zorder=3)
             topstack = topstack+Rseries
-        if(any(Sseries) and plot_S=='stacked'):
+        if (any(Sseries) and plot_S=='stacked'):
             ax.fill_between(numpy.ma.masked_where(Sseries<=0, self.tseries), numpy.ma.masked_where(Sseries<=0, topstack+Sseries), topstack, color=color_S, alpha=0.5, label='$S$', zorder=2)
             ax.plot(        numpy.ma.masked_where(Sseries<=0, self.tseries), numpy.ma.masked_where(Sseries<=0, topstack+Sseries),           color=color_S, zorder=3)
             topstack = topstack+Sseries
@@ -359,64 +359,64 @@ class SEIRSModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Draw the shaded variables:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if(any(Fseries) and plot_F=='shaded'):
+        if (any(Fseries) and plot_F=='shaded'):
             ax.fill_between(numpy.ma.masked_where(Fseries<=0, self.tseries), numpy.ma.masked_where(Fseries<=0, Fseries), 0, color=color_F, alpha=0.5, label='$F$', zorder=4)
             ax.plot(        numpy.ma.masked_where(Fseries<=0, self.tseries), numpy.ma.masked_where(Fseries<=0, Fseries),    color=color_F, zorder=5)
-        if(any(Eseries) and plot_E=='shaded'):
+        if (any(Eseries) and plot_E=='shaded'):
             ax.fill_between(numpy.ma.masked_where(Eseries<=0, self.tseries), numpy.ma.masked_where(Eseries<=0, Eseries), 0, color=color_E, alpha=0.5, label='$E$', zorder=4)
             ax.plot(        numpy.ma.masked_where(Eseries<=0, self.tseries), numpy.ma.masked_where(Eseries<=0, Eseries),    color=color_E, zorder=5)
-        if(combine_Q and (any(Dseries) and plot_Q_E=='shaded' and plot_Q_E=='shaded')):
+        if (combine_Q and (any(Dseries) and plot_Q_E=='shaded' and plot_Q_E=='shaded')):
             ax.fill_between(numpy.ma.masked_where(Dseries<=0, self.tseries), numpy.ma.masked_where(Dseries<=0, Dseries), 0, color=color_Q_E, alpha=0.5, label='$Q_{all}$', zorder=4)
             ax.plot(        numpy.ma.masked_where(Dseries<=0, self.tseries), numpy.ma.masked_where(Dseries<=0, Dseries),    color=color_Q_E, zorder=5)
         else:
-            if(any(Q_Eseries) and plot_Q_E=='shaded'):
+            if (any(Q_Eseries) and plot_Q_E=='shaded'):
                 ax.fill_between(numpy.ma.masked_where(Q_Eseries<=0, self.tseries), numpy.ma.masked_where(Q_Eseries<=0, Q_Eseries), 0, color=color_Q_E, alpha=0.5, label='$Q_E$', zorder=4)
                 ax.plot(        numpy.ma.masked_where(Q_Eseries<=0, self.tseries), numpy.ma.masked_where(Q_Eseries<=0, Q_Eseries),    color=color_Q_E, zorder=5)
-            if(any(Q_Iseries) and plot_Q_I=='shaded'):
+            if (any(Q_Iseries) and plot_Q_I=='shaded'):
                 ax.fill_between(numpy.ma.masked_where(Q_Iseries<=0, self.tseries), numpy.ma.masked_where(Q_Iseries<=0, Q_Iseries), 0, color=color_Q_I, alpha=0.5, label='$Q_I$', zorder=4)
                 ax.plot(        numpy.ma.masked_where(Q_Iseries<=0, self.tseries), numpy.ma.masked_where(Q_Iseries<=0, Q_Iseries),    color=color_Q_I, zorder=5)
-        if(any(Iseries) and plot_I=='shaded'):
+        if (any(Iseries) and plot_I=='shaded'):
             ax.fill_between(numpy.ma.masked_where(Iseries<=0, self.tseries), numpy.ma.masked_where(Iseries<=0, Iseries), 0, color=color_I, alpha=0.5, label='$I$', zorder=4)
             ax.plot(        numpy.ma.masked_where(Iseries<=0, self.tseries), numpy.ma.masked_where(Iseries<=0, Iseries),    color=color_I, zorder=5)
-        if(any(Sseries) and plot_S=='shaded'):
+        if (any(Sseries) and plot_S=='shaded'):
             ax.fill_between(numpy.ma.masked_where(Sseries<=0, self.tseries), numpy.ma.masked_where(Sseries<=0, Sseries), 0, color=color_S, alpha=0.5, label='$S$', zorder=4)
             ax.plot(        numpy.ma.masked_where(Sseries<=0, self.tseries), numpy.ma.masked_where(Sseries<=0, Sseries),    color=color_S, zorder=5)
-        if(any(Rseries) and plot_R=='shaded'):
+        if (any(Rseries) and plot_R=='shaded'):
             ax.fill_between(numpy.ma.masked_where(Rseries<=0, self.tseries), numpy.ma.masked_where(Rseries<=0, Rseries), 0, color=color_R, alpha=0.5, label='$R$', zorder=4)
             ax.plot(        numpy.ma.masked_where(Rseries<=0, self.tseries), numpy.ma.masked_where(Rseries<=0, Rseries),    color=color_R, zorder=5)
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Draw the line variables:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if(any(Fseries) and plot_F=='line'):
+        if (any(Fseries) and plot_F=='line'):
             ax.plot(numpy.ma.masked_where(Fseries<=0, self.tseries), numpy.ma.masked_where(Fseries<=0, Fseries), color=color_F, label='$F$', zorder=6)
-        if(any(Eseries) and plot_E=='line'):
+        if (any(Eseries) and plot_E=='line'):
             ax.plot(numpy.ma.masked_where(Eseries<=0, self.tseries), numpy.ma.masked_where(Eseries<=0, Eseries), color=color_E, label='$E$', zorder=6)
-        if(combine_Q and (any(Dseries) and plot_Q_E=='line' and plot_Q_E=='line')):
+        if (combine_Q and (any(Dseries) and plot_Q_E=='line' and plot_Q_E=='line')):
             ax.plot(numpy.ma.masked_where(Dseries<=0, self.tseries), numpy.ma.masked_where(Dseries<=0, Dseries), color=color_Q_E, label='$Q_{all}$', zorder=6)
         else:
-            if(any(Q_Eseries) and plot_Q_E=='line'):
+            if (any(Q_Eseries) and plot_Q_E=='line'):
                 ax.plot(numpy.ma.masked_where(Q_Eseries<=0, self.tseries), numpy.ma.masked_where(Q_Eseries<=0, Q_Eseries), color=color_Q_E, label='$Q_E$', zorder=6)
-            if(any(Q_Iseries) and plot_Q_I=='line'):
+            if (any(Q_Iseries) and plot_Q_I=='line'):
                 ax.plot(numpy.ma.masked_where(Q_Iseries<=0, self.tseries), numpy.ma.masked_where(Q_Iseries<=0, Q_Iseries), color=color_Q_I, label='$Q_I$', zorder=6)
-        if(any(Iseries) and plot_I=='line'):
+        if (any(Iseries) and plot_I=='line'):
             ax.plot(numpy.ma.masked_where(Iseries<=0, self.tseries), numpy.ma.masked_where(Iseries<=0, Iseries), color=color_I, label='$I$', zorder=6)
-        if(any(Sseries) and plot_S=='line'):
+        if (any(Sseries) and plot_S=='line'):
             ax.plot(numpy.ma.masked_where(Sseries<=0, self.tseries), numpy.ma.masked_where(Sseries<=0, Sseries), color=color_S, label='$S$', zorder=6)
-        if(any(Rseries) and plot_R=='line'):
+        if (any(Rseries) and plot_R=='line'):
             ax.plot(numpy.ma.masked_where(Rseries<=0, self.tseries), numpy.ma.masked_where(Rseries<=0, Rseries), color=color_R, label='$R$', zorder=6)
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Draw the vertical line annotations:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if(len(vlines)>0 and len(vline_colors)==0):
+        if (len(vlines)>0 and len(vline_colors)==0):
             vline_colors = ['gray']*len(vlines)
-        if(len(vlines)>0 and len(vline_labels)==0):
+        if (len(vlines)>0 and len(vline_labels)==0):
             vline_labels = [None]*len(vlines)
-        if(len(vlines)>0 and len(vline_styles)==0):
+        if (len(vlines)>0 and len(vline_styles)==0):
             vline_styles = [':']*len(vlines)
         for vline_x, vline_color, vline_style, vline_label in zip(vlines, vline_colors, vline_styles, vline_labels):
-            if(vline_x is not None):
+            if (vline_x is not None):
                 ax.axvline(x=vline_x, color=vline_color, linestyle=vline_style, alpha=1, label=vline_label)
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -426,14 +426,14 @@ class SEIRSModel():
         ax.set_ylabel('percent of population' if plot_percentages else 'number of individuals')
         ax.set_xlim(0, (max(self.tseries) if not xlim else xlim))
         ax.set_ylim(0, ylim)
-        if(plot_percentages):
+        if (plot_percentages):
             ax.set_yticklabels(['{:,.0%}'.format(y) for y in ax.get_yticks()])
-        if(legend):
+        if (legend):
             legend_handles, legend_labels = ax.get_legend_handles_labels()
             ax.legend(legend_handles[::-1], legend_labels[::-1], loc='upper right', facecolor='white', edgecolor='none', framealpha=0.9, prop={'size': 8})
-        if(title):
+        if (title):
             ax.set_title(title, size=12)
-        if(side_title):
+        if (side_title):
             ax.annotate(side_title, (0, 0.5), xytext=(-45, 0), ha='right', va='center',
                 size=12, rotation=90, xycoords='axes fraction', textcoords='offset points')
 
@@ -457,7 +457,7 @@ class SEIRSModel():
 
         fig, ax = pyplot.subplots(figsize=figsize)
 
-        if(use_seaborn):
+        if (use_seaborn):
             import seaborn
             seaborn.set_style('ticks')
             seaborn.despine()
@@ -471,7 +471,7 @@ class SEIRSModel():
                         vlines=vlines, vline_colors=vline_colors, vline_styles=vline_styles, vline_labels=vline_labels,
                         ylim=ylim, xlim=xlim, legend=legend, title=title, side_title=side_title, plot_percentages=plot_percentages)
 
-        if(show):
+        if (show):
             pyplot.show()
 
         return fig, ax
@@ -494,7 +494,7 @@ class SEIRSModel():
 
         fig, ax = pyplot.subplots(figsize=figsize)
 
-        if(use_seaborn):
+        if (use_seaborn):
             import seaborn
             seaborn.set_style('ticks')
             seaborn.despine()
@@ -508,7 +508,7 @@ class SEIRSModel():
                         vlines=vlines, vline_colors=vline_colors, vline_styles=vline_styles, vline_labels=vline_labels,
                         ylim=ylim, xlim=xlim, legend=legend, title=title, side_title=side_title, plot_percentages=plot_percentages)
 
-        if(show):
+        if (show):
             pyplot.show()
 
         return fig, ax
@@ -571,7 +571,7 @@ class SEIRSNetworkModel():
                     initE=0, initI=0, initR=0, initF=0, initQ_E=0, initQ_I=0,
                     transition_mode='exponential_rates', node_groups=None, store_Xseries=False, seed=None):
 
-        if(seed is not None):
+        if (seed is not None):
             numpy.random.seed(seed)
             self.seed = seed
 
@@ -648,7 +648,7 @@ class SEIRSNetworkModel():
         numpy.random.shuffle(self.X)
 
         self.store_Xseries = store_Xseries
-        if(store_Xseries):
+        if (store_Xseries):
             self.Xseries        = numpy.zeros(shape=(6*self.numNodes, self.numNodes), dtype='uint8')
             self.Xseries[0,:]   = self.X.T
 
@@ -684,7 +684,7 @@ class SEIRSNetworkModel():
         # Initialize node subgroup data series:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         self.nodeGroupData = None
-        if(node_groups):
+        if (node_groups):
             self.nodeGroupData = {}
             for groupName, nodeList in node_groups.items():
                 self.nodeGroupData[groupName] = {'nodes':   numpy.array(nodeList),
@@ -728,7 +728,7 @@ class SEIRSNetworkModel():
         self.numNodes   = int(self.A.shape[1])
         self.degree     = numpy.asarray(self.node_degrees(self.A)).astype(float)
         #----------------------------------------
-        if(self.parameters['G_Q'] is None):
+        if (self.parameters['G_Q'] is None):
             self.G_Q = self.G # If no Q graph is provided, use G in its place
         else:
             self.G_Q = self.parameters['G_Q']
@@ -783,19 +783,19 @@ class SEIRSNetworkModel():
         #----------------------------------------
         # Global transmission parameters:
         #----------------------------------------
-        if(self.beta_pairwise_mode == 'infected' or self.beta_pairwise_mode is None):
+        if (self.beta_pairwise_mode == 'infected' or self.beta_pairwise_mode is None):
             self.beta_global         = numpy.full_like(self.beta, fill_value=numpy.mean(self.beta))
             self.beta_Q_global       = numpy.full_like(self.beta_Q, fill_value=numpy.mean(self.beta_Q))
-        elif(self.beta_pairwise_mode == 'infectee'):
+        elif (self.beta_pairwise_mode == 'infectee'):
             self.beta_global         = self.beta
             self.beta_Q_global       = self.beta_Q
-        elif(self.beta_pairwise_mode == 'min'):
+        elif (self.beta_pairwise_mode == 'min'):
             self.beta_global         = numpy.minimum(self.beta, numpy.mean(beta))
             self.beta_Q_global       = numpy.minimum(self.beta_Q, numpy.mean(beta_Q))
-        elif(self.beta_pairwise_mode == 'max'):
+        elif (self.beta_pairwise_mode == 'max'):
             self.beta_global         = numpy.maximum(self.beta, numpy.mean(beta))
             self.beta_Q_global       = numpy.maximum(self.beta_Q, numpy.mean(beta_Q))
-        elif(self.beta_pairwise_mode == 'mean'):
+        elif (self.beta_pairwise_mode == 'mean'):
             self.beta_global         = (self.beta + numpy.full_like(self.beta, fill_value=numpy.mean(self.beta)))/2
             self.beta_Q_global       = (self.beta_Q + numpy.full_like(self.beta_Q, fill_value=numpy.mean(self.beta_Q)))/2
 
@@ -806,48 +806,48 @@ class SEIRSNetworkModel():
         self.beta_Q_local       = self.beta_Q    if self.parameters['beta_Q_local'] is None    else numpy.array(self.parameters['beta_Q_local'])    if isinstance(self.parameters['beta_Q_local'], (list, numpy.ndarray))    else numpy.full(fill_value=self.parameters['beta_Q_local'], shape=(self.numNodes,1))
 
         #----------------------------------------
-        if(self.beta_local.ndim == 2 and self.beta_local.shape[0] == self.numNodes and self.beta_local.shape[1] == self.numNodes):
+        if (self.beta_local.ndim == 2 and self.beta_local.shape[0] == self.numNodes and self.beta_local.shape[1] == self.numNodes):
             self.A_beta_pairwise = self.beta_local
-        elif((self.beta_local.ndim == 1 and self.beta_local.shape[0] == self.numNodes) or (self.beta_local.ndim == 2 and (self.beta_local.shape[0] == self.numNodes or self.beta_local.shape[1] == self.numNodes))):
+        elif ((self.beta_local.ndim == 1 and self.beta_local.shape[0] == self.numNodes) or (self.beta_local.ndim == 2 and (self.beta_local.shape[0] == self.numNodes or self.beta_local.shape[1] == self.numNodes))):
             self.beta_local = self.beta_local.reshape((self.numNodes,1))
             # Pre-multiply beta values by the adjacency matrix ("transmission weight connections")
             A_beta_pairwise_byInfected = scipy.sparse.csr_matrix.multiply(self.A, self.beta_local.T).tocsr()
             A_beta_pairwise_byInfectee = scipy.sparse.csr_matrix.multiply(self.A, self.beta_local).tocsr()
             #------------------------------
             # Compute the effective pairwise beta values as a function of the infected/infectee pair:
-            if(self.beta_pairwise_mode == 'infected'):
+            if (self.beta_pairwise_mode == 'infected'):
                 self.A_beta_pairwise = A_beta_pairwise_byInfected
-            elif(self.beta_pairwise_mode == 'infectee'):
+            elif (self.beta_pairwise_mode == 'infectee'):
                 self.A_beta_pairwise = A_beta_pairwise_byInfectee
-            elif(self.beta_pairwise_mode == 'min'):
+            elif (self.beta_pairwise_mode == 'min'):
                 self.A_beta_pairwise = scipy.sparse.csr_matrix.minimum(A_beta_pairwise_byInfected, A_beta_pairwise_byInfectee)
-            elif(self.beta_pairwise_mode == 'max'):
+            elif (self.beta_pairwise_mode == 'max'):
                 self.A_beta_pairwise = scipy.sparse.csr_matrix.maximum(A_beta_pairwise_byInfected, A_beta_pairwise_byInfectee)
-            elif(self.beta_pairwise_mode == 'mean' or self.beta_pairwise_mode is None):
+            elif (self.beta_pairwise_mode == 'mean' or self.beta_pairwise_mode is None):
                 self.A_beta_pairwise = (A_beta_pairwise_byInfected + A_beta_pairwise_byInfectee)/2
             else:
                 print("Unrecognized beta_pairwise_mode value (support for 'infected', 'infectee', 'min', 'max', and 'mean').")
         else:
             print("Invalid values given for beta_local (expected 1xN list/array or NxN 2d array)")
         #----------------------------------------
-        if(self.beta_Q_local.ndim == 2 and self.beta_Q_local.shape[0] == self.numNodes and self.beta_Q_local.shape[1] == self.numNodes):
+        if (self.beta_Q_local.ndim == 2 and self.beta_Q_local.shape[0] == self.numNodes and self.beta_Q_local.shape[1] == self.numNodes):
             self.A_Q_beta_Q_pairwise = self.beta_Q_local
-        elif((self.beta_Q_local.ndim == 1 and self.beta_Q_local.shape[0] == self.numNodes) or (self.beta_Q_local.ndim == 2 and (self.beta_Q_local.shape[0] == self.numNodes or self.beta_Q_local.shape[1] == self.numNodes))):
+        elif ((self.beta_Q_local.ndim == 1 and self.beta_Q_local.shape[0] == self.numNodes) or (self.beta_Q_local.ndim == 2 and (self.beta_Q_local.shape[0] == self.numNodes or self.beta_Q_local.shape[1] == self.numNodes))):
             self.beta_Q_local = self.beta_Q_local.reshape((self.numNodes,1))
             # Pre-multiply beta_Q values by the isolation adjacency matrix ("transmission weight connections")
             A_Q_beta_Q_pairwise_byInfected      = scipy.sparse.csr_matrix.multiply(self.A_Q, self.beta_Q_local.T).tocsr()
             A_Q_beta_Q_pairwise_byInfectee      = scipy.sparse.csr_matrix.multiply(self.A_Q, self.beta_Q_local).tocsr()
             #------------------------------
             # Compute the effective pairwise beta values as a function of the infected/infectee pair:
-            if(self.beta_pairwise_mode == 'infected'):
+            if (self.beta_pairwise_mode == 'infected'):
                 self.A_Q_beta_Q_pairwise = A_Q_beta_Q_pairwise_byInfected
-            elif(self.beta_pairwise_mode == 'infectee'):
+            elif (self.beta_pairwise_mode == 'infectee'):
                 self.A_Q_beta_Q_pairwise = A_Q_beta_Q_pairwise_byInfectee
-            elif(self.beta_pairwise_mode == 'min'):
+            elif (self.beta_pairwise_mode == 'min'):
                 self.A_Q_beta_Q_pairwise = scipy.sparse.csr_matrix.minimum(A_Q_beta_Q_pairwise_byInfected, A_Q_beta_Q_pairwise_byInfectee)
-            elif(self.beta_pairwise_mode == 'max'):
+            elif (self.beta_pairwise_mode == 'max'):
                 self.A_Q_beta_Q_pairwise = scipy.sparse.csr_matrix.maximum(A_Q_beta_Q_pairwise_byInfected, A_Q_beta_Q_pairwise_byInfectee)
-            elif(self.beta_pairwise_mode == 'mean' or self.beta_pairwise_mode is None):
+            elif (self.beta_pairwise_mode == 'mean' or self.beta_pairwise_mode is None):
                 self.A_Q_beta_Q_pairwise = (A_Q_beta_Q_pairwise_byInfected + A_Q_beta_Q_pairwise_byInfectee)/2
             else:
                 print("Unrecognized beta_pairwise_mode value (support for 'infected', 'infectee', 'min', 'max', and 'mean').")
@@ -865,52 +865,52 @@ class SEIRSNetworkModel():
         self.delta[numpy.isneginf(self.delta)] = 0.0
         self.delta_Q[numpy.isneginf(self.delta_Q)] = 0.0
         #----------------------------------------
-        if(self.delta.ndim == 2 and self.delta.shape[0] == self.numNodes and self.delta.shape[1] == self.numNodes):
+        if (self.delta.ndim == 2 and self.delta.shape[0] == self.numNodes and self.delta.shape[1] == self.numNodes):
             self.A_delta_pairwise = self.delta
-        elif((self.delta.ndim == 1 and self.delta.shape[0] == self.numNodes) or (self.delta.ndim == 2 and (self.delta.shape[0] == self.numNodes or self.delta.shape[1] == self.numNodes))):
+        elif ((self.delta.ndim == 1 and self.delta.shape[0] == self.numNodes) or (self.delta.ndim == 2 and (self.delta.shape[0] == self.numNodes or self.delta.shape[1] == self.numNodes))):
             self.delta = self.delta.reshape((self.numNodes,1))
             # Pre-multiply delta values by the adjacency matrix ("transmission weight connections")
             A_delta_pairwise_byInfected = scipy.sparse.csr_matrix.multiply(self.A, self.delta.T).tocsr()
             A_delta_pairwise_byInfectee = scipy.sparse.csr_matrix.multiply(self.A, self.delta).tocsr()
             #------------------------------
             # Compute the effective pairwise delta values as a function of the infected/infectee pair:
-            if(self.delta_pairwise_mode == 'infected'):
+            if (self.delta_pairwise_mode == 'infected'):
                 self.A_delta_pairwise = A_delta_pairwise_byInfected
-            elif(self.delta_pairwise_mode == 'infectee'):
+            elif (self.delta_pairwise_mode == 'infectee'):
                 self.A_delta_pairwise = A_delta_pairwise_byInfectee
-            elif(self.delta_pairwise_mode == 'min'):
+            elif (self.delta_pairwise_mode == 'min'):
                 self.A_delta_pairwise = scipy.sparse.csr_matrix.minimum(A_delta_pairwise_byInfected, A_delta_pairwise_byInfectee)
-            elif(self.delta_pairwise_mode == 'max'):
+            elif (self.delta_pairwise_mode == 'max'):
                 self.A_delta_pairwise = scipy.sparse.csr_matrix.maximum(A_delta_pairwise_byInfected, A_delta_pairwise_byInfectee)
-            elif(self.delta_pairwise_mode == 'mean'):
+            elif (self.delta_pairwise_mode == 'mean'):
                 self.A_delta_pairwise = (A_delta_pairwise_byInfected + A_delta_pairwise_byInfectee)/2
-            elif(self.delta_pairwise_mode is None):
+            elif (self.delta_pairwise_mode is None):
                 self.A_delta_pairwise = self.A
             else:
                 print("Unrecognized delta_pairwise_mode value (support for 'infected', 'infectee', 'min', 'max', and 'mean').")
         else:
             print("Invalid values given for delta (expected 1xN list/array or NxN 2d array)")
         #----------------------------------------
-        if(self.delta_Q.ndim == 2 and self.delta_Q.shape[0] == self.numNodes and self.delta_Q.shape[1] == self.numNodes):
+        if (self.delta_Q.ndim == 2 and self.delta_Q.shape[0] == self.numNodes and self.delta_Q.shape[1] == self.numNodes):
             self.A_Q_delta_Q_pairwise = self.delta_Q
-        elif((self.delta_Q.ndim == 1 and self.delta_Q.shape[0] == self.numNodes) or (self.delta_Q.ndim == 2 and (self.delta_Q.shape[0] == self.numNodes or self.delta_Q.shape[1] == self.numNodes))):
+        elif ((self.delta_Q.ndim == 1 and self.delta_Q.shape[0] == self.numNodes) or (self.delta_Q.ndim == 2 and (self.delta_Q.shape[0] == self.numNodes or self.delta_Q.shape[1] == self.numNodes))):
             self.delta_Q = self.delta_Q.reshape((self.numNodes,1))
             # Pre-multiply delta_Q values by the isolation adjacency matrix ("transmission weight connections")
             A_Q_delta_Q_pairwise_byInfected      = scipy.sparse.csr_matrix.multiply(self.A_Q, self.delta_Q).tocsr()
             A_Q_delta_Q_pairwise_byInfectee      = scipy.sparse.csr_matrix.multiply(self.A_Q, self.delta_Q.T).tocsr()
             #------------------------------
             # Compute the effective pairwise delta values as a function of the infected/infectee pair:
-            if(self.delta_pairwise_mode == 'infected'):
+            if (self.delta_pairwise_mode == 'infected'):
                 self.A_Q_delta_Q_pairwise = A_Q_delta_Q_pairwise_byInfected
-            elif(self.delta_pairwise_mode == 'infectee'):
+            elif (self.delta_pairwise_mode == 'infectee'):
                 self.A_Q_delta_Q_pairwise = A_Q_delta_Q_pairwise_byInfectee
-            elif(self.delta_pairwise_mode == 'min'):
+            elif (self.delta_pairwise_mode == 'min'):
                 self.A_Q_delta_Q_pairwise = scipy.sparse.csr_matrix.minimum(A_Q_delta_Q_pairwise_byInfected, A_Q_delta_Q_pairwise_byInfectee)
-            elif(self.delta_pairwise_mode == 'max'):
+            elif (self.delta_pairwise_mode == 'max'):
                 self.A_Q_delta_Q_pairwise = scipy.sparse.csr_matrix.maximum(A_Q_delta_Q_pairwise_byInfected, A_Q_delta_Q_pairwise_byInfectee)
-            elif(self.delta_pairwise_mode == 'mean'):
+            elif (self.delta_pairwise_mode == 'mean'):
                 self.A_Q_delta_Q_pairwise = (A_Q_delta_Q_pairwise_byInfected + A_Q_delta_Q_pairwise_byInfectee)/2
-            elif(self.delta_pairwise_mode is None):
+            elif (self.delta_pairwise_mode is None):
                 self.A_Q_delta_Q_pairwise = self.A
             else:
                 print("Unrecognized delta_pairwise_mode value (support for 'infected', 'infectee', 'min', 'max', and 'mean').")
@@ -935,7 +935,7 @@ class SEIRSNetworkModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def total_num_susceptible(self, t_idx=None):
-        if(t_idx is None):
+        if (t_idx is None):
             return (self.numS[:])
         else:
             return (self.numS[t_idx])
@@ -943,7 +943,7 @@ class SEIRSNetworkModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def total_num_infected(self, t_idx=None):
-        if(t_idx is None):
+        if (t_idx is None):
             return (self.numE[:] + self.numI[:] + self.numQ_E[:] + self.numQ_I[:])
         else:
             return (self.numE[t_idx] + self.numI[t_idx] + self.numQ_E[t_idx] + self.numQ_I[t_idx])
@@ -951,7 +951,7 @@ class SEIRSNetworkModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def total_num_isolated(self, t_idx=None):
-        if(t_idx is None):
+        if (t_idx is None):
             return (self.numQ_E[:] + self.numQ_I[:])
         else:
             return (self.numQ_E[t_idx] + self.numQ_I[t_idx])
@@ -959,7 +959,7 @@ class SEIRSNetworkModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def total_num_tested(self, t_idx=None):
-        if(t_idx is None):
+        if (t_idx is None):
             return (self.numTested[:])
         else:
             return (self.numTested[t_idx])
@@ -967,7 +967,7 @@ class SEIRSNetworkModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def total_num_positive(self, t_idx=None):
-        if(t_idx is None):
+        if (t_idx is None):
             return (self.numPositive[:])
         else:
             return (self.numPositive[t_idx])
@@ -975,7 +975,7 @@ class SEIRSNetworkModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def total_num_recovered(self, t_idx=None):
-        if(t_idx is None):
+        if (t_idx is None):
             return (self.numR[:])
         else:
             return (self.numR[t_idx])
@@ -992,19 +992,19 @@ class SEIRSNetworkModel():
         #------------------------------------
 
         self.transmissionTerms_I = numpy.zeros(shape=(self.numNodes,1))
-        if(numpy.any(self.numI[self.tidx])):
+        if (numpy.any(self.numI[self.tidx])):
             self.transmissionTerms_I = numpy.asarray(scipy.sparse.csr_matrix.dot(self.A_deltabeta, self.X==self.I))
 
         #------------------------------------
 
         self.transmissionTerms_Q = numpy.zeros(shape=(self.numNodes,1))
-        if(numpy.any(self.numQ_I[self.tidx])):
+        if (numpy.any(self.numQ_I[self.tidx])):
             self.transmissionTerms_Q = numpy.asarray(scipy.sparse.csr_matrix.dot(self.A_Q_deltabeta_Q, self.X==self.Q_I))
 
         #------------------------------------
 
         numContacts_Q = numpy.zeros(shape=(self.numNodes,1))
-        if(numpy.any(self.positive) and (numpy.any(self.phi_E) or numpy.any(self.phi_I))):
+        if (numpy.any(self.positive) and (numpy.any(self.phi_E) or numpy.any(self.phi_I))):
             numContacts_Q = numpy.asarray(scipy.sparse.csr_matrix.dot(self.A, ((self.positive)&(self.X!=self.R)&(self.X!=self.F))))
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1017,7 +1017,7 @@ class SEIRSNetworkModel():
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        if(self.transition_mode == 'time_in_state'):
+        if (self.transition_mode == 'time_in_state'):
 
             propensities_EtoI     = 1e5 * ((self.X==self.E) & numpy.greater(self.timer_state, 1/self.sigma))
 
@@ -1090,18 +1090,18 @@ class SEIRSNetworkModel():
 
     def set_isolation(self, node, isolate):
         # Move this node in/out of the appropriate isolation state:
-        if(isolate == True):
-            if(self.X[node] == self.E):
+        if (isolate == True):
+            if (self.X[node] == self.E):
                 self.X[node] = self.Q_E
                 self.timer_state = 0
-            elif(self.X[node] == self.I):
+            elif (self.X[node] == self.I):
                 self.X[node] = self.Q_I
                 self.timer_state = 0
-        elif(isolate == False):
-            if(self.X[node] == self.Q_E):
+        elif (isolate == False):
+            if (self.X[node] == self.Q_E):
                 self.X[node] = self.E
                 self.timer_state = 0
-            elif(self.X[node] == self.Q_I):
+            elif (self.X[node] == self.Q_I):
                 self.X[node] = self.I
                 self.timer_state = 0
         # Reset the isolation timer:
@@ -1123,7 +1123,7 @@ class SEIRSNetworkModel():
     def introduce_exposures(self, num_new_exposures):
         exposedNodes = numpy.random.choice(range(self.numNodes), size=num_new_exposures, replace=False)
         for exposedNode in exposedNodes:
-            if(self.X[exposedNode]==self.S):
+            if (self.X[exposedNode]==self.S):
                 self.X[exposedNode] = self.E
 
 
@@ -1143,10 +1143,10 @@ class SEIRSNetworkModel():
         self.numTested   = numpy.pad(self.numTested, [(0, 6*self.numNodes)], mode='constant', constant_values=0)
         self.numPositive = numpy.pad(self.numPositive, [(0, 6*self.numNodes)], mode='constant', constant_values=0)
 
-        if(self.store_Xseries):
+        if (self.store_Xseries):
             self.Xseries = numpy.pad(self.Xseries, [(0, 6*self.numNodes), (0,0)], mode='constant', constant_values=0)
 
-        if(self.nodeGroupData):
+        if (self.nodeGroupData):
             for groupName in self.nodeGroupData:
                 self.nodeGroupData[groupName]['numS']        = numpy.pad(self.nodeGroupData[groupName]['numS'], [(0, 6*self.numNodes)], mode='constant', constant_values=0)
                 self.nodeGroupData[groupName]['numE']        = numpy.pad(self.nodeGroupData[groupName]['numE'], [(0, 6*self.numNodes)], mode='constant', constant_values=0)
@@ -1176,10 +1176,10 @@ class SEIRSNetworkModel():
         self.numTested   = numpy.array(self.numTested, dtype=float)[:self.tidx+1]
         self.numPositive = numpy.array(self.numPositive, dtype=float)[:self.tidx+1]
 
-        if(self.store_Xseries):
+        if (self.store_Xseries):
             self.Xseries = self.Xseries[:self.tidx+1, :]
 
-        if(self.nodeGroupData):
+        if (self.nodeGroupData):
             for groupName in self.nodeGroupData:
                 self.nodeGroupData[groupName]['numS']        = numpy.array(self.nodeGroupData[groupName]['numS'], dtype=float)[:self.tidx+1]
                 self.nodeGroupData[groupName]['numE']        = numpy.array(self.nodeGroupData[groupName]['numE'], dtype=float)[:self.tidx+1]
@@ -1199,7 +1199,7 @@ class SEIRSNetworkModel():
 
     def run_iteration(self):
 
-        if(self.tidx >= len(self.tseries)-1):
+        if (self.tidx >= len(self.tseries)-1):
             # Room has run out in the timeseries storage arrays; double the size of these arrays:
             self.increase_data_series_length()
 
@@ -1214,7 +1214,7 @@ class SEIRSNetworkModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         propensities, transitionTypes = self.calc_propensities()
 
-        if(propensities.sum() > 0):
+        if (propensities.sum() > 0):
 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             # Calculate alpha
@@ -1250,7 +1250,7 @@ class SEIRSNetworkModel():
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
             # Save information about infection events when they occur:
-            if(transitionType == 'StoE'):
+            if (transitionType == 'StoE'):
                 transitionNode_GNbrs  = list(self.G[transitionNode].keys())
                 transitionNode_GQNbrs = list(self.G_Q[transitionNode].keys())
                 self.infectionsLog.append({ 't':                            self.t,
@@ -1264,7 +1264,7 @@ class SEIRSNetworkModel():
 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-            if(transitionType in ['EtoQE', 'ItoQI']):
+            if (transitionType in ['EtoQE', 'ItoQI']):
                 self.set_positive(node=transitionNode, positive=True)
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1305,10 +1305,10 @@ class SEIRSNetworkModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Store system states
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if(self.store_Xseries):
+        if (self.store_Xseries):
             self.Xseries[self.tidx,:] = self.X.T
 
-        if(self.nodeGroupData):
+        if (self.nodeGroupData):
             for groupName in self.nodeGroupData:
                 self.nodeGroupData[groupName]['numS'][self.tidx]        = numpy.count_nonzero(self.nodeGroupData[groupName]['mask']*self.X==self.S)
                 self.nodeGroupData[groupName]['numE'][self.tidx]        = numpy.count_nonzero(self.nodeGroupData[groupName]['mask']*self.X==self.E)
@@ -1324,7 +1324,7 @@ class SEIRSNetworkModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Terminate if tmax reached or num infections is 0:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if(self.t >= self.tmax or (self.total_num_infected(self.tidx) < 1 and self.total_num_isolated(self.tidx) < 1)):
+        if (self.t >= self.tmax or (self.total_num_infected(self.tidx) < 1 and self.total_num_isolated(self.tidx) < 1)):
             self.finalize_data_series()
             return False
 
@@ -1337,7 +1337,7 @@ class SEIRSNetworkModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def run(self, T, checkpoints=None, print_interval=10, verbose='t'):
-        if(T>0):
+        if (T>0):
             self.tmax += T
         else:
             return False
@@ -1345,12 +1345,12 @@ class SEIRSNetworkModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Pre-process checkpoint values:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if(checkpoints):
+        if (checkpoints):
             numCheckpoints = len(checkpoints['t'])
             for chkpt_param, chkpt_values in checkpoints.items():
                 assert(isinstance(chkpt_values, (list, numpy.ndarray)) and len(chkpt_values)==numCheckpoints), "Expecting a list of values with length equal to number of checkpoint times ("+str(numCheckpoints)+") for each checkpoint parameter."
             checkpointIdx  = numpy.searchsorted(checkpoints['t'], self.t) # Finds 1st index in list greater than given val
-            if(checkpointIdx >= numCheckpoints):
+            if (checkpointIdx >= numCheckpoints):
                 # We are out of checkpoints, stop checking them:
                 checkpoints = None
             else:
@@ -1367,19 +1367,19 @@ class SEIRSNetworkModel():
 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             # Handle checkpoints if applicable:
-            if(checkpoints):
-                if(self.t >= checkpointTime):
-                    if(verbose is not False):
+            if (checkpoints):
+                if (self.t >= checkpointTime):
+                    if (verbose is not False):
                         print("[Checkpoint: Updating parameters]")
                     # A checkpoint has been reached, update param values:
                     for param in list(self.parameters.keys()):
-                        if(param in list(checkpoints.keys())):
+                        if (param in list(checkpoints.keys())):
                             self.parameters.update({param: checkpoints[param][checkpointIdx]})
                     # Update parameter data structures and scenario flags:
                     self.update_parameters()
                     # Update the next checkpoint time:
                     checkpointIdx  = numpy.searchsorted(checkpoints['t'], self.t) # Finds 1st index in list greater than given val
-                    if(checkpointIdx >= numCheckpoints):
+                    if (checkpointIdx >= numCheckpoints):
                         # We are out of checkpoints, stop checking them:
                         checkpoints = None
                     else:
@@ -1388,11 +1388,11 @@ class SEIRSNetworkModel():
 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-            if(print_interval):
-                if(print_reset and (int(self.t) % print_interval == 0)):
-                    if(verbose=="t"):
+            if (print_interval):
+                if (print_reset and (int(self.t) % print_interval == 0)):
+                    if (verbose=="t"):
                         print("t = %.2f" % self.t)
-                    if(verbose==True):
+                    if (verbose==True):
                         print("t = %.2f" % self.t)
                         print("\t S      = " + str(self.numS[self.tidx]))
                         print("\t E      = " + str(self.numE[self.tidx]))
@@ -1402,7 +1402,7 @@ class SEIRSNetworkModel():
                         print("\t Q_E    = " + str(self.numQ_E[self.tidx]))
                         print("\t Q_I  = " + str(self.numQ_I[self.tidx]))
                     print_reset = False
-                elif(not print_reset and (int(self.t) % 10 != 0)):
+                elif (not print_reset and (int(self.t) % 10 != 0)):
                     print_reset = True
 
         return True
@@ -1425,7 +1425,7 @@ class SEIRSNetworkModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Create an Axes object if None provided:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if(not ax):
+        if (not ax):
             fig, ax = pyplot.subplots()
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1443,11 +1443,11 @@ class SEIRSNetworkModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Draw the reference data:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if(dashed_reference_results):
+        if (dashed_reference_results):
             dashedReference_tseries  = dashed_reference_results.tseries[::int(self.numNodes/100)]
             dashedReference_IDEstack = (dashed_reference_results.numI + dashed_reference_results.numQ_I + dashed_reference_results.numQ_E + dashed_reference_results.numE)[::int(self.numNodes/100)] / (self.numNodes if plot_percentages else 1)
             ax.plot(dashedReference_tseries, dashedReference_IDEstack, color='#E0E0E0', linestyle='--', label='$I+D+E$ ('+dashed_reference_label+')', zorder=0)
-        if(shaded_reference_results):
+        if (shaded_reference_results):
             shadedReference_tseries  = shaded_reference_results.tseries
             shadedReference_IDEstack = (shaded_reference_results.numI + shaded_reference_results.numQ_I + shaded_reference_results.numQ_E + shaded_reference_results.numE) / (self.numNodes if plot_percentages else 1)
             ax.fill_between(shaded_reference_results.tseries, shadedReference_IDEstack, 0, color='#EFEFEF', label='$I+D+E$ ('+shaded_reference_label+')', zorder=0)
@@ -1457,36 +1457,36 @@ class SEIRSNetworkModel():
         # Draw the stacked variables:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         topstack = numpy.zeros_like(self.tseries)
-        if(any(Fseries) and plot_F=='stacked'):
+        if (any(Fseries) and plot_F=='stacked'):
             ax.fill_between(numpy.ma.masked_where(Fseries<=0, self.tseries), numpy.ma.masked_where(Fseries<=0, topstack+Fseries), topstack, color=color_F, alpha=0.5, label='$F$', zorder=2)
             ax.plot(        numpy.ma.masked_where(Fseries<=0, self.tseries), numpy.ma.masked_where(Fseries<=0, topstack+Fseries),           color=color_F, zorder=3)
             topstack = topstack+Fseries
-        if(any(Eseries) and plot_E=='stacked'):
+        if (any(Eseries) and plot_E=='stacked'):
             ax.fill_between(numpy.ma.masked_where(Eseries<=0, self.tseries), numpy.ma.masked_where(Eseries<=0, topstack+Eseries), topstack, color=color_E, alpha=0.5, label='$E$', zorder=2)
             ax.plot(        numpy.ma.masked_where(Eseries<=0, self.tseries), numpy.ma.masked_where(Eseries<=0, topstack+Eseries),           color=color_E, zorder=3)
             topstack = topstack+Eseries
-        if(combine_D and plot_Q_E=='stacked' and plot_Q_I=='stacked'):
+        if (combine_D and plot_Q_E=='stacked' and plot_Q_I=='stacked'):
             ax.fill_between(numpy.ma.masked_where(Dseries<=0, self.tseries), numpy.ma.masked_where(Dseries<=0, topstack+Dseries), topstack, color=color_Q_E, alpha=0.5, label='$Q_{all}$', zorder=2)
             ax.plot(        numpy.ma.masked_where(Dseries<=0, self.tseries), numpy.ma.masked_where(Dseries<=0, topstack+Dseries),           color=color_Q_E, zorder=3)
             topstack = topstack+Dseries
         else:
-            if(any(Q_Eseries) and plot_Q_E=='stacked'):
+            if (any(Q_Eseries) and plot_Q_E=='stacked'):
                 ax.fill_between(numpy.ma.masked_where(Q_Eseries<=0, self.tseries), numpy.ma.masked_where(Q_Eseries<=0, topstack+Q_Eseries), topstack, color=color_Q_E, alpha=0.5, label='$Q_E$', zorder=2)
                 ax.plot(        numpy.ma.masked_where(Q_Eseries<=0, self.tseries), numpy.ma.masked_where(Q_Eseries<=0, topstack+Q_Eseries),           color=color_Q_E, zorder=3)
                 topstack = topstack+Q_Eseries
-            if(any(Q_Iseries) and plot_Q_I=='stacked'):
+            if (any(Q_Iseries) and plot_Q_I=='stacked'):
                 ax.fill_between(numpy.ma.masked_where(Q_Iseries<=0, self.tseries), numpy.ma.masked_where(Q_Iseries<=0, topstack+Q_Iseries), topstack, color=color_Q_I, alpha=0.5, label='$Q_I$', zorder=2)
                 ax.plot(        numpy.ma.masked_where(Q_Iseries<=0, self.tseries), numpy.ma.masked_where(Q_Iseries<=0, topstack+Q_Iseries),           color=color_Q_I, zorder=3)
                 topstack = topstack+Q_Iseries
-        if(any(Iseries) and plot_I=='stacked'):
+        if (any(Iseries) and plot_I=='stacked'):
             ax.fill_between(numpy.ma.masked_where(Iseries<=0, self.tseries), numpy.ma.masked_where(Iseries<=0, topstack+Iseries), topstack, color=color_I, alpha=0.5, label='$I$', zorder=2)
             ax.plot(        numpy.ma.masked_where(Iseries<=0, self.tseries), numpy.ma.masked_where(Iseries<=0, topstack+Iseries),           color=color_I, zorder=3)
             topstack = topstack+Iseries
-        if(any(Rseries) and plot_R=='stacked'):
+        if (any(Rseries) and plot_R=='stacked'):
             ax.fill_between(numpy.ma.masked_where(Rseries<=0, self.tseries), numpy.ma.masked_where(Rseries<=0, topstack+Rseries), topstack, color=color_R, alpha=0.5, label='$R$', zorder=2)
             ax.plot(        numpy.ma.masked_where(Rseries<=0, self.tseries), numpy.ma.masked_where(Rseries<=0, topstack+Rseries),           color=color_R, zorder=3)
             topstack = topstack+Rseries
-        if(any(Sseries) and plot_S=='stacked'):
+        if (any(Sseries) and plot_S=='stacked'):
             ax.fill_between(numpy.ma.masked_where(Sseries<=0, self.tseries), numpy.ma.masked_where(Sseries<=0, topstack+Sseries), topstack, color=color_S, alpha=0.5, label='$S$', zorder=2)
             ax.plot(        numpy.ma.masked_where(Sseries<=0, self.tseries), numpy.ma.masked_where(Sseries<=0, topstack+Sseries),           color=color_S, zorder=3)
             topstack = topstack+Sseries
@@ -1495,64 +1495,64 @@ class SEIRSNetworkModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Draw the shaded variables:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if(any(Fseries) and plot_F=='shaded'):
+        if (any(Fseries) and plot_F=='shaded'):
             ax.fill_between(numpy.ma.masked_where(Fseries<=0, self.tseries), numpy.ma.masked_where(Fseries<=0, Fseries), 0, color=color_F, alpha=0.5, label='$F$', zorder=4)
             ax.plot(        numpy.ma.masked_where(Fseries<=0, self.tseries), numpy.ma.masked_where(Fseries<=0, Fseries),    color=color_F, zorder=5)
-        if(any(Eseries) and plot_E=='shaded'):
+        if (any(Eseries) and plot_E=='shaded'):
             ax.fill_between(numpy.ma.masked_where(Eseries<=0, self.tseries), numpy.ma.masked_where(Eseries<=0, Eseries), 0, color=color_E, alpha=0.5, label='$E$', zorder=4)
             ax.plot(        numpy.ma.masked_where(Eseries<=0, self.tseries), numpy.ma.masked_where(Eseries<=0, Eseries),    color=color_E, zorder=5)
-        if(combine_D and (any(Dseries) and plot_Q_E=='shaded' and plot_Q_I=='shaded')):
+        if (combine_D and (any(Dseries) and plot_Q_E=='shaded' and plot_Q_I=='shaded')):
             ax.fill_between(numpy.ma.masked_where(Dseries<=0, self.tseries), numpy.ma.masked_where(Dseries<=0, Dseries), 0, color=color_Q_E, alpha=0.5, label='$Q_{all}$', zorder=4)
             ax.plot(        numpy.ma.masked_where(Dseries<=0, self.tseries), numpy.ma.masked_where(Dseries<=0, Dseries),    color=color_Q_E, zorder=5)
         else:
-            if(any(Q_Eseries) and plot_Q_E=='shaded'):
+            if (any(Q_Eseries) and plot_Q_E=='shaded'):
                 ax.fill_between(numpy.ma.masked_where(Q_Eseries<=0, self.tseries), numpy.ma.masked_where(Q_Eseries<=0, Q_Eseries), 0, color=color_Q_E, alpha=0.5, label='$Q_E$', zorder=4)
                 ax.plot(        numpy.ma.masked_where(Q_Eseries<=0, self.tseries), numpy.ma.masked_where(Q_Eseries<=0, Q_Eseries),    color=color_Q_E, zorder=5)
-            if(any(Q_Iseries) and plot_Q_I=='shaded'):
+            if (any(Q_Iseries) and plot_Q_I=='shaded'):
                 ax.fill_between(numpy.ma.masked_where(Q_Iseries<=0, self.tseries), numpy.ma.masked_where(Q_Iseries<=0, Q_Iseries), 0, color=color_Q_I, alpha=0.5, label='$Q_I$', zorder=4)
                 ax.plot(        numpy.ma.masked_where(Q_Iseries<=0, self.tseries), numpy.ma.masked_where(Q_Iseries<=0, Q_Iseries),    color=color_Q_I, zorder=5)
-        if(any(Iseries) and plot_I=='shaded'):
+        if (any(Iseries) and plot_I=='shaded'):
             ax.fill_between(numpy.ma.masked_where(Iseries<=0, self.tseries), numpy.ma.masked_where(Iseries<=0, Iseries), 0, color=color_I, alpha=0.5, label='$I$', zorder=4)
             ax.plot(        numpy.ma.masked_where(Iseries<=0, self.tseries), numpy.ma.masked_where(Iseries<=0, Iseries),    color=color_I, zorder=5)
-        if(any(Sseries) and plot_S=='shaded'):
+        if (any(Sseries) and plot_S=='shaded'):
             ax.fill_between(numpy.ma.masked_where(Sseries<=0, self.tseries), numpy.ma.masked_where(Sseries<=0, Sseries), 0, color=color_S, alpha=0.5, label='$S$', zorder=4)
             ax.plot(        numpy.ma.masked_where(Sseries<=0, self.tseries), numpy.ma.masked_where(Sseries<=0, Sseries),    color=color_S, zorder=5)
-        if(any(Rseries) and plot_R=='shaded'):
+        if (any(Rseries) and plot_R=='shaded'):
             ax.fill_between(numpy.ma.masked_where(Rseries<=0, self.tseries), numpy.ma.masked_where(Rseries<=0, Rseries), 0, color=color_R, alpha=0.5, label='$R$', zorder=4)
             ax.plot(        numpy.ma.masked_where(Rseries<=0, self.tseries), numpy.ma.masked_where(Rseries<=0, Rseries),    color=color_R, zorder=5)
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Draw the line variables:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if(any(Fseries) and plot_F=='line'):
+        if (any(Fseries) and plot_F=='line'):
             ax.plot(numpy.ma.masked_where(Fseries<=0, self.tseries), numpy.ma.masked_where(Fseries<=0, Fseries), color=color_F, label='$F$', zorder=6)
-        if(any(Eseries) and plot_E=='line'):
+        if (any(Eseries) and plot_E=='line'):
             ax.plot(numpy.ma.masked_where(Eseries<=0, self.tseries), numpy.ma.masked_where(Eseries<=0, Eseries), color=color_E, label='$E$', zorder=6)
-        if(combine_D and (any(Dseries) and plot_Q_E=='line' and plot_Q_I=='line')):
+        if (combine_D and (any(Dseries) and plot_Q_E=='line' and plot_Q_I=='line')):
             ax.plot(numpy.ma.masked_where(Dseries<=0, self.tseries), numpy.ma.masked_where(Dseries<=0, Dseries), color=color_Q_E, label='$Q_{all}$', zorder=6)
         else:
-            if(any(Q_Eseries) and plot_Q_E=='line'):
+            if (any(Q_Eseries) and plot_Q_E=='line'):
                 ax.plot(numpy.ma.masked_where(Q_Eseries<=0, self.tseries), numpy.ma.masked_where(Q_Eseries<=0, Q_Eseries), color=color_Q_E, label='$Q_E$', zorder=6)
-            if(any(Q_Iseries) and plot_Q_I=='line'):
+            if (any(Q_Iseries) and plot_Q_I=='line'):
                 ax.plot(numpy.ma.masked_where(Q_Iseries<=0, self.tseries), numpy.ma.masked_where(Q_Iseries<=0, Q_Iseries), color=color_Q_I, label='$Q_I$', zorder=6)
-        if(any(Iseries) and plot_I=='line'):
+        if (any(Iseries) and plot_I=='line'):
             ax.plot(numpy.ma.masked_where(Iseries<=0, self.tseries), numpy.ma.masked_where(Iseries<=0, Iseries), color=color_I, label='$I$', zorder=6)
-        if(any(Sseries) and plot_S=='line'):
+        if (any(Sseries) and plot_S=='line'):
             ax.plot(numpy.ma.masked_where(Sseries<=0, self.tseries), numpy.ma.masked_where(Sseries<=0, Sseries), color=color_S, label='$S$', zorder=6)
-        if(any(Rseries) and plot_R=='line'):
+        if (any(Rseries) and plot_R=='line'):
             ax.plot(numpy.ma.masked_where(Rseries<=0, self.tseries), numpy.ma.masked_where(Rseries<=0, Rseries), color=color_R, label='$R$', zorder=6)
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Draw the vertical line annotations:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if(len(vlines)>0 and len(vline_colors)==0):
+        if (len(vlines)>0 and len(vline_colors)==0):
             vline_colors = ['gray']*len(vlines)
-        if(len(vlines)>0 and len(vline_labels)==0):
+        if (len(vlines)>0 and len(vline_labels)==0):
             vline_labels = [None]*len(vlines)
-        if(len(vlines)>0 and len(vline_styles)==0):
+        if (len(vlines)>0 and len(vline_styles)==0):
             vline_styles = [':']*len(vlines)
         for vline_x, vline_color, vline_style, vline_label in zip(vlines, vline_colors, vline_styles, vline_labels):
-            if(vline_x is not None):
+            if (vline_x is not None):
                 ax.axvline(x=vline_x, color=vline_color, linestyle=vline_style, alpha=1, label=vline_label)
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1562,14 +1562,14 @@ class SEIRSNetworkModel():
         ax.set_ylabel('percent of population' if plot_percentages else 'number of individuals')
         ax.set_xlim(0, (max(self.tseries) if not xlim else xlim))
         ax.set_ylim(0, ylim)
-        if(plot_percentages):
+        if (plot_percentages):
             ax.set_yticklabels(['{:,.0%}'.format(y) for y in ax.get_yticks()])
-        if(legend):
+        if (legend):
             legend_handles, legend_labels = ax.get_legend_handles_labels()
             ax.legend(legend_handles[::-1], legend_labels[::-1], loc='upper right', facecolor='white', edgecolor='none', framealpha=0.9, prop={'size': 8})
-        if(title):
+        if (title):
             ax.set_title(title, size=12)
-        if(side_title):
+        if (side_title):
             ax.annotate(side_title, (0, 0.5), xytext=(-45, 0), ha='right', va='center',
                 size=12, rotation=90, xycoords='axes fraction', textcoords='offset points')
 
@@ -1593,7 +1593,7 @@ class SEIRSNetworkModel():
 
         fig, ax = pyplot.subplots(figsize=figsize)
 
-        if(use_seaborn):
+        if (use_seaborn):
             import seaborn
             seaborn.set_style('ticks')
             seaborn.despine()
@@ -1607,7 +1607,7 @@ class SEIRSNetworkModel():
                         vlines=vlines, vline_colors=vline_colors, vline_styles=vline_styles, vline_labels=vline_labels,
                         ylim=ylim, xlim=xlim, legend=legend, title=title, side_title=side_title, plot_percentages=plot_percentages)
 
-        if(show):
+        if (show):
             pyplot.show()
 
         return fig, ax
@@ -1630,7 +1630,7 @@ class SEIRSNetworkModel():
 
         fig, ax = pyplot.subplots(figsize=figsize)
 
-        if(use_seaborn):
+        if (use_seaborn):
             import seaborn
             seaborn.set_style('ticks')
             seaborn.despine()
@@ -1644,7 +1644,7 @@ class SEIRSNetworkModel():
                         vlines=vlines, vline_colors=vline_colors, vline_styles=vline_styles, vline_labels=vline_labels,
                         ylim=ylim, xlim=xlim, legend=legend, title=title, side_title=side_title, plot_percentages=plot_percentages)
 
-        if(show):
+        if (show):
             pyplot.show()
 
         return fig, ax
@@ -1741,7 +1741,7 @@ class ExtSEIRSNetworkModel():
                     o=0, prevalence_ext=0,
                     transition_mode='exponential_rates', node_groups=None, store_Xseries=False, seed=None):
 
-        if(seed is not None):
+        if (seed is not None):
             numpy.random.seed(seed)
             self.seed = seed
 
@@ -1848,7 +1848,7 @@ class ExtSEIRSNetworkModel():
         numpy.random.shuffle(self.X)
 
         self.store_Xseries = store_Xseries
-        if(store_Xseries):
+        if (store_Xseries):
             self.Xseries        = numpy.zeros(shape=(6*self.numNodes, self.numNodes), dtype='uint8')
             self.Xseries[0,:]   = self.X.T
 
@@ -1896,7 +1896,7 @@ class ExtSEIRSNetworkModel():
         # Initialize node subgroup data series:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         self.nodeGroupData = None
-        if(node_groups):
+        if (node_groups):
             self.nodeGroupData = {}
             for groupName, nodeList in node_groups.items():
                 self.nodeGroupData[groupName] = {'nodes':   numpy.array(nodeList),
@@ -1954,7 +1954,7 @@ class ExtSEIRSNetworkModel():
         self.numNodes   = int(self.A.shape[1])
         self.degree     = numpy.asarray(self.node_degrees(self.A)).astype(float)
         #----------------------------------------
-        if(self.parameters['G_Q'] is None):
+        if (self.parameters['G_Q'] is None):
             self.G_Q = self.G # If no Q graph is provided, use G in its place
         else:
             self.G_Q = self.parameters['G_Q']
@@ -2035,23 +2035,23 @@ class ExtSEIRSNetworkModel():
         #----------------------------------------
         # Global transmission parameters:
         #----------------------------------------
-        if(self.beta_pairwise_mode == 'infected' or self.beta_pairwise_mode is None):
+        if (self.beta_pairwise_mode == 'infected' or self.beta_pairwise_mode is None):
             self.beta_global         = numpy.full_like(self.beta, fill_value=numpy.mean(self.beta))
             self.beta_Q_global       = numpy.full_like(self.beta_Q, fill_value=numpy.mean(self.beta_Q))
             self.beta_asym_global    = numpy.full_like(self.beta_asym, fill_value=numpy.mean(self.beta_asym))
-        elif(self.beta_pairwise_mode == 'infectee'):
+        elif (self.beta_pairwise_mode == 'infectee'):
             self.beta_global         = self.beta
             self.beta_Q_global       = self.beta_Q
             self.beta_asym_global    = self.beta_asym
-        elif(self.beta_pairwise_mode == 'min'):
+        elif (self.beta_pairwise_mode == 'min'):
             self.beta_global         = numpy.minimum(self.beta, numpy.mean(beta))
             self.beta_Q_global       = numpy.minimum(self.beta_Q, numpy.mean(beta_Q))
             self.beta_asym_global    = numpy.minimum(self.beta_asym, numpy.mean(beta_asym))
-        elif(self.beta_pairwise_mode == 'max'):
+        elif (self.beta_pairwise_mode == 'max'):
             self.beta_global         = numpy.maximum(self.beta, numpy.mean(beta))
             self.beta_Q_global       = numpy.maximum(self.beta_Q, numpy.mean(beta_Q))
             self.beta_asym_global    = numpy.maximum(self.beta_asym, numpy.mean(beta_asym))
-        elif(self.beta_pairwise_mode == 'mean'):
+        elif (self.beta_pairwise_mode == 'mean'):
             self.beta_global         = (self.beta + numpy.full_like(self.beta, fill_value=numpy.mean(self.beta)))/2
             self.beta_Q_global       = (self.beta_Q + numpy.full_like(self.beta_Q, fill_value=numpy.mean(self.beta_Q)))/2
             self.beta_asym_global    = (self.beta_asym + numpy.full_like(self.beta_asym, fill_value=numpy.mean(self.beta_asym)))/2
@@ -2063,74 +2063,74 @@ class ExtSEIRSNetworkModel():
         self.beta_Q_local       = self.beta_Q    if self.parameters['beta_Q_local'] is None    else numpy.array(self.parameters['beta_Q_local'])    if isinstance(self.parameters['beta_Q_local'], (list, numpy.ndarray))    else numpy.full(fill_value=self.parameters['beta_Q_local'], shape=(self.numNodes,1))
         self.beta_asym_local    = None           if self.parameters['beta_asym_local'] is None else numpy.array(self.parameters['beta_asym_local']) if isinstance(self.parameters['beta_asym_local'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['beta_asym_local'], shape=(self.numNodes,1))
         #----------------------------------------
-        if(self.beta_local.ndim == 2 and self.beta_local.shape[0] == self.numNodes and self.beta_local.shape[1] == self.numNodes):
+        if (self.beta_local.ndim == 2 and self.beta_local.shape[0] == self.numNodes and self.beta_local.shape[1] == self.numNodes):
             self.A_beta_pairwise = self.beta_local
-        elif((self.beta_local.ndim == 1 and self.beta_local.shape[0] == self.numNodes) or (self.beta_local.ndim == 2 and (self.beta_local.shape[0] == self.numNodes or self.beta_local.shape[1] == self.numNodes))):
+        elif ((self.beta_local.ndim == 1 and self.beta_local.shape[0] == self.numNodes) or (self.beta_local.ndim == 2 and (self.beta_local.shape[0] == self.numNodes or self.beta_local.shape[1] == self.numNodes))):
             self.beta_local = self.beta_local.reshape((self.numNodes,1))
             # Pre-multiply beta values by the adjacency matrix ("transmission weight connections")
             A_beta_pairwise_byInfected = scipy.sparse.csr_matrix.multiply(self.A, self.beta_local.T).tocsr()
             A_beta_pairwise_byInfectee = scipy.sparse.csr_matrix.multiply(self.A, self.beta_local).tocsr()
             #------------------------------
             # Compute the effective pairwise beta values as a function of the infected/infectee pair:
-            if(self.beta_pairwise_mode == 'infected'):
+            if (self.beta_pairwise_mode == 'infected'):
                 self.A_beta_pairwise = A_beta_pairwise_byInfected
-            elif(self.beta_pairwise_mode == 'infectee'):
+            elif (self.beta_pairwise_mode == 'infectee'):
                 self.A_beta_pairwise = A_beta_pairwise_byInfectee
-            elif(self.beta_pairwise_mode == 'min'):
+            elif (self.beta_pairwise_mode == 'min'):
                 self.A_beta_pairwise = scipy.sparse.csr_matrix.minimum(A_beta_pairwise_byInfected, A_beta_pairwise_byInfectee)
-            elif(self.beta_pairwise_mode == 'max'):
+            elif (self.beta_pairwise_mode == 'max'):
                 self.A_beta_pairwise = scipy.sparse.csr_matrix.maximum(A_beta_pairwise_byInfected, A_beta_pairwise_byInfectee)
-            elif(self.beta_pairwise_mode == 'mean' or self.beta_pairwise_mode is None):
+            elif (self.beta_pairwise_mode == 'mean' or self.beta_pairwise_mode is None):
                 self.A_beta_pairwise = (A_beta_pairwise_byInfected + A_beta_pairwise_byInfectee)/2
             else:
                 print("Unrecognized beta_pairwise_mode value (support for 'infected', 'infectee', 'min', 'max', and 'mean').")
         else:
             print("Invalid values given for beta_local (expected 1xN list/array or NxN 2d array)")
         #----------------------------------------
-        if(self.beta_Q_local.ndim == 2 and self.beta_Q_local.shape[0] == self.numNodes and self.beta_Q_local.shape[1] == self.numNodes):
+        if (self.beta_Q_local.ndim == 2 and self.beta_Q_local.shape[0] == self.numNodes and self.beta_Q_local.shape[1] == self.numNodes):
             self.A_Q_beta_Q_pairwise = self.beta_Q_local
-        elif((self.beta_Q_local.ndim == 1 and self.beta_Q_local.shape[0] == self.numNodes) or (self.beta_Q_local.ndim == 2 and (self.beta_Q_local.shape[0] == self.numNodes or self.beta_Q_local.shape[1] == self.numNodes))):
+        elif ((self.beta_Q_local.ndim == 1 and self.beta_Q_local.shape[0] == self.numNodes) or (self.beta_Q_local.ndim == 2 and (self.beta_Q_local.shape[0] == self.numNodes or self.beta_Q_local.shape[1] == self.numNodes))):
             self.beta_Q_local = self.beta_Q_local.reshape((self.numNodes,1))
             # Pre-multiply beta_Q values by the isolation adjacency matrix ("transmission weight connections")
             A_Q_beta_Q_pairwise_byInfected      = scipy.sparse.csr_matrix.multiply(self.A_Q, self.beta_Q_local.T).tocsr()
             A_Q_beta_Q_pairwise_byInfectee      = scipy.sparse.csr_matrix.multiply(self.A_Q, self.beta_Q_local).tocsr()
             #------------------------------
             # Compute the effective pairwise beta values as a function of the infected/infectee pair:
-            if(self.beta_pairwise_mode == 'infected'):
+            if (self.beta_pairwise_mode == 'infected'):
                 self.A_Q_beta_Q_pairwise = A_Q_beta_Q_pairwise_byInfected
-            elif(self.beta_pairwise_mode == 'infectee'):
+            elif (self.beta_pairwise_mode == 'infectee'):
                 self.A_Q_beta_Q_pairwise = A_Q_beta_Q_pairwise_byInfectee
-            elif(self.beta_pairwise_mode == 'min'):
+            elif (self.beta_pairwise_mode == 'min'):
                 self.A_Q_beta_Q_pairwise = scipy.sparse.csr_matrix.minimum(A_Q_beta_Q_pairwise_byInfected, A_Q_beta_Q_pairwise_byInfectee)
-            elif(self.beta_pairwise_mode == 'max'):
+            elif (self.beta_pairwise_mode == 'max'):
                 self.A_Q_beta_Q_pairwise = scipy.sparse.csr_matrix.maximum(A_Q_beta_Q_pairwise_byInfected, A_Q_beta_Q_pairwise_byInfectee)
-            elif(self.beta_pairwise_mode == 'mean' or self.beta_pairwise_mode is None):
+            elif (self.beta_pairwise_mode == 'mean' or self.beta_pairwise_mode is None):
                 self.A_Q_beta_Q_pairwise = (A_Q_beta_Q_pairwise_byInfected + A_Q_beta_Q_pairwise_byInfectee)/2
             else:
                 print("Unrecognized beta_pairwise_mode value (support for 'infected', 'infectee', 'min', 'max', and 'mean').")
         else:
             print("Invalid values given for beta_Q_local (expected 1xN list/array or NxN 2d array)")
         #----------------------------------------
-        if(self.beta_asym_local is None):
+        if (self.beta_asym_local is None):
             self.A_beta_asym_pairwise = None
-        elif(self.beta_asym_local.ndim == 2 and self.beta_asym_local.shape[0] == self.numNodes and self.beta_asym_local.shape[1] == self.numNodes):
+        elif (self.beta_asym_local.ndim == 2 and self.beta_asym_local.shape[0] == self.numNodes and self.beta_asym_local.shape[1] == self.numNodes):
             self.A_beta_asym_pairwise = self.beta_asym_local
-        elif((self.beta_asym_local.ndim == 1 and self.beta_asym_local.shape[0] == self.numNodes) or (self.beta_asym_local.ndim == 2 and (self.beta_asym_local.shape[0] == self.numNodes or self.beta_asym_local.shape[1] == self.numNodes))):
+        elif ((self.beta_asym_local.ndim == 1 and self.beta_asym_local.shape[0] == self.numNodes) or (self.beta_asym_local.ndim == 2 and (self.beta_asym_local.shape[0] == self.numNodes or self.beta_asym_local.shape[1] == self.numNodes))):
             self.beta_asym_local = self.beta_asym_local.reshape((self.numNodes,1))
             # Pre-multiply beta_asym values by the adjacency matrix ("transmission weight connections")
             A_beta_asym_pairwise_byInfected      = scipy.sparse.csr_matrix.multiply(self.A, self.beta_asym_local.T).tocsr()
             A_beta_asym_pairwise_byInfectee      = scipy.sparse.csr_matrix.multiply(self.A, self.beta_asym_local).tocsr()
             #------------------------------
             # Compute the effective pairwise beta values as a function of the infected/infectee pair:
-            if(self.beta_pairwise_mode == 'infected'):
+            if (self.beta_pairwise_mode == 'infected'):
                 self.A_beta_asym_pairwise = A_beta_asym_pairwise_byInfected
-            elif(self.beta_pairwise_mode == 'infectee'):
+            elif (self.beta_pairwise_mode == 'infectee'):
                 self.A_beta_asym_pairwise = A_beta_asym_pairwise_byInfectee
-            elif(self.beta_pairwise_mode == 'min'):
+            elif (self.beta_pairwise_mode == 'min'):
                 self.A_beta_asym_pairwise = scipy.sparse.csr_matrix.minimum(A_beta_asym_pairwise_byInfected, A_beta_asym_pairwise_byInfectee)
-            elif(self.beta_pairwise_mode == 'max'):
+            elif (self.beta_pairwise_mode == 'max'):
                 self.A_beta_asym_pairwise = scipy.sparse.csr_matrix.maximum(A_beta_asym_pairwise_byInfected, A_beta_asym_pairwise_byInfectee)
-            elif(self.beta_pairwise_mode == 'mean' or self.beta_pairwise_mode is None):
+            elif (self.beta_pairwise_mode == 'mean' or self.beta_pairwise_mode is None):
                 self.A_beta_asym_pairwise = (A_beta_asym_pairwise_byInfected + A_beta_asym_pairwise_byInfectee)/2
             else:
                 print("Unrecognized beta_pairwise_mode value (support for 'infected', 'infectee', 'min', 'max', and 'mean').")
@@ -2147,52 +2147,52 @@ class ExtSEIRSNetworkModel():
         self.delta[numpy.isneginf(self.delta)] = 0.0
         self.delta_Q[numpy.isneginf(self.delta_Q)] = 0.0
         #----------------------------------------
-        if(self.delta.ndim == 2 and self.delta.shape[0] == self.numNodes and self.delta.shape[1] == self.numNodes):
+        if (self.delta.ndim == 2 and self.delta.shape[0] == self.numNodes and self.delta.shape[1] == self.numNodes):
             self.A_delta_pairwise = self.delta
-        elif((self.delta.ndim == 1 and self.delta.shape[0] == self.numNodes) or (self.delta.ndim == 2 and (self.delta.shape[0] == self.numNodes or self.delta.shape[1] == self.numNodes))):
+        elif ((self.delta.ndim == 1 and self.delta.shape[0] == self.numNodes) or (self.delta.ndim == 2 and (self.delta.shape[0] == self.numNodes or self.delta.shape[1] == self.numNodes))):
             self.delta = self.delta.reshape((self.numNodes,1))
             # Pre-multiply delta values by the adjacency matrix ("transmission weight connections")
             A_delta_pairwise_byInfected = scipy.sparse.csr_matrix.multiply(self.A, self.delta.T).tocsr()
             A_delta_pairwise_byInfectee = scipy.sparse.csr_matrix.multiply(self.A, self.delta).tocsr()
             #------------------------------
             # Compute the effective pairwise delta values as a function of the infected/infectee pair:
-            if(self.delta_pairwise_mode == 'infected'):
+            if (self.delta_pairwise_mode == 'infected'):
                 self.A_delta_pairwise = A_delta_pairwise_byInfected
-            elif(self.delta_pairwise_mode == 'infectee'):
+            elif (self.delta_pairwise_mode == 'infectee'):
                 self.A_delta_pairwise = A_delta_pairwise_byInfectee
-            elif(self.delta_pairwise_mode == 'min'):
+            elif (self.delta_pairwise_mode == 'min'):
                 self.A_delta_pairwise = scipy.sparse.csr_matrix.minimum(A_delta_pairwise_byInfected, A_delta_pairwise_byInfectee)
-            elif(self.delta_pairwise_mode == 'max'):
+            elif (self.delta_pairwise_mode == 'max'):
                 self.A_delta_pairwise = scipy.sparse.csr_matrix.maximum(A_delta_pairwise_byInfected, A_delta_pairwise_byInfectee)
-            elif(self.delta_pairwise_mode == 'mean'):
+            elif (self.delta_pairwise_mode == 'mean'):
                 self.A_delta_pairwise = (A_delta_pairwise_byInfected + A_delta_pairwise_byInfectee)/2
-            elif(self.delta_pairwise_mode is None):
+            elif (self.delta_pairwise_mode is None):
                 self.A_delta_pairwise = self.A
             else:
                 print("Unrecognized delta_pairwise_mode value (support for 'infected', 'infectee', 'min', 'max', and 'mean').")
         else:
             print("Invalid values given for delta (expected 1xN list/array or NxN 2d array)")
         #----------------------------------------
-        if(self.delta_Q.ndim == 2 and self.delta_Q.shape[0] == self.numNodes and self.delta_Q.shape[1] == self.numNodes):
+        if (self.delta_Q.ndim == 2 and self.delta_Q.shape[0] == self.numNodes and self.delta_Q.shape[1] == self.numNodes):
             self.A_Q_delta_Q_pairwise = self.delta_Q
-        elif((self.delta_Q.ndim == 1 and self.delta_Q.shape[0] == self.numNodes) or (self.delta_Q.ndim == 2 and (self.delta_Q.shape[0] == self.numNodes or self.delta_Q.shape[1] == self.numNodes))):
+        elif ((self.delta_Q.ndim == 1 and self.delta_Q.shape[0] == self.numNodes) or (self.delta_Q.ndim == 2 and (self.delta_Q.shape[0] == self.numNodes or self.delta_Q.shape[1] == self.numNodes))):
             self.delta_Q = self.delta_Q.reshape((self.numNodes,1))
             # Pre-multiply delta_Q values by the isolation adjacency matrix ("transmission weight connections")
             A_Q_delta_Q_pairwise_byInfected      = scipy.sparse.csr_matrix.multiply(self.A_Q, self.delta_Q).tocsr()
             A_Q_delta_Q_pairwise_byInfectee      = scipy.sparse.csr_matrix.multiply(self.A_Q, self.delta_Q.T).tocsr()
             #------------------------------
             # Compute the effective pairwise delta values as a function of the infected/infectee pair:
-            if(self.delta_pairwise_mode == 'infected'):
+            if (self.delta_pairwise_mode == 'infected'):
                 self.A_Q_delta_Q_pairwise = A_Q_delta_Q_pairwise_byInfected
-            elif(self.delta_pairwise_mode == 'infectee'):
+            elif (self.delta_pairwise_mode == 'infectee'):
                 self.A_Q_delta_Q_pairwise = A_Q_delta_Q_pairwise_byInfectee
-            elif(self.delta_pairwise_mode == 'min'):
+            elif (self.delta_pairwise_mode == 'min'):
                 self.A_Q_delta_Q_pairwise = scipy.sparse.csr_matrix.minimum(A_Q_delta_Q_pairwise_byInfected, A_Q_delta_Q_pairwise_byInfectee)
-            elif(self.delta_pairwise_mode == 'max'):
+            elif (self.delta_pairwise_mode == 'max'):
                 self.A_Q_delta_Q_pairwise = scipy.sparse.csr_matrix.maximum(A_Q_delta_Q_pairwise_byInfected, A_Q_delta_Q_pairwise_byInfectee)
-            elif(self.delta_pairwise_mode == 'mean'):
+            elif (self.delta_pairwise_mode == 'mean'):
                 self.A_Q_delta_Q_pairwise = (A_Q_delta_Q_pairwise_byInfected + A_Q_delta_Q_pairwise_byInfectee)/2
-            elif(self.delta_pairwise_mode is None):
+            elif (self.delta_pairwise_mode is None):
                 self.A_Q_delta_Q_pairwise = self.A
             else:
                 print("Unrecognized delta_pairwise_mode value (support for 'infected', 'infectee', 'min', 'max', and 'mean').")
@@ -2204,7 +2204,7 @@ class ExtSEIRSNetworkModel():
         #----------------------------------------
         self.A_deltabeta          = scipy.sparse.csr_matrix.multiply(self.A_delta_pairwise, self.A_beta_pairwise)
         self.A_Q_deltabeta_Q      = scipy.sparse.csr_matrix.multiply(self.A_Q_delta_Q_pairwise, self.A_Q_beta_Q_pairwise)
-        if(self.A_beta_asym_pairwise is not None):
+        if (self.A_beta_asym_pairwise is not None):
             self.A_deltabeta_asym = scipy.sparse.csr_matrix.multiply(self.A_delta_pairwise, self.A_beta_asym_pairwise)
         else:
             self.A_deltabeta_asym = None
@@ -2221,7 +2221,7 @@ class ExtSEIRSNetworkModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def total_num_susceptible(self, t_idx=None):
-        if(t_idx is None):
+        if (t_idx is None):
             return (self.numS[:] + self.numQ_S[:])
         else:
             return (self.numS[t_idx] + self.numQ_S[t_idx])
@@ -2229,7 +2229,7 @@ class ExtSEIRSNetworkModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def total_num_infected(self, t_idx=None):
-        if(t_idx is None):
+        if (t_idx is None):
             return (self.numE[:] + self.numI_pre[:] + self.numI_sym[:] + self.numI_asym[:] + self.numH[:]
                     + self.numQ_E[:] + self.numQ_pre[:] + self.numQ_sym[:] + self.numQ_asym[:])
         else:
@@ -2239,7 +2239,7 @@ class ExtSEIRSNetworkModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def total_num_isolated(self, t_idx=None):
-        if(t_idx is None):
+        if (t_idx is None):
             return (self.numQ_S[:] + self.numQ_E[:] + self.numQ_pre[:] + self.numQ_sym[:] + self.numQ_asym[:] + self.numQ_R[:])
         else:
             return (self.numQ_S[t_idx] + self.numQ_E[t_idx] + self.numQ_pre[t_idx] + self.numQ_sym[t_idx] + self.numQ_asym[t_idx] + self.numQ_R[t_idx])
@@ -2247,7 +2247,7 @@ class ExtSEIRSNetworkModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def total_num_tested(self, t_idx=None):
-        if(t_idx is None):
+        if (t_idx is None):
             return (self.numTested[:])
         else:
             return (self.numTested[t_idx])
@@ -2255,7 +2255,7 @@ class ExtSEIRSNetworkModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def total_num_positive(self, t_idx=None):
-        if(t_idx is None):
+        if (t_idx is None):
             return (self.numPositive[:])
         else:
             return (self.numPositive[t_idx])
@@ -2263,7 +2263,7 @@ class ExtSEIRSNetworkModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def total_num_recovered(self, t_idx=None):
-        if(t_idx is None):
+        if (t_idx is None):
             return (self.numR[:] + self.numQ_R[:])
         else:
             return (self.numR[t_idx] + self.numQ_R[t_idx])
@@ -2280,8 +2280,8 @@ class ExtSEIRSNetworkModel():
         #------------------------------------
 
         self.transmissionTerms_I = numpy.zeros(shape=(self.numNodes,1))
-        if(numpy.any(self.numI_sym[self.tidx]) or numpy.any(self.numI_asym[self.tidx]) or numpy.any(self.numI_pre[self.tidx])):
-            if(self.A_deltabeta_asym is not None):
+        if (numpy.any(self.numI_sym[self.tidx]) or numpy.any(self.numI_asym[self.tidx]) or numpy.any(self.numI_pre[self.tidx])):
+            if (self.A_deltabeta_asym is not None):
                 self.transmissionTerms_sym  = numpy.asarray(scipy.sparse.csr_matrix.dot(self.A_deltabeta, self.X==self.I_sym))
                 self.transmissionTerms_asym = numpy.asarray(scipy.sparse.csr_matrix.dot(self.A_deltabeta_asym, ((self.X==self.I_pre)|(self.X==self.I_asym))))
                 self.transmissionTerms_I    = self.transmissionTerms_sym+self.transmissionTerms_asym
@@ -2291,19 +2291,19 @@ class ExtSEIRSNetworkModel():
         #------------------------------------
 
         self.transmissionTerms_Q = numpy.zeros(shape=(self.numNodes,1))
-        if(numpy.any(self.numQ_pre[self.tidx]) or numpy.any(self.numQ_sym[self.tidx]) or numpy.any(self.numQ_asym[self.tidx])):
+        if (numpy.any(self.numQ_pre[self.tidx]) or numpy.any(self.numQ_sym[self.tidx]) or numpy.any(self.numQ_asym[self.tidx])):
             self.transmissionTerms_Q = numpy.asarray(scipy.sparse.csr_matrix.dot(self.A_Q_deltabeta_Q, ((self.X==self.Q_pre)|(self.X==self.Q_sym)|(self.X==self.Q_asym))))
 
         #------------------------------------
 
         self.transmissionTerms_IQ = numpy.zeros(shape=(self.numNodes,1))
-        if(numpy.any(self.numQ_S[self.tidx]) and (numpy.any(self.numI_sym[self.tidx]) or numpy.any(self.numI_asym[self.tidx]) or numpy.any(self.numI_pre[self.tidx]))):
+        if (numpy.any(self.numQ_S[self.tidx]) and (numpy.any(self.numI_sym[self.tidx]) or numpy.any(self.numI_asym[self.tidx]) or numpy.any(self.numI_pre[self.tidx]))):
             self.transmissionTerms_IQ = numpy.asarray(scipy.sparse.csr_matrix.dot(self.A_Q_deltabeta_Q, ((self.X==self.I_sym)|(self.X==self.I_pre)|(self.X==self.I_asym))))
 
         #------------------------------------
 
         numContacts_Q = numpy.zeros(shape=(self.numNodes,1))
-        if(numpy.any(self.positive) and (numpy.any(self.phi_S) or numpy.any(self.phi_E) or numpy.any(self.phi_pre) or numpy.any(self.phi_sym) or numpy.any(self.phi_asym))):
+        if (numpy.any(self.positive) and (numpy.any(self.phi_S) or numpy.any(self.phi_E) or numpy.any(self.phi_pre) or numpy.any(self.phi_sym) or numpy.any(self.phi_asym))):
             numContacts_Q = numpy.asarray(scipy.sparse.csr_matrix.dot(self.A, ((self.positive)&(self.X!=self.R)&(self.X!=self.Q_R)&(self.X!=self.F))))
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2318,7 +2318,7 @@ class ExtSEIRSNetworkModel():
                                   )*(self.X==self.S)
 
         propensities_QStoQE = numpy.zeros_like(propensities_StoE)
-        if(numpy.any(self.X==self.Q_S)):
+        if (numpy.any(self.X==self.Q_S)):
             propensities_QStoQE = ( self.alpha_Q *
                                         (self.o*(self.q*self.beta_global*self.prevalence_ext)
                                         + (1-self.o)*(
@@ -2329,7 +2329,7 @@ class ExtSEIRSNetworkModel():
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        if(self.transition_mode == 'time_in_state'):
+        if (self.transition_mode == 'time_in_state'):
 
             propensities_EtoIPRE     = 1e5 * ((self.X==self.E) & numpy.greater(self.timer_state, 1/self.sigma))
 
@@ -2441,31 +2441,31 @@ class ExtSEIRSNetworkModel():
 
     def set_isolation(self, node, isolate):
         # Move this node in/out of the appropriate isolation state:
-        if(isolate == True):
-            if(self.X[node] == self.S):
+        if (isolate == True):
+            if (self.X[node] == self.S):
                 self.X[node] = self.Q_S
-            elif(self.X[node] == self.E):
+            elif (self.X[node] == self.E):
                 self.X[node] = self.Q_E
-            elif(self.X[node] == self.I_pre):
+            elif (self.X[node] == self.I_pre):
                 self.X[node] = self.Q_pre
-            elif(self.X[node] == self.I_sym):
+            elif (self.X[node] == self.I_sym):
                 self.X[node] = self.Q_sym
-            elif(self.X[node] == self.I_asym):
+            elif (self.X[node] == self.I_asym):
                 self.X[node] = self.Q_asym
-            elif(self.X[node] == self.R):
+            elif (self.X[node] == self.R):
                 self.X[node] = self.Q_R
-        elif(isolate == False):
-            if(self.X[node] == self.Q_S):
+        elif (isolate == False):
+            if (self.X[node] == self.Q_S):
                 self.X[node] = self.S
-            elif(self.X[node] == self.Q_E):
+            elif (self.X[node] == self.Q_E):
                 self.X[node] = self.E
-            elif(self.X[node] == self.Q_pre):
+            elif (self.X[node] == self.Q_pre):
                 self.X[node] = self.I_pre
-            elif(self.X[node] == self.Q_sym):
+            elif (self.X[node] == self.Q_sym):
                 self.X[node] = self.I_sym
-            elif(self.X[node] == self.Q_asym):
+            elif (self.X[node] == self.Q_asym):
                 self.X[node] = self.I_asym
-            elif(self.X[node] == self.Q_R):
+            elif (self.X[node] == self.Q_R):
                 self.X[node] = self.R
         # Reset the isolation timer:
         self.timer_isolation[node] = 0
@@ -2486,9 +2486,9 @@ class ExtSEIRSNetworkModel():
     def introduce_exposures(self, num_new_exposures):
         exposedNodes = numpy.random.choice(range(self.numNodes), size=num_new_exposures, replace=False)
         for exposedNode in exposedNodes:
-            if(self.X[exposedNode]==self.S):
+            if (self.X[exposedNode]==self.S):
                 self.X[exposedNode] = self.E
-            elif(self.X[exposedNode]==self.Q_S):
+            elif (self.X[exposedNode]==self.Q_S):
                 self.X[exposedNode] = self.Q_E
 
 
@@ -2515,10 +2515,10 @@ class ExtSEIRSNetworkModel():
         self.numTested   = numpy.pad(self.numTested, [(0, 6*self.numNodes)], mode='constant', constant_values=0)
         self.numPositive = numpy.pad(self.numPositive, [(0, 6*self.numNodes)], mode='constant', constant_values=0)
 
-        if(self.store_Xseries):
+        if (self.store_Xseries):
             self.Xseries = numpy.pad(self.Xseries, [(0, 6*self.numNodes), (0,0)], mode='constant', constant_values=0)
 
-        if(self.nodeGroupData):
+        if (self.nodeGroupData):
             for groupName in self.nodeGroupData:
                 self.nodeGroupData[groupName]['numS']        = numpy.pad(self.nodeGroupData[groupName]['numS'], [(0, 6*self.numNodes)], mode='constant', constant_values=0)
                 self.nodeGroupData[groupName]['numE']        = numpy.pad(self.nodeGroupData[groupName]['numE'], [(0, 6*self.numNodes)], mode='constant', constant_values=0)
@@ -2562,10 +2562,10 @@ class ExtSEIRSNetworkModel():
         self.numTested   = numpy.array(self.numTested, dtype=float)[:self.tidx+1]
         self.numPositive = numpy.array(self.numPositive, dtype=float)[:self.tidx+1]
 
-        if(self.store_Xseries):
+        if (self.store_Xseries):
             self.Xseries = self.Xseries[:self.tidx+1, :]
 
-        if(self.nodeGroupData):
+        if (self.nodeGroupData):
             for groupName in self.nodeGroupData:
                 self.nodeGroupData[groupName]['numS']        = numpy.array(self.nodeGroupData[groupName]['numS'], dtype=float)[:self.tidx+1]
                 self.nodeGroupData[groupName]['numE']        = numpy.array(self.nodeGroupData[groupName]['numE'], dtype=float)[:self.tidx+1]
@@ -2593,7 +2593,7 @@ class ExtSEIRSNetworkModel():
 
         max_dt = self.tmax if max_dt is None else max_dt
 
-        if(self.tidx >= len(self.tseries)-1):
+        if (self.tidx >= len(self.tseries)-1):
             # Room has run out in the timeseries storage arrays; double the size of these arrays:
             self.increase_data_series_length()
 
@@ -2608,7 +2608,7 @@ class ExtSEIRSNetworkModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         propensities, transitionTypes = self.calc_propensities()
 
-        if(propensities.sum() > 0):
+        if (propensities.sum() > 0):
 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             # Calculate alpha
@@ -2622,7 +2622,7 @@ class ExtSEIRSNetworkModel():
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             tau = (1/alpha)*numpy.log(float(1/r1))
 
-            if(tau > max_dt):
+            if (tau > max_dt):
                 # If the time to next event exceeds the max allowed interval,
                 # advance the system time by the max allowed interval,
                 # but do not execute any events (recalculate Gillespie interval/event next iteration)
@@ -2660,7 +2660,7 @@ class ExtSEIRSNetworkModel():
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
             # Save information about infection events when they occur:
-            if(transitionType == 'StoE' or transitionType == 'QStoQE'):
+            if (transitionType == 'StoE' or transitionType == 'QStoQE'):
                 transitionNode_GNbrs  = list(self.G[transitionNode].keys())
                 transitionNode_GQNbrs = list(self.G_Q[transitionNode].keys())
                 self.infectionsLog.append({ 't':                            self.t,
@@ -2674,7 +2674,7 @@ class ExtSEIRSNetworkModel():
 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-            if(transitionType in ['EtoQE', 'IPREtoQPRE', 'ISYMtoQSYM', 'IASYMtoQASYM', 'ISYMtoH']):
+            if (transitionType in ['EtoQE', 'IPREtoQPRE', 'ISYMtoQSYM', 'IASYMtoQASYM', 'ISYMtoH']):
                 self.set_positive(node=transitionNode, positive=True)
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2723,10 +2723,10 @@ class ExtSEIRSNetworkModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Store system states
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if(self.store_Xseries):
+        if (self.store_Xseries):
             self.Xseries[self.tidx,:] = self.X.T
 
-        if(self.nodeGroupData):
+        if (self.nodeGroupData):
             for groupName in self.nodeGroupData:
                 self.nodeGroupData[groupName]['numS'][self.tidx]        = numpy.count_nonzero(self.nodeGroupData[groupName]['mask']*self.X==self.S)
                 self.nodeGroupData[groupName]['numE'][self.tidx]        = numpy.count_nonzero(self.nodeGroupData[groupName]['mask']*self.X==self.E)
@@ -2749,7 +2749,7 @@ class ExtSEIRSNetworkModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Terminate if tmax reached or num infections is 0:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if(self.t >= self.tmax or (self.total_num_infected(self.tidx) < 1 and self.total_num_isolated(self.tidx) < 1)):
+        if (self.t >= self.tmax or (self.total_num_infected(self.tidx) < 1 and self.total_num_isolated(self.tidx) < 1)):
             self.finalize_data_series()
             return False
 
@@ -2762,7 +2762,7 @@ class ExtSEIRSNetworkModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def run(self, T, checkpoints=None, max_dt=None, min_dt=None, print_interval=10, verbose='t'):
-        if(T>0):
+        if (T>0):
             self.tmax += T
         else:
             return False
@@ -2770,12 +2770,12 @@ class ExtSEIRSNetworkModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Pre-process checkpoint values:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if(checkpoints):
+        if (checkpoints):
             numCheckpoints = len(checkpoints['t'])
             for chkpt_param, chkpt_values in checkpoints.items():
                 assert(isinstance(chkpt_values, (list, numpy.ndarray)) and len(chkpt_values)==numCheckpoints), "Expecting a list of values with length equal to number of checkpoint times ("+str(numCheckpoints)+") for each checkpoint parameter."
             checkpointIdx  = numpy.searchsorted(checkpoints['t'], self.t) # Finds 1st index in list greater than given val
-            if(checkpointIdx >= numCheckpoints):
+            if (checkpointIdx >= numCheckpoints):
                 # We are out of checkpoints, stop checking them:
                 checkpoints = None
             else:
@@ -2792,19 +2792,19 @@ class ExtSEIRSNetworkModel():
 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             # Handle checkpoints if applicable:
-            if(checkpoints):
-                if(self.t >= checkpointTime):
-                    if(verbose is not False):
+            if (checkpoints):
+                if (self.t >= checkpointTime):
+                    if (verbose is not False):
                         print("[Checkpoint: Updating parameters]")
                     # A checkpoint has been reached, update param values:
                     for param in list(self.parameters.keys()):
-                        if(param in list(checkpoints.keys())):
+                        if (param in list(checkpoints.keys())):
                             self.parameters.update({param: checkpoints[param][checkpointIdx]})
                     # Update parameter data structures and scenario flags:
                     self.update_parameters()
                     # Update the next checkpoint time:
                     checkpointIdx  = numpy.searchsorted(checkpoints['t'], self.t) # Finds 1st index in list greater than given val
-                    if(checkpointIdx >= numCheckpoints):
+                    if (checkpointIdx >= numCheckpoints):
                         # We are out of checkpoints, stop checking them:
                         checkpoints = None
                     else:
@@ -2813,11 +2813,11 @@ class ExtSEIRSNetworkModel():
 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-            if(print_interval):
-                if(print_reset and (int(self.t) % print_interval == 0)):
-                    if(verbose=="t"):
+            if (print_interval):
+                if (print_reset and (int(self.t) % print_interval == 0)):
+                    if (verbose=="t"):
                         print("t = %.2f" % self.t)
-                    if(verbose==True):
+                    if (verbose==True):
                         print("t = %.2f" % self.t)
                         print("\t S      = " + str(self.numS[self.tidx]))
                         print("\t E      = " + str(self.numE[self.tidx]))
@@ -2835,7 +2835,7 @@ class ExtSEIRSNetworkModel():
                         print("\t Q_R    = " + str(self.numQ_R[self.tidx]))
 
                     print_reset = False
-                elif(not print_reset and (int(self.t) % 10 != 0)):
+                elif (not print_reset and (int(self.t) % 10 != 0)):
                     print_reset = True
 
         return True
@@ -2863,7 +2863,7 @@ class ExtSEIRSNetworkModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Create an Axes object if None provided:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if(not ax):
+        if (not ax):
             fig, ax = pyplot.subplots()
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2888,11 +2888,11 @@ class ExtSEIRSNetworkModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Draw the reference data:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if(dashed_reference_results):
+        if (dashed_reference_results):
             dashedReference_tseries       = dashed_reference_results.tseries[::int(self.numNodes/100)]
             dashedReference_infectedStack = dashed_reference_results.total_num_infected()[::int(self.numNodes/100)] / (self.numNodes if plot_percentages else 1)
             ax.plot(dashedReference_tseries, dashedReference_infectedStack, color='#E0E0E0', linestyle='--', label='Total infections ('+dashed_reference_label+')', zorder=0)
-        if(shaded_reference_results):
+        if (shaded_reference_results):
             shadedReference_tseries       = shaded_reference_results.tseries
             shadedReference_infectedStack = shaded_reference_results.total_num_infected() / (self.numNodes if plot_percentages else 1)
             ax.fill_between(shaded_reference_results.tseries, shadedReference_infectedStack, 0, color='#EFEFEF', label='Total infections ('+shaded_reference_label+')', zorder=0)
@@ -2902,77 +2902,77 @@ class ExtSEIRSNetworkModel():
         # Draw the stacked variables:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         topstack = numpy.zeros_like(self.tseries)
-        if(any(Fseries) and plot_F=='stacked'):
+        if (any(Fseries) and plot_F=='stacked'):
             ax.fill_between(numpy.ma.masked_where(Fseries<=0, self.tseries), numpy.ma.masked_where(Fseries<=0, topstack+Fseries), topstack, color=color_F, alpha=0.75, label='$F$', zorder=2)
             ax.plot(        numpy.ma.masked_where(Fseries<=0, self.tseries), numpy.ma.masked_where(Fseries<=0, topstack+Fseries),           color=color_F, zorder=3)
             topstack = topstack+Fseries
 
-        if(any(Hseries) and plot_H=='stacked'):
+        if (any(Hseries) and plot_H=='stacked'):
             ax.fill_between(numpy.ma.masked_where(Hseries<=0, self.tseries), numpy.ma.masked_where(Hseries<=0, topstack+Hseries), topstack, color=color_H, alpha=0.75, label='$H$', zorder=2)
             ax.plot(        numpy.ma.masked_where(Hseries<=0, self.tseries), numpy.ma.masked_where(Hseries<=0, topstack+Hseries),           color=color_H, zorder=3)
             topstack = topstack+Hseries
 
-        if(combine_Q_infected and any(Q_infectedseries) and plot_Q_E=='stacked' and plot_Q_pre=='stacked' and plot_Q_sym=='stacked' and plot_Q_asym=='stacked'):
+        if (combine_Q_infected and any(Q_infectedseries) and plot_Q_E=='stacked' and plot_Q_pre=='stacked' and plot_Q_sym=='stacked' and plot_Q_asym=='stacked'):
             ax.fill_between(numpy.ma.masked_where(Q_infectedseries<=0, self.tseries), numpy.ma.masked_where(Q_infectedseries<=0, topstack+Q_infectedseries), topstack, facecolor=color_Q_infected, alpha=0.75, hatch='//////', edgecolor='white', linewidth=0.0, label='$Q_{infected}$', zorder=2)
             ax.plot(        numpy.ma.masked_where(Q_infectedseries<=0, self.tseries), numpy.ma.masked_where(Q_infectedseries<=0, topstack+Q_infectedseries),           color=color_Q_infected, zorder=3)
             topstack = topstack+Q_infectedseries
 
-        if(not combine_Q_infected and any(Q_Eseries) and plot_Q_E=='stacked'):
+        if (not combine_Q_infected and any(Q_Eseries) and plot_Q_E=='stacked'):
             ax.fill_between(numpy.ma.masked_where(Q_Eseries<=0, self.tseries), numpy.ma.masked_where(Q_Eseries<=0, topstack+Q_Eseries), topstack, facecolor=color_Q_E, alpha=0.75, hatch='//////', edgecolor='white', linewidth=0.0, label='$Q_E$', zorder=2)
             ax.plot(        numpy.ma.masked_where(Q_Eseries<=0, self.tseries), numpy.ma.masked_where(Q_Eseries<=0, topstack+Q_Eseries),           color=color_Q_E, zorder=3)
             topstack = topstack+Q_Eseries
 
-        if(any(Eseries) and plot_E=='stacked'):
+        if (any(Eseries) and plot_E=='stacked'):
             ax.fill_between(numpy.ma.masked_where(Eseries<=0, self.tseries), numpy.ma.masked_where(Eseries<=0, topstack+Eseries), topstack, color=color_E, alpha=0.75, label='$E$', zorder=2)
             ax.plot(        numpy.ma.masked_where(Eseries<=0, self.tseries), numpy.ma.masked_where(Eseries<=0, topstack+Eseries),           color=color_E, zorder=3)
             topstack = topstack+Eseries
 
-        if(not combine_Q_infected and any(Q_preseries) and plot_Q_pre=='stacked'):
+        if (not combine_Q_infected and any(Q_preseries) and plot_Q_pre=='stacked'):
             ax.fill_between(numpy.ma.masked_where(Q_preseries<=0, self.tseries), numpy.ma.masked_where(Q_preseries<=0, topstack+Q_preseries), topstack, facecolor=color_Q_pre, alpha=0.75,  hatch='//////', edgecolor='white', linewidth=0.0, label='$Q_{pre}$', zorder=2)
             ax.plot(        numpy.ma.masked_where(Q_preseries<=0, self.tseries), numpy.ma.masked_where(Q_preseries<=0, topstack+Q_preseries),           color=color_Q_pre, zorder=3)
             topstack = topstack+Q_preseries
 
-        if(any(I_preseries) and plot_I_pre=='stacked'):
+        if (any(I_preseries) and plot_I_pre=='stacked'):
             ax.fill_between(numpy.ma.masked_where(I_preseries<=0, self.tseries), numpy.ma.masked_where(I_preseries<=0, topstack+I_preseries), topstack, color=color_I_pre, alpha=0.75, label='$I_{pre}$', zorder=2)
             ax.plot(        numpy.ma.masked_where(I_preseries<=0, self.tseries), numpy.ma.masked_where(I_preseries<=0, topstack+I_preseries),           color=color_I_pre, zorder=3)
             topstack = topstack+I_preseries
 
-        if(not combine_Q_infected and any(Q_symseries) and plot_Q_sym=='stacked'):
+        if (not combine_Q_infected and any(Q_symseries) and plot_Q_sym=='stacked'):
             ax.fill_between(numpy.ma.masked_where(Q_symseries<=0, self.tseries), numpy.ma.masked_where(Q_symseries<=0, topstack+Q_symseries), topstack, facecolor=color_Q_sym, alpha=0.75,  hatch='//////', edgecolor='white', linewidth=0.0, label='$Q_{sym}$', zorder=2)
             ax.plot(        numpy.ma.masked_where(Q_symseries<=0, self.tseries), numpy.ma.masked_where(Q_symseries<=0, topstack+Q_symseries),           color=color_Q_sym, zorder=3)
             topstack = topstack+Q_symseries
 
-        if(any(I_symseries) and plot_I_sym=='stacked'):
+        if (any(I_symseries) and plot_I_sym=='stacked'):
             ax.fill_between(numpy.ma.masked_where(I_symseries<=0, self.tseries), numpy.ma.masked_where(I_symseries<=0, topstack+I_symseries), topstack, color=color_I_sym, alpha=0.75, label='$I_{sym}$', zorder=2)
             ax.plot(        numpy.ma.masked_where(I_symseries<=0, self.tseries), numpy.ma.masked_where(I_symseries<=0, topstack+I_symseries),           color=color_I_sym, zorder=3)
             topstack = topstack+I_symseries
 
-        if(not combine_Q_infected and any(Q_asymseries) and plot_Q_asym=='stacked'):
+        if (not combine_Q_infected and any(Q_asymseries) and plot_Q_asym=='stacked'):
             ax.fill_between(numpy.ma.masked_where(Q_asymseries<=0, self.tseries), numpy.ma.masked_where(Q_asymseries<=0, topstack+Q_asymseries), topstack, facecolor=color_Q_asym, alpha=0.75,  hatch='//////', edgecolor='white', linewidth=0.0, label='$Q_{asym}$', zorder=2)
             ax.plot(        numpy.ma.masked_where(Q_asymseries<=0, self.tseries), numpy.ma.masked_where(Q_asymseries<=0, topstack+Q_asymseries),           color=color_Q_asym, zorder=3)
             topstack = topstack+Q_asymseries
 
-        if(any(I_asymseries) and plot_I_asym=='stacked'):
+        if (any(I_asymseries) and plot_I_asym=='stacked'):
             ax.fill_between(numpy.ma.masked_where(I_asymseries<=0, self.tseries), numpy.ma.masked_where(I_asymseries<=0, topstack+I_asymseries), topstack, color=color_I_asym, alpha=0.75, label='$I_{asym}$', zorder=2)
             ax.plot(        numpy.ma.masked_where(I_asymseries<=0, self.tseries), numpy.ma.masked_where(I_asymseries<=0, topstack+I_asymseries),           color=color_I_asym, zorder=3)
             topstack = topstack+I_asymseries
 
-        if(any(Q_Rseries) and plot_Q_R=='stacked'):
+        if (any(Q_Rseries) and plot_Q_R=='stacked'):
             ax.fill_between(numpy.ma.masked_where(Q_Rseries<=0, self.tseries), numpy.ma.masked_where(Q_Rseries<=0, topstack+Q_Rseries), topstack, facecolor=color_Q_R, alpha=0.75, hatch='//////', edgecolor='white', linewidth=0.0, label='$Q_R$', zorder=2)
             ax.plot(        numpy.ma.masked_where(Q_Rseries<=0, self.tseries), numpy.ma.masked_where(Q_Rseries<=0, topstack+Q_Rseries),           color=color_Q_R, zorder=3)
             topstack = topstack+Q_Rseries
 
-        if(any(Rseries) and plot_R=='stacked'):
+        if (any(Rseries) and plot_R=='stacked'):
             ax.fill_between(numpy.ma.masked_where(Rseries<=0, self.tseries), numpy.ma.masked_where(Rseries<=0, topstack+Rseries), topstack, color=color_R, alpha=0.75, label='$R$', zorder=2)
             ax.plot(        numpy.ma.masked_where(Rseries<=0, self.tseries), numpy.ma.masked_where(Rseries<=0, topstack+Rseries),           color=color_R, zorder=3)
             topstack = topstack+Rseries
 
-        if(any(Q_Sseries) and plot_Q_S=='stacked'):
+        if (any(Q_Sseries) and plot_Q_S=='stacked'):
             ax.fill_between(numpy.ma.masked_where(Q_Sseries<=0, self.tseries), numpy.ma.masked_where(Q_Sseries<=0, topstack+Q_Sseries), topstack, facecolor=color_Q_S, alpha=0.75, hatch='//////', edgecolor='white', linewidth=0.0, label='$Q_S$', zorder=2)
             ax.plot(        numpy.ma.masked_where(Q_Sseries<=0, self.tseries), numpy.ma.masked_where(Q_Sseries<=0, topstack+Q_Sseries),           color=color_Q_S, zorder=3)
             topstack = topstack+Q_Sseries
 
-        if(any(Sseries) and plot_S=='stacked'):
+        if (any(Sseries) and plot_S=='stacked'):
             ax.fill_between(numpy.ma.masked_where(Sseries<=0, self.tseries), numpy.ma.masked_where(Sseries<=0, topstack+Sseries), topstack, color=color_S, alpha=0.75, label='$S$', zorder=2)
             ax.plot(        numpy.ma.masked_where(Sseries<=0, self.tseries), numpy.ma.masked_where(Sseries<=0, topstack+Sseries),           color=color_S, zorder=3)
             topstack = topstack+Sseries
@@ -2981,125 +2981,125 @@ class ExtSEIRSNetworkModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Draw the shaded variables:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if(any(Fseries) and plot_F=='shaded'):
+        if (any(Fseries) and plot_F=='shaded'):
             ax.fill_between(numpy.ma.masked_where(Fseries<=0, self.tseries), numpy.ma.masked_where(Fseries<=0, Fseries), 0, color=color_F, alpha=0.75, label='$F$', zorder=4)
             ax.plot(        numpy.ma.masked_where(Fseries<=0, self.tseries), numpy.ma.masked_where(Fseries<=0, Fseries),    color=color_F, zorder=5)
 
-        if(any(Hseries) and plot_H=='shaded'):
+        if (any(Hseries) and plot_H=='shaded'):
             ax.fill_between(numpy.ma.masked_where(Hseries<=0, self.tseries), numpy.ma.masked_where(Hseries<=0, Hseries), 0, color=color_H, alpha=0.75, label='$H$', zorder=4)
             ax.plot(        numpy.ma.masked_where(Hseries<=0, self.tseries), numpy.ma.masked_where(Hseries<=0, Hseries),    color=color_H, zorder=5)
 
-        if(combine_Q_infected and any(Q_infectedseries) and plot_Q_E=='shaded' and plot_Q_pre=='shaded' and plot_Q_sym=='shaded' and plot_Q_asym=='shaded'):
+        if (combine_Q_infected and any(Q_infectedseries) and plot_Q_E=='shaded' and plot_Q_pre=='shaded' and plot_Q_sym=='shaded' and plot_Q_asym=='shaded'):
             ax.fill_between(numpy.ma.masked_where(Q_infectedseries<=0, self.tseries), numpy.ma.masked_where(Q_infectedseries<=0, Q_infectedseries), 0, color=color_Q_infected, alpha=0.75, hatch='//////', edgecolor='white', linewidth=0.0, label='$Q_{infected}$', zorder=4)
             ax.plot(        numpy.ma.masked_where(Q_infectedseries<=0, self.tseries), numpy.ma.masked_where(Q_infectedseries<=0, Q_infectedseries),    color=color_Q_infected, zorder=5)
 
-        if(not combine_Q_infected and any(Q_Eseries) and plot_Q_E=='shaded'):
+        if (not combine_Q_infected and any(Q_Eseries) and plot_Q_E=='shaded'):
             ax.fill_between(numpy.ma.masked_where(Q_Eseries<=0, self.tseries), numpy.ma.masked_where(Q_Eseries<=0, Q_Eseries), 0, facecolor=color_Q_E, alpha=0.75, hatch='//////', edgecolor='white', linewidth=0.0, label='$Q_E$', zorder=4)
             ax.plot(        numpy.ma.masked_where(Q_Eseries<=0, self.tseries), numpy.ma.masked_where(Q_Eseries<=0, Q_Eseries),    color=color_Q_E, zorder=5)
 
-        if(any(Eseries) and plot_E=='shaded'):
+        if (any(Eseries) and plot_E=='shaded'):
             ax.fill_between(numpy.ma.masked_where(Eseries<=0, self.tseries), numpy.ma.masked_where(Eseries<=0, Eseries), 0, color=color_E, alpha=0.75, label='$E$', zorder=4)
             ax.plot(        numpy.ma.masked_where(Eseries<=0, self.tseries), numpy.ma.masked_where(Eseries<=0, Eseries),    color=color_E, zorder=5)
 
-        if(not combine_Q_infected and any(Q_preseries) and plot_Q_pre=='shaded'):
+        if (not combine_Q_infected and any(Q_preseries) and plot_Q_pre=='shaded'):
             ax.fill_between(numpy.ma.masked_where(Q_preseries<=0, self.tseries), numpy.ma.masked_where(Q_preseries<=0, Q_preseries), 0, facecolor=color_Q_pre, alpha=0.75,  hatch='//////', edgecolor='white', linewidth=0.0, label='$Q_{pre}$', zorder=4)
             ax.plot(        numpy.ma.masked_where(Q_preseries<=0, self.tseries), numpy.ma.masked_where(Q_preseries<=0, Q_preseries),    color=color_Q_pre, zorder=5)
 
-        if(any(I_preseries) and plot_I_pre=='shaded'):
+        if (any(I_preseries) and plot_I_pre=='shaded'):
             ax.fill_between(numpy.ma.masked_where(I_preseries<=0, self.tseries), numpy.ma.masked_where(I_preseries<=0, I_preseries), 0, color=color_I_pre, alpha=0.75, label='$I_{pre}$', zorder=4)
             ax.plot(        numpy.ma.masked_where(I_preseries<=0, self.tseries), numpy.ma.masked_where(I_preseries<=0, I_preseries),    color=color_I_pre, zorder=5)
 
-        if(not combine_Q_infected and any(Q_symseries) and plot_Q_sym=='shaded'):
+        if (not combine_Q_infected and any(Q_symseries) and plot_Q_sym=='shaded'):
             ax.fill_between(numpy.ma.masked_where(Q_symseries<=0, self.tseries), numpy.ma.masked_where(Q_symseries<=0, Q_symseries), 0, facecolor=color_Q_sym, alpha=0.75,  hatch='//////', edgecolor='white', linewidth=0.0, label='$Q_{sym}$', zorder=4)
             ax.plot(        numpy.ma.masked_where(Q_symseries<=0, self.tseries), numpy.ma.masked_where(Q_symseries<=0, Q_symseries),    color=color_Q_sym, zorder=5)
 
-        if(any(I_symseries) and plot_I_sym=='shaded'):
+        if (any(I_symseries) and plot_I_sym=='shaded'):
             ax.fill_between(numpy.ma.masked_where(I_symseries<=0, self.tseries), numpy.ma.masked_where(I_symseries<=0, I_symseries), 0, color=color_I_sym, alpha=0.75, label='$I_{sym}$', zorder=4)
             ax.plot(        numpy.ma.masked_where(I_symseries<=0, self.tseries), numpy.ma.masked_where(I_symseries<=0, I_symseries),    color=color_I_sym, zorder=5)
 
-        if(not combine_Q_infected and any(Q_asymseries) and plot_Q_asym=='shaded'):
+        if (not combine_Q_infected and any(Q_asymseries) and plot_Q_asym=='shaded'):
             ax.fill_between(numpy.ma.masked_where(Q_asymseries<=0, self.tseries), numpy.ma.masked_where(Q_asymseries<=0, Q_asymseries), 0, facecolor=color_Q_asym, alpha=0.75,  hatch='//////', edgecolor='white', linewidth=0.0, label='$Q_{asym}$', zorder=4)
             ax.plot(        numpy.ma.masked_where(Q_asymseries<=0, self.tseries), numpy.ma.masked_where(Q_asymseries<=0, Q_asymseries),    color=color_Q_asym, zorder=5)
 
-        if(any(I_asymseries) and plot_I_asym=='shaded'):
+        if (any(I_asymseries) and plot_I_asym=='shaded'):
             ax.fill_between(numpy.ma.masked_where(I_asymseries<=0, self.tseries), numpy.ma.masked_where(I_asymseries<=0, I_asymseries), 0, color=color_I_asym, alpha=0.75, label='$I_{asym}$', zorder=4)
             ax.plot(        numpy.ma.masked_where(I_asymseries<=0, self.tseries), numpy.ma.masked_where(I_asymseries<=0, I_asymseries),    color=color_I_asym, zorder=5)
 
-        if(any(Q_Rseries) and plot_Q_R=='shaded'):
+        if (any(Q_Rseries) and plot_Q_R=='shaded'):
             ax.fill_between(numpy.ma.masked_where(Q_Rseries<=0, self.tseries), numpy.ma.masked_where(Q_Rseries<=0, Q_Rseries), 0, facecolor=color_Q_R, alpha=0.75, hatch='//////', edgecolor='white', linewidth=0.0, label='$Q_R$', zorder=4)
             ax.plot(        numpy.ma.masked_where(Q_Rseries<=0, self.tseries), numpy.ma.masked_where(Q_Rseries<=0, Q_Rseries),    color=color_Q_R, zorder=5)
 
-        if(any(Rseries) and plot_R=='shaded'):
+        if (any(Rseries) and plot_R=='shaded'):
             ax.fill_between(numpy.ma.masked_where(Rseries<=0, self.tseries), numpy.ma.masked_where(Rseries<=0, Rseries), 0, color=color_R, alpha=0.75, label='$R$', zorder=4)
             ax.plot(        numpy.ma.masked_where(Rseries<=0, self.tseries), numpy.ma.masked_where(Rseries<=0, Rseries),    color=color_R, zorder=5)
 
-        if(any(Q_Sseries) and plot_Q_S=='shaded'):
+        if (any(Q_Sseries) and plot_Q_S=='shaded'):
             ax.fill_between(numpy.ma.masked_where(Q_Sseries<=0, self.tseries), numpy.ma.masked_where(Q_Sseries<=0, Q_Sseries), 0, facecolor=color_Q_S, alpha=0.75, hatch='//////', edgecolor='white', linewidth=0.0, label='$Q_S$', zorder=4)
             ax.plot(        numpy.ma.masked_where(Q_Sseries<=0, self.tseries), numpy.ma.masked_where(Q_Sseries<=0, Q_Sseries),    color=color_Q_S, zorder=5)
 
-        if(any(Sseries) and plot_S=='shaded'):
+        if (any(Sseries) and plot_S=='shaded'):
             ax.fill_between(numpy.ma.masked_where(Sseries<=0, self.tseries), numpy.ma.masked_where(Sseries<=0, Sseries), 0, color=color_S, alpha=0.75, label='$S$', zorder=4)
             ax.plot(        numpy.ma.masked_where(Sseries<=0, self.tseries), numpy.ma.masked_where(Sseries<=0, Sseries),    color=color_S, zorder=5)
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Draw the line variables:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if(any(Fseries) and plot_F=='line'):
+        if (any(Fseries) and plot_F=='line'):
             ax.plot(numpy.ma.masked_where(Fseries<=0, self.tseries), numpy.ma.masked_where(Fseries<=0, Fseries), color=color_F, label='$F$', zorder=6)
 
-        if(any(Hseries) and plot_H=='line'):
+        if (any(Hseries) and plot_H=='line'):
             ax.plot(numpy.ma.masked_where(Hseries<=0, self.tseries), numpy.ma.masked_where(Hseries<=0, Hseries), color=color_H, label='$H$', zorder=6)
 
-        if(combine_Q_infected and any(Q_infectedseries) and plot_Q_E=='line' and plot_Q_pre=='line' and plot_Q_sym=='line' and plot_Q_asym=='line'):
+        if (combine_Q_infected and any(Q_infectedseries) and plot_Q_E=='line' and plot_Q_pre=='line' and plot_Q_sym=='line' and plot_Q_asym=='line'):
             ax.plot(numpy.ma.masked_where(Q_infectedseries<=0, self.tseries), numpy.ma.masked_where(Q_infectedseries<=0, Q_infectedseries), color=color_Q_infected, label='$Q_{infected}$', zorder=6)
 
-        if(not combine_Q_infected and any(Q_Eseries) and plot_Q_E=='line'):
+        if (not combine_Q_infected and any(Q_Eseries) and plot_Q_E=='line'):
             ax.plot(numpy.ma.masked_where(Q_Eseries<=0, self.tseries), numpy.ma.masked_where(Q_Eseries<=0, Q_Eseries), color=color_Q_E, label='$Q_E$', zorder=6)
 
-        if(any(Eseries) and plot_E=='line'):
+        if (any(Eseries) and plot_E=='line'):
             ax.plot(numpy.ma.masked_where(Eseries<=0, self.tseries), numpy.ma.masked_where(Eseries<=0, Eseries), color=color_E, label='$E$', zorder=6)
 
-        if(not combine_Q_infected and any(Q_preseries) and plot_Q_pre=='line'):
+        if (not combine_Q_infected and any(Q_preseries) and plot_Q_pre=='line'):
             ax.plot(numpy.ma.masked_where(Q_preseries<=0, self.tseries), numpy.ma.masked_where(Q_preseries<=0, Q_preseries), color=color_Q_pre, label='$Q_{pre}$', zorder=6)
 
-        if(any(I_preseries) and plot_I_pre=='line'):
+        if (any(I_preseries) and plot_I_pre=='line'):
             ax.plot(numpy.ma.masked_where(I_preseries<=0, self.tseries), numpy.ma.masked_where(I_preseries<=0, I_preseries), color=color_I_pre, label='$I_{pre}$', zorder=6)
 
-        if(not combine_Q_infected and any(Q_symseries) and plot_Q_sym=='line'):
+        if (not combine_Q_infected and any(Q_symseries) and plot_Q_sym=='line'):
             ax.plot(numpy.ma.masked_where(Q_symseries<=0, self.tseries), numpy.ma.masked_where(Q_symseries<=0, Q_symseries), color=color_Q_sym, label='$Q_{sym}$', zorder=6)
 
-        if(any(I_symseries) and plot_I_sym=='line'):
+        if (any(I_symseries) and plot_I_sym=='line'):
             ax.plot(numpy.ma.masked_where(I_symseries<=0, self.tseries), numpy.ma.masked_where(I_symseries<=0, I_symseries), color=color_I_sym, label='$I_{sym}$', zorder=6)
 
-        if(not combine_Q_infected and any(Q_asymseries) and plot_Q_asym=='line'):
+        if (not combine_Q_infected and any(Q_asymseries) and plot_Q_asym=='line'):
             ax.plot(numpy.ma.masked_where(Q_asymseries<=0, self.tseries), numpy.ma.masked_where(Q_asymseries<=0, Q_asymseries), color=color_Q_asym, label='$Q_{asym}$', zorder=6)
 
-        if(any(I_asymseries) and plot_I_asym=='line'):
+        if (any(I_asymseries) and plot_I_asym=='line'):
             ax.plot(numpy.ma.masked_where(I_asymseries<=0, self.tseries), numpy.ma.masked_where(I_asymseries<=0, I_asymseries), color=color_I_asym, label='$I_{asym}$', zorder=6)
 
-        if(any(Q_Rseries) and plot_Q_R=='line'):
+        if (any(Q_Rseries) and plot_Q_R=='line'):
             ax.plot(numpy.ma.masked_where(Q_Rseries<=0, self.tseries), numpy.ma.masked_where(Q_Rseries<=0, Q_Rseries), color=color_Q_R, linestyle='--', label='$Q_R$', zorder=6)
 
-        if(any(Rseries) and plot_R=='line'):
+        if (any(Rseries) and plot_R=='line'):
             ax.plot(numpy.ma.masked_where(Rseries<=0, self.tseries), numpy.ma.masked_where(Rseries<=0, Rseries), color=color_R, label='$R$', zorder=6)
 
-        if(any(Q_Sseries) and plot_Q_S=='line'):
+        if (any(Q_Sseries) and plot_Q_S=='line'):
             ax.plot(numpy.ma.masked_where(Q_Sseries<=0, self.tseries), numpy.ma.masked_where(Q_Sseries<=0, Q_Sseries), color=color_Q_S, linestyle='--', label='$Q_S$', zorder=6)
 
-        if(any(Sseries) and plot_S=='line'):
+        if (any(Sseries) and plot_S=='line'):
             ax.plot(numpy.ma.masked_where(Sseries<=0, self.tseries), numpy.ma.masked_where(Sseries<=0, Sseries), color=color_S, label='$S$', zorder=6)
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Draw the vertical line annotations:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        if(len(vlines)>0 and len(vline_colors)==0):
+        if (len(vlines)>0 and len(vline_colors)==0):
             vline_colors = ['gray']*len(vlines)
-        if(len(vlines)>0 and len(vline_labels)==0):
+        if (len(vlines)>0 and len(vline_labels)==0):
             vline_labels = [None]*len(vlines)
-        if(len(vlines)>0 and len(vline_styles)==0):
+        if (len(vlines)>0 and len(vline_styles)==0):
             vline_styles = [':']*len(vlines)
         for vline_x, vline_color, vline_style, vline_label in zip(vlines, vline_colors, vline_styles, vline_labels):
-            if(vline_x is not None):
+            if (vline_x is not None):
                 ax.axvline(x=vline_x, color=vline_color, linestyle=vline_style, alpha=1, label=vline_label)
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -3109,14 +3109,14 @@ class ExtSEIRSNetworkModel():
         ax.set_ylabel('percent of population' if plot_percentages else 'number of individuals')
         ax.set_xlim(0, (max(self.tseries) if not xlim else xlim))
         ax.set_ylim(0, ylim)
-        if(plot_percentages):
+        if (plot_percentages):
             ax.set_yticklabels(['{:,.0%}'.format(y) for y in ax.get_yticks()])
-        if(legend):
+        if (legend):
             legend_handles, legend_labels = ax.get_legend_handles_labels()
             ax.legend(legend_handles[::-1], legend_labels[::-1], loc='upper right', facecolor='white', edgecolor='none', framealpha=0.9, prop={'size': 8})
-        if(title):
+        if (title):
             ax.set_title(title, size=12)
-        if(side_title):
+        if (side_title):
             ax.annotate(side_title, (0, 0.5), xytext=(-45, 0), ha='right', va='center',
                 size=12, rotation=90, xycoords='axes fraction', textcoords='offset points')
 
@@ -3145,7 +3145,7 @@ class ExtSEIRSNetworkModel():
 
         fig, ax = pyplot.subplots(figsize=figsize)
 
-        if(use_seaborn):
+        if (use_seaborn):
             import seaborn
             seaborn.set_style('ticks')
             seaborn.despine()
@@ -3164,7 +3164,7 @@ class ExtSEIRSNetworkModel():
                         vlines=vlines, vline_colors=vline_colors, vline_styles=vline_styles, vline_labels=vline_labels,
                         ylim=ylim, xlim=xlim, legend=legend, title=title, side_title=side_title, plot_percentages=plot_percentages)
 
-        if(show):
+        if (show):
             pyplot.show()
 
         return fig, ax
@@ -3192,7 +3192,7 @@ class ExtSEIRSNetworkModel():
 
         fig, ax = pyplot.subplots(figsize=figsize)
 
-        if(use_seaborn):
+        if (use_seaborn):
             import seaborn
             seaborn.set_style('ticks')
             seaborn.despine()
@@ -3211,7 +3211,7 @@ class ExtSEIRSNetworkModel():
                         vlines=vlines, vline_colors=vline_colors, vline_styles=vline_styles, vline_labels=vline_labels,
                         ylim=ylim, xlim=xlim, legend=legend, title=title, side_title=side_title, plot_percentages=plot_percentages)
 
-        if(show):
+        if (show):
             pyplot.show()
 
         return fig, ax
