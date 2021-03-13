@@ -21,14 +21,14 @@ class SEIRSModel():
     """
     A class to simulate the Deterministic SEIRS Model
     ===================================================
-    Params: beta    Rate of transmission (exposure) 
-            sigma   Rate of infection (upon exposure) 
-            gamma   Rate of recovery (upon infection) 
-            xi      Rate of re-susceptibility (upon recovery)  
-            mu_I    Rate of infection-related death  
-            mu_0    Rate of baseline death   
+    Params: beta    Rate of transmission (exposure)
+            sigma   Rate of infection (upon exposure)
+            gamma   Rate of recovery (upon infection)
+            xi      Rate of re-susceptibility (upon recovery)
+            mu_I    Rate of infection-related death
+            mu_0    Rate of baseline death
             nu      Rate of baseline birth
-            
+
             beta_D  Rate of transmission (exposure) for individuals with detected infections
             sigma_D Rate of infection (upon exposure) for individuals with detected infections
             gamma_D Rate of recovery (upon infection) for individuals with detected infections
@@ -38,32 +38,32 @@ class SEIRSModel():
             psi_E   Probability of positive test results for exposed individuals
             psi_I   Probability of positive test results for exposed individuals
             q       Probability of quarantined individuals interacting with others
-            
-            initE   Init number of exposed individuals       
-            initI   Init number of infectious individuals      
+
+            initE   Init number of exposed individuals
+            initI   Init number of infectious individuals
             initD_E Init number of detected infectious individuals
-            initD_I Init number of detected infectious individuals   
-            initR   Init number of recovered individuals     
+            initD_I Init number of detected infectious individuals
+            initR   Init number of recovered individuals
             initF   Init number of infection-related fatalities
-                    (all remaining nodes initialized susceptible)   
+                    (all remaining nodes initialized susceptible)
     """
 
     def __init__(self, initN, beta, sigma, gamma, xi=0, mu_I=0, mu_0=0, nu=0, p=0,
-                        beta_D=None, sigma_D=None, gamma_D=None, mu_D=None, 
+                        beta_D=None, sigma_D=None, gamma_D=None, mu_D=None,
                         theta_E=0, theta_I=0, psi_E=0, psi_I=0, q=0,
                         initE=0, initI=10, initD_E=0, initD_I=0, initR=0, initF=0):
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Model Parameters:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        self.beta   = beta  
-        self.sigma  = sigma 
-        self.gamma  = gamma 
-        self.xi     = xi    
-        self.mu_I   = mu_I  
-        self.mu_0   = mu_0  
-        self.nu     = nu    
-        self.p      = p     
+        self.beta   = beta
+        self.sigma  = sigma
+        self.gamma  = gamma
+        self.xi     = xi
+        self.mu_I   = mu_I
+        self.mu_0   = mu_0
+        self.nu     = nu
+        self.p      = p
 
         # Testing-related parameters:
         self.beta_D   = beta_D  if beta_D is not None else self.beta
@@ -82,7 +82,7 @@ class SEIRSModel():
         self.t       = 0
         self.tmax    = 0 # will be set when run() is called
         self.tseries = numpy.array([0])
-        
+
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Initialize Counts of inidividuals with each state:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -104,7 +104,7 @@ class SEIRSModel():
     def system_dfes(t, variables, beta, sigma, gamma, xi, mu_I, mu_0, nu,
                                   beta_D, sigma_D, gamma_D, mu_D, theta_E, theta_I, psi_E, psi_I, q):
 
-        S, E, I, D_E, D_I, R, F = variables    # varibles is a list with compartment counts as elements 
+        S, E, I, D_E, D_I, R, F = variables    # varibles is a list with compartment counts as elements
 
         N   = S + E + I + D_E + D_I + R
 
@@ -139,7 +139,7 @@ class SEIRSModel():
         t_span          = (self.t, self.t+runtime)
 
         # Define the initial conditions as the system's current state:
-        # (which will be the t=0 condition if this is the first run of this model, 
+        # (which will be the t=0 condition if this is the first run of this model,
         # else where the last sim left off)
 
         init_cond       = [self.numS[-1], self.numE[-1], self.numI[-1], self.numD_E[-1], self.numD_I[-1], self.numR[-1], self.numF[-1]]
@@ -149,7 +149,7 @@ class SEIRSModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         solution        = scipy.integrate.solve_ivp(lambda t, X: SEIRSModel.system_dfes(t, X, self.beta, self.sigma, self.gamma, self.xi, self.mu_I, self.mu_0, self.nu,
                                                                                             self.beta_D, self.sigma_D, self.gamma_D, self.mu_D, self.theta_E, self.theta_I, self.psi_E, self.psi_I, self.q
-                                                                                        ), 
+                                                                                        ),
                                                         t_span=t_span, y0=init_cond, t_eval=t_eval
                                                    )
 
@@ -177,7 +177,7 @@ class SEIRSModel():
             self.tmax += T
         else:
             return False
-        
+
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Pre-process checkpoint values:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -187,10 +187,10 @@ class SEIRSModel():
                           'beta_D', 'sigma_D', 'gamma_D', 'mu_D',
                           'theta_E', 'theta_I', 'psi_E', 'psi_I', 'q']
             for param in paramNames:
-                # For params that don't have given checkpoint values (or bad value given), 
+                # For params that don't have given checkpoint values (or bad value given),
                 # set their checkpoint values to the value they have now for all checkpoints.
                 if(param not in list(checkpoints.keys())
-                    or not isinstance(checkpoints[param], (list, numpy.ndarray)) 
+                    or not isinstance(checkpoints[param], (list, numpy.ndarray))
                     or len(checkpoints[param])!=numCheckpoints):
                     checkpoints[param] = [getattr(self, param)]*numCheckpoints
 
@@ -211,7 +211,7 @@ class SEIRSModel():
                 print("\t D_I = " + str(self.numD_I[-1]))
                 print("\t R   = " + str(self.numR[-1]))
                 print("\t F   = " + str(self.numF[-1]))
-                    
+
 
         else: # checkpoints provided
             for checkpointIdx, checkpointTime in enumerate(checkpoints['t']):
@@ -244,9 +244,9 @@ class SEIRSModel():
 
     def total_num_infections(self, t_idx=None):
         if(t_idx is None):
-            return (self.numE[:] + self.numI[:] + self.numD_E[:] + self.numD_I[:])  
+            return (self.numE[:] + self.numI[:] + self.numD_E[:] + self.numD_I[:])
         else:
-            return (self.numE[t_idx] + self.numI[t_idx] + self.numD_E[t_idx] + self.numD_I[t_idx])   
+            return (self.numE[t_idx] + self.numI[t_idx] + self.numD_E[t_idx] + self.numD_I[t_idx])
 
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -256,8 +256,8 @@ class SEIRSModel():
                             plot_D_E='line', plot_D_I='line', combine_D=True,
                             color_S='tab:green', color_E='orange', color_I='crimson', color_R='tab:blue', color_F='black',
                             color_D_E='mediumorchid', color_D_I='mediumorchid', color_reference='#E0E0E0',
-                            dashed_reference_results=None, dashed_reference_label='reference', 
-                            shaded_reference_results=None, shaded_reference_label='reference', 
+                            dashed_reference_results=None, dashed_reference_label='reference',
+                            shaded_reference_results=None, shaded_reference_label='reference',
                             vlines=[], vline_colors=[], vline_styles=[], vline_labels=[],
                             ylim=None, xlim=None, legend=True, title=None, side_title=None, plot_percentages=True):
 
@@ -279,10 +279,10 @@ class SEIRSModel():
         D_Iseries   = self.numD_I/self.N if plot_percentages else self.numD_I
         Iseries     = self.numI/self.N if plot_percentages else self.numI
         Rseries     = self.numR/self.N if plot_percentages else self.numR
-        Sseries     = self.numS/self.N if plot_percentages else self.numS 
+        Sseries     = self.numS/self.N if plot_percentages else self.numS
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        # Draw the reference data:      
+        # Draw the reference data:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         if(dashed_reference_results):
             dashedReference_tseries  = dashed_reference_results.tseries[::int(self.N/100)]
@@ -331,7 +331,7 @@ class SEIRSModel():
             ax.fill_between(numpy.ma.masked_where(Sseries<=0, self.tseries), numpy.ma.masked_where(Sseries<=0, topstack+Sseries), topstack, color=color_S, alpha=0.5, label='$S$', zorder=2)
             ax.plot(        numpy.ma.masked_where(Sseries<=0, self.tseries), numpy.ma.masked_where(Sseries<=0, topstack+Sseries),           color=color_S, zorder=3)
             topstack = topstack+Sseries
-        
+
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Draw the shaded variables:
@@ -364,7 +364,7 @@ class SEIRSModel():
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Draw the line variables:
-        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~        
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         if(any(Fseries) and plot_F=='line'):
             ax.plot(numpy.ma.masked_where(Fseries<=0, self.tseries), numpy.ma.masked_where(Fseries<=0, Fseries), color=color_F, label='$F$', zorder=6)
         if(any(Eseries) and plot_E=='line'):
@@ -413,7 +413,7 @@ class SEIRSModel():
         if(side_title):
             ax.annotate(side_title, (0, 0.5), xytext=(-45, 0), ha='right', va='center',
                 size=12, rotation=90, xycoords='axes fraction', textcoords='offset points')
-       
+
         return ax
 
 
@@ -424,8 +424,8 @@ class SEIRSModel():
                         plot_D_E='line', plot_D_I='line', combine_D=True,
                         color_S='tab:green', color_E='orange', color_I='crimson', color_R='tab:blue', color_F='black',
                         color_D_E='mediumorchid', color_D_I='mediumorchid', color_reference='#E0E0E0',
-                        dashed_reference_results=None, dashed_reference_label='reference', 
-                        shaded_reference_results=None, shaded_reference_label='reference', 
+                        dashed_reference_results=None, dashed_reference_label='reference',
+                        shaded_reference_results=None, shaded_reference_label='reference',
                         vlines=[], vline_colors=[], vline_styles=[], vline_labels=[],
                         ylim=None, xlim=None, legend=True, title=None, side_title=None, plot_percentages=True,
                         figsize=(12,8), use_seaborn=True, show=True):
@@ -443,8 +443,8 @@ class SEIRSModel():
                         plot_D_E=plot_D_E, plot_D_I=plot_D_I, combine_D=combine_D,
                         color_S=color_S, color_E=color_E, color_I=color_I, color_R=color_R, color_F=color_F,
                         color_D_E=color_D_E, color_D_I=color_D_I, color_reference=color_reference,
-                        dashed_reference_results=dashed_reference_results, dashed_reference_label=dashed_reference_label, 
-                        shaded_reference_results=shaded_reference_results, shaded_reference_label=shaded_reference_label, 
+                        dashed_reference_results=dashed_reference_results, dashed_reference_label=dashed_reference_label,
+                        shaded_reference_results=shaded_reference_results, shaded_reference_label=shaded_reference_label,
                         vlines=vlines, vline_colors=vline_colors, vline_styles=vline_styles, vline_labels=vline_labels,
                         ylim=ylim, xlim=xlim, legend=legend, title=title, side_title=side_title, plot_percentages=plot_percentages)
 
@@ -461,8 +461,8 @@ class SEIRSModel():
                             plot_D_E='stacked', plot_D_I='stacked', combine_D=True,
                             color_S='tab:green', color_E='orange', color_I='crimson', color_R='tab:blue', color_F='black',
                             color_D_E='mediumorchid', color_D_I='mediumorchid', color_reference='#E0E0E0',
-                            dashed_reference_results=None, dashed_reference_label='reference', 
-                            shaded_reference_results=None, shaded_reference_label='reference', 
+                            dashed_reference_results=None, dashed_reference_label='reference',
+                            shaded_reference_results=None, shaded_reference_label='reference',
                             vlines=[], vline_colors=[], vline_styles=[], vline_labels=[],
                             ylim=None, xlim=None, legend=True, title=None, side_title=None, plot_percentages=True,
                             figsize=(12,8), use_seaborn=True, show=True):
@@ -480,9 +480,9 @@ class SEIRSModel():
                         plot_D_E=plot_D_E, plot_D_I=plot_D_I, combine_D=combine_D,
                         color_S=color_S, color_E=color_E, color_I=color_I, color_R=color_R, color_F=color_F,
                         color_D_E=color_D_E, color_D_I=color_D_I, color_reference=color_reference,
-                        dashed_reference_results=dashed_reference_results, dashed_reference_label=dashed_reference_label, 
-                        shaded_reference_results=shaded_reference_results, shaded_reference_label=shaded_reference_label, 
-                        vlines=vlines, vline_colors=vline_colors, vline_styles=vline_styles, vline_labels=vline_labels, 
+                        dashed_reference_results=dashed_reference_results, dashed_reference_label=dashed_reference_label,
+                        shaded_reference_results=shaded_reference_results, shaded_reference_label=shaded_reference_label,
+                        vlines=vlines, vline_colors=vline_colors, vline_styles=vline_styles, vline_labels=vline_labels,
                         ylim=ylim, xlim=xlim, legend=legend, title=title, side_title=side_title, plot_percentages=plot_percentages)
 
         if(show):
@@ -504,14 +504,14 @@ class SEIRSNetworkModel():
     Params: G       Network adjacency matrix (numpy array) or Networkx graph object.
             beta    Rate of transmission (exposure) (global)
             beta_local    Rate(s) of transmission (exposure) for adjacent individuals (optional)
-            sigma   Rate of infection (upon exposure) 
-            gamma   Rate of recovery (upon infection) 
-            xi      Rate of re-susceptibility (upon recovery)  
-            mu_I    Rate of infection-related death  
-            mu_0    Rate of baseline death   
+            sigma   Rate of infection (upon exposure)
+            gamma   Rate of recovery (upon infection)
+            xi      Rate of re-susceptibility (upon recovery)
+            mu_I    Rate of infection-related death
+            mu_0    Rate of baseline death
             nu      Rate of baseline birth
             p       Probability of interaction outside adjacent nodes
-            
+
             Q       Quarantine adjacency matrix (numpy array) or Networkx graph object.
             beta_D  Rate of transmission (exposure) for individuals with detected infections (global)
             beta_local    Rate(s) of transmission (exposure) for adjacent individuals with detected infections (optional)
@@ -525,14 +525,14 @@ class SEIRSNetworkModel():
             psi_E   Probability of positive test results for exposed individuals
             psi_I   Probability of positive test results for exposed individuals
             q       Probability of quarantined individuals interaction outside adjacent nodes
-            
-            initE   Init number of exposed individuals       
-            initI   Init number of infectious individuals      
+
+            initE   Init number of exposed individuals
+            initI   Init number of infectious individuals
             initD_E Init number of detected infectious individuals
-            initD_I Init number of detected infectious individuals   
-            initR   Init number of recovered individuals     
+            initD_I Init number of detected infectious individuals
+            initR   Init number of recovered individuals
             initF   Init number of infection-related fatalities
-                    (all remaining nodes initialized susceptible)   
+                    (all remaining nodes initialized susceptible)
     """
 
     def __init__(self, G, beta, sigma, gamma, xi=0, mu_I=0, mu_0=0, nu=0, beta_local=None, p=0,
@@ -554,15 +554,15 @@ class SEIRSNetworkModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Model Parameters:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        self.parameters = { 'beta':beta, 'sigma':sigma, 'gamma':gamma, 'xi':xi, 'mu_I':mu_I, 'mu_0':mu_0, 'nu':nu, 
-                            'beta_D':beta_D, 'sigma_D':sigma_D, 'gamma_D':gamma_D, 'mu_D':mu_D, 
+        self.parameters = { 'beta':beta, 'sigma':sigma, 'gamma':gamma, 'xi':xi, 'mu_I':mu_I, 'mu_0':mu_0, 'nu':nu,
+                            'beta_D':beta_D, 'sigma_D':sigma_D, 'gamma_D':gamma_D, 'mu_D':mu_D,
                             'beta_local':beta_local, 'beta_D_local':beta_D_local, 'p':p,'q':q,
                             'theta_E':theta_E, 'theta_I':theta_I, 'phi_E':phi_E, 'phi_I':phi_I, 'psi_E':psi_E, 'psi_I':psi_I }
         self.update_parameters()
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Each node can undergo up to 4 transitions (sans vitality/re-susceptibility returns to S state),
-        # so there are ~numNodes*4 events/timesteps expected; initialize numNodes*5 timestep slots to start 
+        # so there are ~numNodes*4 events/timesteps expected; initialize numNodes*5 timestep slots to start
         # (will be expanded during run if needed)
         self.tseries    = numpy.zeros(5*self.numNodes)
         self.numE       = numpy.zeros(5*self.numNodes)
@@ -581,7 +581,7 @@ class SEIRSNetworkModel():
         self.tmax       = 0 # will be set when run() is called
         self.tidx       = 0
         self.tseries[0] = 0
-        
+
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Initialize Counts of inidividuals with each state:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -593,7 +593,7 @@ class SEIRSNetworkModel():
         self.numF[0]    = int(initF)
         self.numS[0]    = self.numNodes - self.numE[0] - self.numI[0] - self.numD_E[0] - self.numD_I[0] - self.numR[0] - self.numF[0]
         self.N[0]       = self.numS[0] + self.numE[0] + self.numI[0] + self.numD_E[0] + self.numD_I[0] + self.numR[0]
-        
+
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Node states:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -613,7 +613,7 @@ class SEIRSNetworkModel():
             self.Xseries        = numpy.zeros(shape=(5*self.numNodes, self.numNodes), dtype='uint8')
             self.Xseries[0,:]   = self.X.T
 
-        self.transitions =  { 
+        self.transitions =  {
                                 'StoE': {'currentState':self.S, 'newState':self.E},
                                 'EtoI': {'currentState':self.E, 'newState':self.I},
                                 'ItoR': {'currentState':self.I, 'newState':self.R},
@@ -653,7 +653,7 @@ class SEIRSNetworkModel():
                 self.nodeGroupData[groupName]['numF'][0]    = numpy.count_nonzero(self.nodeGroupData[groupName]['mask']*self.X==self.F)
                 self.nodeGroupData[groupName]['N'][0]       = self.nodeGroupData[groupName]['numS'][0] + self.nodeGroupData[groupName]['numE'][0] + self.nodeGroupData[groupName]['numI'][0] + self.nodeGroupData[groupName]['numD_E'][0] + self.nodeGroupData[groupName]['numD_I'][0] + self.nodeGroupData[groupName]['numR'][0]
 
-         
+
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -673,7 +673,7 @@ class SEIRSNetworkModel():
         self.mu_0           = numpy.array(self.parameters['mu_0']).reshape((self.numNodes, 1))  if isinstance(self.parameters['mu_0'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['mu_0'], shape=(self.numNodes,1))
         self.nu             = numpy.array(self.parameters['nu']).reshape((self.numNodes, 1))    if isinstance(self.parameters['nu'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['nu'], shape=(self.numNodes,1))
         self.p              = numpy.array(self.parameters['p']).reshape((self.numNodes, 1))     if isinstance(self.parameters['p'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['p'], shape=(self.numNodes,1))
-        
+
         # Testing-related parameters:
         self.beta_D         = (numpy.array(self.parameters['beta_D']).reshape((self.numNodes, 1))  if isinstance(self.parameters['beta_D'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['beta_D'], shape=(self.numNodes,1))) if self.parameters['beta_D'] is not None else self.beta
         self.sigma_D        = (numpy.array(self.parameters['sigma_D']).reshape((self.numNodes, 1)) if isinstance(self.parameters['sigma_D'], (list, numpy.ndarray)) else numpy.full(fill_value=self.parameters['sigma_D'], shape=(self.numNodes,1))) if self.parameters['sigma_D'] is not None else self.sigma
@@ -717,7 +717,7 @@ class SEIRSNetworkModel():
                 self.beta_D_local = numpy.full_like(self.beta_D, fill_value=self.parameters['beta_D_local'])
         else:
             self.beta_D_local = self.beta_D
-        
+
         # Pre-multiply beta values by the adjacency matrix ("transmission weight connections")
         if(self.beta_local.ndim == 1):
             self.A_beta     = scipy.sparse.csr_matrix.multiply(self.A, numpy.tile(self.beta_local, (1,self.numNodes))).tocsr()
@@ -780,9 +780,9 @@ class SEIRSNetworkModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def update_scenario_flags(self):
-        self.testing_scenario   = ( (numpy.any(self.psi_I) and (numpy.any(self.theta_I) or numpy.any(self.phi_I)))  
+        self.testing_scenario   = ( (numpy.any(self.psi_I) and (numpy.any(self.theta_I) or numpy.any(self.phi_I)))
                                     or (numpy.any(self.psi_E) and (numpy.any(self.theta_E) or numpy.any(self.phi_E))) )
-        self.tracing_scenario   = ( (numpy.any(self.psi_E) and numpy.any(self.phi_E)) 
+        self.tracing_scenario   = ( (numpy.any(self.psi_E) and numpy.any(self.phi_E))
                                     or (numpy.any(self.psi_I) and numpy.any(self.phi_I)) )
         self.vitality_scenario  = (numpy.any(self.mu_0) and numpy.any(self.nu))
         self.resusceptibility_scenario  = (numpy.any(self.xi))
@@ -791,35 +791,35 @@ class SEIRSNetworkModel():
 
     def total_num_infections(self, t_idx=None):
         if(t_idx is None):
-            return (self.numE[:] + self.numI[:] + self.numD_E[:] + self.numD_I[:])            
+            return (self.numE[:] + self.numI[:] + self.numD_E[:] + self.numD_I[:])
         else:
-            return (self.numE[t_idx] + self.numI[t_idx] + self.numD_E[t_idx] + self.numD_I[t_idx])          
+            return (self.numE[t_idx] + self.numI[t_idx] + self.numD_E[t_idx] + self.numD_I[t_idx])
 
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        
+
     def calc_propensities(self):
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Pre-calculate matrix multiplication terms that may be used in multiple propensity calculations,
         # and check to see if their computation is necessary before doing the multiplication
         transmissionTerms_I = numpy.zeros(shape=(self.numNodes,1))
-        if(numpy.any(self.numI[self.tidx]) 
+        if(numpy.any(self.numI[self.tidx])
             and numpy.any(self.beta!=0)):
             transmissionTerms_I = numpy.asarray( scipy.sparse.csr_matrix.dot(self.A_beta, self.X==self.I) )
 
         transmissionTerms_DI = numpy.zeros(shape=(self.numNodes,1))
-        if(self.testing_scenario 
+        if(self.testing_scenario
             and numpy.any(self.numD_I[self.tidx])
             and numpy.any(self.beta_D)):
             transmissionTerms_DI = numpy.asarray( scipy.sparse.csr_matrix.dot(self.A_Q_beta_D, self.X==self.D_I) )
 
         numContacts_D = numpy.zeros(shape=(self.numNodes,1))
-        if(self.tracing_scenario 
+        if(self.tracing_scenario
             and (numpy.any(self.numD_E[self.tidx]) or numpy.any(self.numD_I[self.tidx]))):
             numContacts_D = numpy.asarray( scipy.sparse.csr_matrix.dot( self.A, ((self.X==self.D_E)|(self.X==self.D_I)) ) )
-                                            
+
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -849,9 +849,9 @@ class SEIRSNetworkModel():
 
         propensities__toS   = self.nu*(self.X!=self.F)
 
-        propensities = numpy.hstack([propensities_StoE, propensities_EtoI, 
-                                     propensities_ItoR, propensities_ItoF, 
-                                     propensities_EtoDE, propensities_ItoDI, propensities_DEtoDI, 
+        propensities = numpy.hstack([propensities_StoE, propensities_EtoI,
+                                     propensities_ItoR, propensities_ItoF,
+                                     propensities_EtoDE, propensities_ItoDI, propensities_DEtoDI,
                                      propensities_DItoR, propensities_DItoF,
                                      propensities_RtoS, propensities__toS])
 
@@ -861,7 +861,7 @@ class SEIRSNetworkModel():
 
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^    
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def increase_data_series_length(self):
         self.tseries= numpy.pad(self.tseries, [(0, 5*self.numNodes)], mode='constant', constant_values=0)
@@ -890,7 +890,7 @@ class SEIRSNetworkModel():
 
         return None
 
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def finalize_data_series(self):
         self.tseries= numpy.array(self.tseries, dtype=float)[:self.tidx+1]
@@ -920,7 +920,7 @@ class SEIRSNetworkModel():
         return None
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^     
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def run_iteration(self):
 
@@ -940,7 +940,7 @@ class SEIRSNetworkModel():
         propensities, transitionTypes = self.calc_propensities()
 
         # Terminate when probability of all events is 0:
-        if(propensities.sum() <= 0.0):            
+        if(propensities.sum() <= 0.0):
             self.finalize_data_series()
             return False
 
@@ -971,7 +971,7 @@ class SEIRSNetworkModel():
         self.X[transitionNode] = self.transitions[transitionType]['newState']
 
         self.tidx += 1
-        
+
         self.tseries[self.tidx]  = self.t
         self.numS[self.tidx]     = numpy.clip(numpy.count_nonzero(self.X==self.S), a_min=0, a_max=self.numNodes)
         self.numE[self.tidx]     = numpy.clip(numpy.count_nonzero(self.X==self.E), a_min=0, a_max=self.numNodes)
@@ -1027,7 +1027,7 @@ class SEIRSNetworkModel():
             checkpointIdx  = numpy.searchsorted(checkpoints['t'], self.t) # Finds 1st index in list greater than given val
             if(checkpointIdx >= numCheckpoints):
                 # We are out of checkpoints, stop checking them:
-                checkpoints = None 
+                checkpoints = None
             else:
                 checkpointTime = checkpoints['t'][checkpointIdx]
 
@@ -1060,7 +1060,7 @@ class SEIRSNetworkModel():
                     checkpointIdx  = numpy.searchsorted(checkpoints['t'], self.t) # Finds 1st index in list greater than given val
                     if(checkpointIdx >= numCheckpoints):
                         # We are out of checkpoints, stop checking them:
-                        checkpoints = None 
+                        checkpoints = None
                     else:
                         checkpointTime = checkpoints['t'][checkpointIdx]
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1094,8 +1094,8 @@ class SEIRSNetworkModel():
                             plot_D_E='line', plot_D_I='line', combine_D=True,
                             color_S='tab:green', color_E='orange', color_I='crimson', color_R='tab:blue', color_F='black',
                             color_D_E='mediumorchid', color_D_I='mediumorchid', color_reference='#E0E0E0',
-                            dashed_reference_results=None, dashed_reference_label='reference', 
-                            shaded_reference_results=None, shaded_reference_label='reference', 
+                            dashed_reference_results=None, dashed_reference_label='reference',
+                            shaded_reference_results=None, shaded_reference_label='reference',
                             vlines=[], vline_colors=[], vline_styles=[], vline_labels=[],
                             ylim=None, xlim=None, legend=True, title=None, side_title=None, plot_percentages=True):
 
@@ -1117,10 +1117,10 @@ class SEIRSNetworkModel():
         D_Iseries   = self.numD_I/self.numNodes if plot_percentages else self.numD_I
         Iseries     = self.numI/self.numNodes if plot_percentages else self.numI
         Rseries     = self.numR/self.numNodes if plot_percentages else self.numR
-        Sseries     = self.numS/self.numNodes if plot_percentages else self.numS 
+        Sseries     = self.numS/self.numNodes if plot_percentages else self.numS
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        # Draw the reference data:      
+        # Draw the reference data:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         if(dashed_reference_results):
             dashedReference_tseries  = dashed_reference_results.tseries[::int(self.numNodes/100)]
@@ -1169,7 +1169,7 @@ class SEIRSNetworkModel():
             ax.fill_between(numpy.ma.masked_where(Sseries<=0, self.tseries), numpy.ma.masked_where(Sseries<=0, topstack+Sseries), topstack, color=color_S, alpha=0.5, label='$S$', zorder=2)
             ax.plot(        numpy.ma.masked_where(Sseries<=0, self.tseries), numpy.ma.masked_where(Sseries<=0, topstack+Sseries),           color=color_S, zorder=3)
             topstack = topstack+Sseries
-        
+
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Draw the shaded variables:
@@ -1202,7 +1202,7 @@ class SEIRSNetworkModel():
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Draw the line variables:
-        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~        
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         if(any(Fseries) and plot_F=='line'):
             ax.plot(numpy.ma.masked_where(Fseries<=0, self.tseries), numpy.ma.masked_where(Fseries<=0, Fseries), color=color_F, label='$F$', zorder=6)
         if(any(Eseries) and plot_E=='line'):
@@ -1251,7 +1251,7 @@ class SEIRSNetworkModel():
         if(side_title):
             ax.annotate(side_title, (0, 0.5), xytext=(-45, 0), ha='right', va='center',
                 size=12, rotation=90, xycoords='axes fraction', textcoords='offset points')
-       
+
         return ax
 
 
@@ -1262,8 +1262,8 @@ class SEIRSNetworkModel():
                         plot_D_E='line', plot_D_I='line', combine_D=True,
                         color_S='tab:green', color_E='orange', color_I='crimson', color_R='tab:blue', color_F='black',
                         color_D_E='mediumorchid', color_D_I='mediumorchid', color_reference='#E0E0E0',
-                        dashed_reference_results=None, dashed_reference_label='reference', 
-                        shaded_reference_results=None, shaded_reference_label='reference', 
+                        dashed_reference_results=None, dashed_reference_label='reference',
+                        shaded_reference_results=None, shaded_reference_label='reference',
                         vlines=[], vline_colors=[], vline_styles=[], vline_labels=[],
                         ylim=None, xlim=None, legend=True, title=None, side_title=None, plot_percentages=True,
                         figsize=(12,8), use_seaborn=True, show=True):
@@ -1281,8 +1281,8 @@ class SEIRSNetworkModel():
                         plot_D_E=plot_D_E, plot_D_I=plot_D_I, combine_D=combine_D,
                         color_S=color_S, color_E=color_E, color_I=color_I, color_R=color_R, color_F=color_F,
                         color_D_E=color_D_E, color_D_I=color_D_I, color_reference=color_reference,
-                        dashed_reference_results=dashed_reference_results, dashed_reference_label=dashed_reference_label, 
-                        shaded_reference_results=shaded_reference_results, shaded_reference_label=shaded_reference_label, 
+                        dashed_reference_results=dashed_reference_results, dashed_reference_label=dashed_reference_label,
+                        shaded_reference_results=shaded_reference_results, shaded_reference_label=shaded_reference_label,
                         vlines=vlines, vline_colors=vline_colors, vline_styles=vline_styles, vline_labels=vline_labels,
                         ylim=ylim, xlim=xlim, legend=legend, title=title, side_title=side_title, plot_percentages=plot_percentages)
 
@@ -1299,8 +1299,8 @@ class SEIRSNetworkModel():
                             plot_D_E='stacked', plot_D_I='stacked', combine_D=True,
                             color_S='tab:green', color_E='orange', color_I='crimson', color_R='tab:blue', color_F='black',
                             color_D_E='mediumorchid', color_D_I='mediumorchid', color_reference='#E0E0E0',
-                            dashed_reference_results=None, dashed_reference_label='reference', 
-                            shaded_reference_results=None, shaded_reference_label='reference', 
+                            dashed_reference_results=None, dashed_reference_label='reference',
+                            shaded_reference_results=None, shaded_reference_label='reference',
                             vlines=[], vline_colors=[], vline_styles=[], vline_labels=[],
                             ylim=None, xlim=None, legend=True, title=None, side_title=None, plot_percentages=True,
                             figsize=(12,8), use_seaborn=True, show=True):
@@ -1318,9 +1318,9 @@ class SEIRSNetworkModel():
                         plot_D_E=plot_D_E, plot_D_I=plot_D_I, combine_D=combine_D,
                         color_S=color_S, color_E=color_E, color_I=color_I, color_R=color_R, color_F=color_F,
                         color_D_E=color_D_E, color_D_I=color_D_I, color_reference=color_reference,
-                        dashed_reference_results=dashed_reference_results, dashed_reference_label=dashed_reference_label, 
-                        shaded_reference_results=shaded_reference_results, shaded_reference_label=shaded_reference_label, 
-                        vlines=vlines, vline_colors=vline_colors, vline_styles=vline_styles, vline_labels=vline_labels, 
+                        dashed_reference_results=dashed_reference_results, dashed_reference_label=dashed_reference_label,
+                        shaded_reference_results=shaded_reference_results, shaded_reference_label=shaded_reference_label,
+                        vlines=vlines, vline_colors=vline_colors, vline_styles=vline_styles, vline_labels=vline_labels,
                         ylim=ylim, xlim=xlim, legend=legend, title=title, side_title=side_title, plot_percentages=plot_percentages)
 
         if(show):
