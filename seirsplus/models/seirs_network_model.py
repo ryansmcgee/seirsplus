@@ -898,7 +898,7 @@ class SEIRSNetworkModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def plot(self, ax=None,  plot_S='line', plot_E='line', plot_I='line',plot_R='line', plot_F='line',
-                            plot_Q_E='line', plot_Q_I='line', combine_D=True,
+                            plot_Q_E='line', plot_Q_I='line', combine_Q=True,
                             color_S='tab:green', color_E='orange', color_I='crimson', color_R='tab:blue', color_F='black',
                             color_Q_E='mediumorchid', color_Q_I='mediumorchid', color_reference='#E0E0E0',
                             dashed_reference_results=None, dashed_reference_label='reference',
@@ -951,7 +951,7 @@ class SEIRSNetworkModel():
             ax.fill_between(numpy.ma.masked_where(Eseries<=0, self.tseries), numpy.ma.masked_where(Eseries<=0, topstack+Eseries), topstack, color=color_E, alpha=0.5, label='$E$', zorder=2)
             ax.plot(        numpy.ma.masked_where(Eseries<=0, self.tseries), numpy.ma.masked_where(Eseries<=0, topstack+Eseries),           color=color_E, zorder=3)
             topstack = topstack+Eseries
-        if (combine_D and plot_Q_E=='stacked' and plot_Q_I=='stacked'):
+        if (combine_Q and plot_Q_E=='stacked' and plot_Q_I=='stacked'):
             ax.fill_between(numpy.ma.masked_where(Dseries<=0, self.tseries), numpy.ma.masked_where(Dseries<=0, topstack+Dseries), topstack, color=color_Q_E, alpha=0.5, label='$Q_{all}$', zorder=2)
             ax.plot(        numpy.ma.masked_where(Dseries<=0, self.tseries), numpy.ma.masked_where(Dseries<=0, topstack+Dseries),           color=color_Q_E, zorder=3)
             topstack = topstack+Dseries
@@ -987,7 +987,7 @@ class SEIRSNetworkModel():
         if (any(Eseries) and plot_E=='shaded'):
             ax.fill_between(numpy.ma.masked_where(Eseries<=0, self.tseries), numpy.ma.masked_where(Eseries<=0, Eseries), 0, color=color_E, alpha=0.5, label='$E$', zorder=4)
             ax.plot(        numpy.ma.masked_where(Eseries<=0, self.tseries), numpy.ma.masked_where(Eseries<=0, Eseries),    color=color_E, zorder=5)
-        if (combine_D and (any(Dseries) and plot_Q_E=='shaded' and plot_Q_I=='shaded')):
+        if (combine_Q and (any(Dseries) and plot_Q_E=='shaded' and plot_Q_I=='shaded')):
             ax.fill_between(numpy.ma.masked_where(Dseries<=0, self.tseries), numpy.ma.masked_where(Dseries<=0, Dseries), 0, color=color_Q_E, alpha=0.5, label='$Q_{all}$', zorder=4)
             ax.plot(        numpy.ma.masked_where(Dseries<=0, self.tseries), numpy.ma.masked_where(Dseries<=0, Dseries),    color=color_Q_E, zorder=5)
         else:
@@ -1014,7 +1014,7 @@ class SEIRSNetworkModel():
             ax.plot(numpy.ma.masked_where(Fseries<=0, self.tseries), numpy.ma.masked_where(Fseries<=0, Fseries), color=color_F, label='$F$', zorder=6)
         if (any(Eseries) and plot_E=='line'):
             ax.plot(numpy.ma.masked_where(Eseries<=0, self.tseries), numpy.ma.masked_where(Eseries<=0, Eseries), color=color_E, label='$E$', zorder=6)
-        if (combine_D and (any(Dseries) and plot_Q_E=='line' and plot_Q_I=='line')):
+        if (combine_Q and (any(Dseries) and plot_Q_E=='line' and plot_Q_I=='line')):
             ax.plot(numpy.ma.masked_where(Dseries<=0, self.tseries), numpy.ma.masked_where(Dseries<=0, Dseries), color=color_Q_E, label='$Q_{all}$', zorder=6)
         else:
             if (any(Q_Eseries) and plot_Q_E=='line'):
@@ -1066,7 +1066,7 @@ class SEIRSNetworkModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def figure_basic(self, plot_S='line', plot_E='line', plot_I='line',plot_R='line', plot_F='line',
-                        plot_Q_E='line', plot_Q_I='line', combine_D=True,
+                        plot_Q_E='line', plot_Q_I='line', combine_Q=True,
                         color_S='tab:green', color_E='orange', color_I='crimson', color_R='tab:blue', color_F='black',
                         color_Q_E='mediumorchid', color_Q_I='mediumorchid', color_reference='#E0E0E0',
                         dashed_reference_results=None, dashed_reference_label='reference',
@@ -1085,7 +1085,7 @@ class SEIRSNetworkModel():
             seaborn.despine()
 
         self.plot(ax=ax, plot_S=plot_S, plot_E=plot_E, plot_I=plot_I,plot_R=plot_R, plot_F=plot_F,
-                        plot_Q_E=plot_Q_E, plot_Q_I=plot_Q_I, combine_D=combine_D,
+                        plot_Q_E=plot_Q_E, plot_Q_I=plot_Q_I, combine_Q=combine_Q,
                         color_S=color_S, color_E=color_E, color_I=color_I, color_R=color_R, color_F=color_F,
                         color_Q_E=color_Q_E, color_Q_I=color_Q_I, color_reference=color_reference,
                         dashed_reference_results=dashed_reference_results, dashed_reference_label=dashed_reference_label,
@@ -1103,7 +1103,7 @@ class SEIRSNetworkModel():
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     def figure_infections(self, plot_S=False, plot_E='stacked', plot_I='stacked',plot_R=False, plot_F=False,
-                            plot_Q_E='stacked', plot_Q_I='stacked', combine_D=True,
+                            plot_Q_E='stacked', plot_Q_I='stacked', combine_Q=True,
                             color_S='tab:green', color_E='orange', color_I='crimson', color_R='tab:blue', color_F='black',
                             color_Q_E='mediumorchid', color_Q_I='mediumorchid', color_reference='#E0E0E0',
                             dashed_reference_results=None, dashed_reference_label='reference',
@@ -1122,7 +1122,7 @@ class SEIRSNetworkModel():
             seaborn.despine()
 
         self.plot(ax=ax, plot_S=plot_S, plot_E=plot_E, plot_I=plot_I,plot_R=plot_R, plot_F=plot_F,
-                        plot_Q_E=plot_Q_E, plot_Q_I=plot_Q_I, combine_D=combine_D,
+                        plot_Q_E=plot_Q_E, plot_Q_I=plot_Q_I, combine_Q=combine_Q,
                         color_S=color_S, color_E=color_E, color_I=color_I, color_R=color_R, color_F=color_F,
                         color_Q_E=color_Q_E, color_Q_I=color_Q_I, color_reference=color_reference,
                         dashed_reference_results=dashed_reference_results, dashed_reference_label=dashed_reference_label,
