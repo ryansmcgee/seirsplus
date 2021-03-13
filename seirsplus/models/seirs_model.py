@@ -382,7 +382,7 @@ class SEIRSModel():
             ax.plot(numpy.ma.masked_where(Fseries<=0, self.tseries), numpy.ma.masked_where(Fseries<=0, Fseries), color=color_F, label='$F$', zorder=6)
         if (any(Eseries) and plot_E=='line'):
             ax.plot(numpy.ma.masked_where(Eseries<=0, self.tseries), numpy.ma.masked_where(Eseries<=0, Eseries), color=color_E, label='$E$', zorder=6)
-        if (combine_Q and (any(Dseries) and plot_Q_E=='line' and plot_Q_E=='line')):
+        if (combine_Q and (any(Dseries) and plot_Q_E=='line' and plot_Q_I == 'line')):
             ax.plot(numpy.ma.masked_where(Dseries<=0, self.tseries), numpy.ma.masked_where(Dseries<=0, Dseries), color=color_Q_E, label='$Q_{all}$', zorder=6)
         else:
             if (any(Q_Eseries) and plot_Q_E=='line'):
