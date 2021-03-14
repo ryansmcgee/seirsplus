@@ -6,8 +6,10 @@ import networkx
 import numpy
 import scipy
 
+from .base_plotable_model import BasePlotableModel
 
-class ExtSEIRSNetworkModel():
+
+class ExtSEIRSNetworkModel(BasePlotableModel):
     """
     A class to simulate the Extended SEIRS Stochastic Network Model
     ===================================================
@@ -70,6 +72,10 @@ class ExtSEIRSNetworkModel():
             initQ_R         Initial number of isolated recovered individuals
                             (all remaining nodes initialized susceptible)
     """
+    
+    plotting_number_property = 'numNodes'
+    """Property to access the number to base plotting on."""
+
     def __init__(self, G, beta, sigma, lamda, gamma,
                     gamma_asym=None, eta=0, gamma_H=None, mu_H=0, alpha=1.0, xi=0, mu_0=0, nu=0, a=0, h=0, f=0, p=0,
                     beta_local=None, beta_asym=None, beta_asym_local=None, beta_pairwise_mode='infected', delta=None, delta_pairwise_mode=None,
@@ -1209,32 +1215,32 @@ class ExtSEIRSNetworkModel():
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Prepare data series to be plotted:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        Sseries      = self.numS/self.numNodes if plot_percentages else self.numS
-        Eseries      = self.numE/self.numNodes if plot_percentages else self.numE
-        I_preseries  = self.numI_pre/self.numNodes if plot_percentages else self.numI_pre
-        I_symseries  = self.numI_sym/self.numNodes if plot_percentages else self.numI_sym
-        I_asymseries = self.numI_asym/self.numNodes if plot_percentages else self.numI_asym
-        Rseries      = self.numR/self.numNodes if plot_percentages else self.numR
-        Hseries      = self.numH/self.numNodes if plot_percentages else self.numH
-        Fseries      = self.numF/self.numNodes if plot_percentages else self.numF
-        Q_Sseries    = self.numQ_S/self.numNodes if plot_percentages else self.numQ_S
-        Q_Eseries    = self.numQ_E/self.numNodes if plot_percentages else self.numQ_E
-        Q_preseries  = self.numQ_pre/self.numNodes if plot_percentages else self.numQ_pre
-        Q_asymseries = self.numQ_asym/self.numNodes if plot_percentages else self.numQ_asym
-        Q_symseries  = self.numQ_sym/self.numNodes if plot_percentages else self.numQ_sym
-        Q_Rseries    = self.numQ_R/self.numNodes if plot_percentages else self.numQ_R
+        Sseries      = self.numS/getattr(self, self.plotting_number_property) if plot_percentages else self.numS
+        Eseries      = self.numE/getattr(self, self.plotting_number_property) if plot_percentages else self.numE
+        I_preseries  = self.numI_pre/getattr(self, self.plotting_number_property) if plot_percentages else self.numI_pre
+        I_symseries  = self.numI_sym/getattr(self, self.plotting_number_property) if plot_percentages else self.numI_sym
+        I_asymseries = self.numI_asym/getattr(self, self.plotting_number_property) if plot_percentages else self.numI_asym
+        Rseries      = self.numR/getattr(self, self.plotting_number_property) if plot_percentages else self.numR
+        Hseries      = self.numH/getattr(self, self.plotting_number_property) if plot_percentages else self.numH
+        Fseries      = self.numF/getattr(self, self.plotting_number_property) if plot_percentages else self.numF
+        Q_Sseries    = self.numQ_S/getattr(self, self.plotting_number_property) if plot_percentages else self.numQ_S
+        Q_Eseries    = self.numQ_E/getattr(self, self.plotting_number_property) if plot_percentages else self.numQ_E
+        Q_preseries  = self.numQ_pre/getattr(self, self.plotting_number_property) if plot_percentages else self.numQ_pre
+        Q_asymseries = self.numQ_asym/getattr(self, self.plotting_number_property) if plot_percentages else self.numQ_asym
+        Q_symseries  = self.numQ_sym/getattr(self, self.plotting_number_property) if plot_percentages else self.numQ_sym
+        Q_Rseries    = self.numQ_R/getattr(self, self.plotting_number_property) if plot_percentages else self.numQ_R
         Q_infectedseries = (Q_Eseries + Q_preseries + Q_asymseries + Q_symseries)
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # Draw the reference data:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         if dashed_reference_results:
-            dashedReference_tseries       = dashed_reference_results.tseries[::int(self.numNodes/100)]
-            dashedReference_infectedStack = dashed_reference_results.total_num_infected()[::int(self.numNodes/100)] / (self.numNodes if plot_percentages else 1)
+            dashedReference_tseries       = dashed_reference_results.tseries[::int(getattr(self, self.plotting_number_property)/100)]
+            dashedReference_infectedStack = dashed_reference_results.total_num_infected()[::int(getattr(self, self.plotting_number_property)/100)] / (getattr(self, self.plotting_number_property) if plot_percentages else 1)
             ax.plot(dashedReference_tseries, dashedReference_infectedStack, color='#E0E0E0', linestyle='--', label='Total infections ('+dashed_reference_label+')', zorder=0)
         if shaded_reference_results:
             shadedReference_tseries       = shaded_reference_results.tseries
-            shadedReference_infectedStack = shaded_reference_results.total_num_infected() / (self.numNodes if plot_percentages else 1)
+            shadedReference_infectedStack = shaded_reference_results.total_num_infected() / (getattr(self, self.plotting_number_property) if plot_percentages else 1)
             ax.fill_between(shaded_reference_results.tseries, shadedReference_infectedStack, 0, color='#EFEFEF', label='Total infections ('+shaded_reference_label+')', zorder=0)
             ax.plot(shaded_reference_results.tseries, shadedReference_infectedStack, color='#E0E0E0', zorder=1)
 
