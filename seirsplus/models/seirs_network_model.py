@@ -737,7 +737,7 @@ class SEIRSNetworkModel(BasePlotableModel):
 
             self.testedInCurrentState[transitionNode] = False
 
-            self.timer_state[transitionNode] = 0.0
+            self.timer_state = 0.0
 
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
