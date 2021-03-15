@@ -14,5 +14,5 @@ setuptools.setup(
     author='Ryan Seamus McGee',
     author_email='ryansmcgee@gmail.com',
     license='MIT',
-    install_requires=['numpy', 'scipy', 'networkx'],
+    install_requires=['numpy', 'scipy', 'networkx', 'seaborn', 'matplotlib'],
     zip_safe=False)
