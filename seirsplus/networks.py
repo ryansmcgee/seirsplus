@@ -8,6 +8,7 @@ from .models import *
 import matplotlib.pyplot as pyplot
 
 
+#Aggregate Pattern
 class CommunitySetting():
 
 
