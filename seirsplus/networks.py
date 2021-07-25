@@ -11,6 +11,8 @@ import matplotlib.pyplot as pyplot
 #Aggregate Pattern
 class CommunitySetting():
 
+#The class enables to ensure there is a root aggregate to maintain consistency within the dofferent types of network.
+
 
 def generate_educationalInstitution_contact_network(num_cohorts=1, 			num_nodes_per_cohort=100, num_teams_per_cohort=10, mean_intracohort_degree=6, pct_contacts_intercohort=0.2, farz_params={'alpha':5.0, 'gamma':5.0, 'beta':0.5, 'r':1, 'q':0.0, 'phi':10, 
                                                      'b':0, 'epsilon':1e-6, 'directed': False, 'weighted': False},
@@ -77,7 +79,7 @@ def generate_educationalInstitution_contact_network(num_cohorts=1, 			num_nodes_
 
         return eduInsNetwork, cohorts_indices, teams_indices
     
-  
+  # Transportation network added to make sure the information is transferred through the system
      def generate_publicTransportation_contact_network(num_buses=1, num_nodes_per_bus=100, num_teams_per_bus=10,
                       mean_intracohort_degree=6, pct_contacts_intercohort=0.2,
               farz_params={'alpha':5.0, 'gamma':5.0, 'beta':0.5, 'r':1, 'q':0.0, 'phi':10, 
