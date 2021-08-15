@@ -1,20 +1,33 @@
 import numpy
 import matplotlib.pyplot as pyplot
+from abc import ABCMeta, abstractmethod
 
-class Target:
-        "Target interface"
 
+class Target(metaclass = ABCMeta):
+        "Target Interface"
+
+	@abstractmethod 
         def targetRequest(self):
-                return "Target: behaviour"
+                return "Behaviour of the target"
+                
+        def __init__(self, adaptee: Adaptee):
+        	self.adaptee = adaptee    
+                
 
 class Adaptee:
 
         def specificRequest(self):
-                return 
+                pass 
+                
 
 class Adapter(Target):
-        def __init__(self, adaptee: Adaptee):
-                self.adaptee = adaptee    
+
+	def targetRequest(self):
+		self.adaptee.specificRequest()
+
+        
+                
+                
 
 def gamma_dist(mean, coeffvar, N):
         scale = mean*coeffvar**2
@@ -93,7 +106,9 @@ def client(target:Target):
                 print("Adaptee")
                 print("Client")
 
+
         adapter = Adapter(adaptee)
+        adapter.targetRequest()
         client = (adapter)
 
 
