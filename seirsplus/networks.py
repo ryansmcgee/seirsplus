@@ -7,9 +7,43 @@ from .models import *
 
 import matplotlib.pyplot as pyplot
 
+from abc import ABCMeta, abstractmethod
+
+
+class INetwork(metaclass = ABCMeta):    #class IBuilder(metaclass = ABCMeta)
+    "Creational Pattern: The Builder Interface"
+
+@staticmethod
+@abstractmethod
+def generate_workplace_contact_network():
+    "Build a workplace contact network"
+
+@staticmethod
+@abstractmethod
+def generate_demographic_contact_network():
+    "Build a demographic contact network"
+
+@staticmethod
+@abstractmethod
+def household_country_data():
+    "Household data for the United States"
+    
+@staticmethod
+@asbtractmethod
+def custom_exponential_graph():
+    "Provides the Graph "
+
+
+@staticmethod
+@abstractmethod
+def get_result():
+    "Return all the values"   
 
 
 
+class Network(INetwork):        #class Builder(IBuilder):
+    "The Concrete Builder"
+    
 def generate_workplace_contact_network(num_cohorts=1, num_nodes_per_cohort=100, num_teams_per_cohort=10,
                                         mean_intracohort_degree=6, pct_contacts_intercohort=0.2,
                                         farz_params={'alpha':5.0, 'gamma':5.0, 'beta':0.5, 'r':1, 'q':0.0, 'phi':10, 
@@ -692,7 +726,30 @@ def plot_degree_distn(graph, max_degree=None, show=True, use_seaborn=True):
         pyplot.show()
 
 
+    #The Product
+    class SIERSApp():
+        "SEIRS Network Models"
 
+        def __init__(self):
+            self.parts = []
+        
+
+    #The Director
+    class Director:
+        "Builds the complex representation"   
+
+        @staticmethod
+        def construct():
+            return Builder()\
+                   .generate_workplace_contact_network()\
+                   .generate_demographic_contact_network()\
+                   .household_data()\
+                   .custom_exponential_graph()
+
+
+    #The Client
+        SEIRSApp = Director.construct()
+        print(APP.parts)
 
 
 
