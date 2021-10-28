@@ -1,0 +1,22 @@
+{
+	"S":{
+			"transitions": 			{},
+			"transmissibilities": 	{},
+			"susceptibilities": 	{"I": {"susceptibility":1.0, "transitions": {"I": {"prob":1.0}}}},
+			"default_state": 		true
+		},
+	"I":{
+			"transitions": 			{"R": {"prob":1.0, "time":6.0}},			
+			"transmissibilities": 	{"work": 0.5, "school": 0.5, "home": 0.5, "exogenous": 0.5},
+			"susceptibilities": 	{},
+			"initial_prevalence": 	0.0,
+			"exogenous_prevalence": 0.0
+		},
+	"R":{
+			"transitions": 			{},			
+			"transmissibilities": 	{},
+			"susceptibilities": 	{},
+			"initial_prevalence": 	0.0,
+			"exogenous_prevalence": 0.0
+		}
+}

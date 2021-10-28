@@ -1,0 +1,52 @@
+{
+	"S":{
+			"transitions": 			{},
+			"transmissibilities": 	{},
+			"susceptibilities": 	{"P": {"susceptibility":1.0, "transitions": {"E": {"prob":1.0}}},
+									 "I": {"susceptibility":1.0, "transitions": {"E": {"prob":1.0}}},
+									 "A": {"susceptibility":1.0, "transitions": {"E": {"prob":1.0}}}},
+			"default_state": 		true,
+			"flags": 				["susceptible"]
+		},
+	"E":{
+			"transitions": 			{"P": {"prob":1.0, "time":3.0}},			
+			"transmissibilities": 	{"network": 0.0, "exogenous": 0.0},
+			"susceptibilities": 	{},
+			"initial_prevalence": 	0.0,
+			"exogenous_prevalence": 0.0,
+			"flags": 				["infected"]
+		},
+	"P":{
+			"transitions": 			{"I": {"prob":0.6, "time":2.2},
+									 "A": {"prob":0.4, "time":2.2}},			
+			"transmissibilities": 	{"network": 0.5, "exogenous": 0.0},
+			"susceptibilities": 	{},
+			"initial_prevalence": 	0.0,
+			"exogenous_prevalence": 0.0,
+			"flags": 				["infected", "infectious"]
+		},
+	"I":{
+			"transitions": 			{"R": {"prob":1.0, "time":4.0}},			
+			"transmissibilities": 	{"network": 0.5, "exogenous": 0.0},
+			"susceptibilities": 	{},
+			"initial_prevalence": 	0.0,
+			"exogenous_prevalence": 0.0,
+			"flags": 				["infected", "infectious"]
+		},
+	"A":{
+			"transitions": 			{"R": {"prob":1.0, "time":4.0}},			
+			"transmissibilities": 	{"network": 0.5, "exogenous": 0.0},
+			"susceptibilities": 	{},
+			"initial_prevalence": 	0.0,
+			"exogenous_prevalence": 0.0,
+			"flags": 				["infected", "infectious"]
+		},
+	"R":{
+			"transitions": 			{},			
+			"transmissibilities": 	{},
+			"susceptibilities": 	{},
+			"initial_prevalence": 	0.0,
+			"exogenous_prevalence": 0.0,
+			"flags": 				["recovered"]
+		}
+}
