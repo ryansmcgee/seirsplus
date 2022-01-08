@@ -6,9 +6,10 @@ This package implements models of generalized SEIRS infectious disease dynamics 
 
 Version 1.0 of the seirsplus package as well as the code and documentation presented in this repository represent COVID modeling frameworks developed in 2020 and early 2021. 
 
-Ongoing modeling and code development with collaborators have advanced the SEIRS+ framework we use internally considerably since the last package release. 
-
 #### 🔶 *Upcoming Major Release: 2.0 (Feb 2022)*
+
+Ongoing modeling and code development with collaborators have advanced the SEIRS+ framework we use internally considerably since the last major package release. 
+
 A major Version 2.0 public release of the SEIRS+ framework package and documentation is planned for early February — watch this space! If you would like access to the Version 2.0 code or further information before this public release, please do not hesitate to reach out.
 
 *New Features in Version 2.0 include:*
