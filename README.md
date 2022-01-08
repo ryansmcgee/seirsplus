@@ -2,12 +2,27 @@
 
 This package implements models of generalized SEIRS infectious disease dynamics with extensions that allow us to study the effect of social contact network structures, heterogeneities, stochasticity, and interventions, such as social distancing, testing, contact tracing, and isolation. 
 
-#### *Latest Release: v1.0 (9 Aug 2020)*
-* Full rollout of [Extended SEIRS Model](https://github.com/ryansmcgee/seirsplus/wiki/Extended-SEIRS-model-description), [TTI simulation loop](https://github.com/ryansmcgee/seirsplus/wiki/TTI-Simulation-loop), and [network generators](https://github.com/ryansmcgee/seirsplus/wiki/network-generation) for [community](https://github.com/ryansmcgee/seirsplus/wiki/network-generation#demographic-community-network) and [workplace](https://github.com/ryansmcgee/seirsplus/wiki/network-generation#workplace-network) populations.
-* Example notebooks with in-depth walkthroughs of sophisticated [Community TTI](https://github.com/ryansmcgee/seirsplus/blob/master/examples/Extended_SEIRS_Community_TTI_Demo.ipynb) and [Workplace TTI](https://github.com/ryansmcgee/seirsplus/blob/master/examples/Extended_SEIRS_Workplace_TTI_Demo.ipynb) simulations.
-* The [`SEIRSModel`](https://github.com/ryansmcgee/seirsplus/wiki/SEIRSModel-class) and [`SEIRSNetworkModel`](https://github.com/ryansmcgee/seirsplus/wiki/SEIRSNetworkModel-class) classes have been refactored to be in line with [Extended SEIRS Model](https://github.com/ryansmcgee/seirsplus/wiki/Extended-SEIRS-model-description) conventions. The dynamics and core implementations remain the same, but some variable names have changed, etc.
-    * The versions of these classes from before 9 Aug 2020 are now located in the `legacy_models.py` module.
-* Launch of new [wiki site](https://github.com/ryansmcgee/seirsplus/wiki) for thorough documentation of models and package features
+#### *Latest Major Release: 1.0 (9 Aug 2020)*
+
+Version 1.0 of the seirsplus package as well as the code and documentation presented in this repository represent COVID modeling frameworks developed in 2020 and early 2021. 
+
+Ongoing modeling and code development with collaborators have advanced the SEIRS+ framework we use internally considerably since the last package release. 
+
+#### 🔶 *Upcoming Major Release: 2.0 (Feb 2022)*
+A major Version 2.0 public release of the SEIRS+ framework package and documentation is planned for early February — watch this space! If you would like access to the Version 2.0 code or further information before this public release, please do not hesitate to reach out.
+
+*New Features in Version 2.0 include:*
+* Top-to-bottom redesign of package to make SEIRS+ a versatile framework not only for accessible rapid COVID modeling but also for network epidemiology research more broadly.
+* Fully customizable compartment models for flexible implementation of any disease state model, and pre-configured compartment models for COVID-19 contexts and other common diseases.
+* Features for tracking transmission chain lineages and infector/infectee characteristics.
+* Expanded support for parameterizable implementations of testing, tracing, isolation, deisolation, and social distancing non-pharmaceutical intervention scenarios.
+* Support for vaccination, including multiple vaccine types and multi-dose vaccine courses.
+* Support for scenarios with emerging disease variants
+* Run-time improvements (i.e., Gillespie tau leaping supported)
+* Many other features
+* Comprehensive testing suite for developers and contributors
+* As always, emphasis on ease of use.
+
 
 ## Overview
 
