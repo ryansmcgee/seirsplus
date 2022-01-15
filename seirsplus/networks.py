@@ -61,10 +61,10 @@ def generate_workplace_contact_network(num_cohorts=1, num_nodes_per_cohort=100, 
 
         cohortStartIdx = cohortFinalIdx + 1
         cohortFinalIdx = cohortStartIdx + cohortNetwork.number_of_nodes() - 1
-        cohorts_indices['c'+str(c)] = list(range(cohortStartIdx, cohortFinalIdx))
+        cohorts_indices['c'+str(c)] = list(range(cohortStartIdx, cohortFinalIdx+1))
 
         for team, indices in teams_indices.items():
-            if('c'+str(c) in team):
+            if('c'+str(c)+'-' in team):
                 teams_indices[team] = [idx+cohortStartIdx for idx in indices]
 
         for i in list(range(cohortNetwork.number_of_nodes())):
@@ -74,7 +74,7 @@ def generate_workplace_contact_network(num_cohorts=1, num_nodes_per_cohort=100, 
             if(len(cohortNetworks) > 1):
                 for d in list(range(i_interCohortDegree)):
                     j = numpy.random.choice(list(range(0, cohortStartIdx))+list(range(cohortFinalIdx+1, N)))
-                    workplaceNetwork.add_edge(i, j)
+                    workplaceNetwork.add_edge(cohortStartIdx+i, j)
 
     return workplaceNetwork, cohorts_indices, teams_indices
 
