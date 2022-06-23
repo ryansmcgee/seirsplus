@@ -5,12 +5,12 @@
 import random
 import bisect
 import math
-import os 
+import os
 
 def random_choice(values, weights=None , size = 1, replace = True):
     if weights is None:
         i = int(random.random() * len(values))
-    else :
+    else:
         total = 0
         cum_weights = []
         for w in weights:
@@ -18,31 +18,31 @@ def random_choice(values, weights=None , size = 1, replace = True):
             cum_weights.append(total)
         x = random.random() * total
         i = bisect.bisect(cum_weights, x)
-    if size <=1: 
-        if len(values)>i: return values[i] 
+    if size <=1:
+        if len(values)>i: return values[i]
         else: return None
-    else: 
+    else:
         cval = [values[j] for j in range(len(values)) if replace or i!=j]
-        if weights is None: cwei=None 
+        if weights is None: cwei=None
         else: cwei = [weights[j] for j in range(len(weights)) if replace or i!=j]
         tmp= random_choice(cval, cwei, size-1, replace)
         if not isinstance(tmp,list): tmp = [tmp]
         tmp.append(values[i])
-        return tmp 
+        return tmp
 
 class Comms:
      def __init__(self, k):
          self.k = k
          self.groups = [[] for i in range(k)]
          self.memberships = {}
-         
+
      def add(self, cluster_id, i, s = 1):
          if i not in  [m[0] for m in self.groups[cluster_id]]:
-            self.groups[cluster_id].append((i,s)) 
+            self.groups[cluster_id].append((i,s))
             if i in self.memberships:
                 self.memberships[i].append((cluster_id,s))
             else:
-                self.memberships[i] =[(cluster_id,s)] 
+                self.memberships[i] =[(cluster_id,s)]
      def write_groups(self, path):
          with open(path, 'w') as f:
              for g in self.groups:
@@ -50,8 +50,8 @@ class Comms:
                     f.write(str(i) + ' ')
                  f.write('\n')
 
-             
-            
+
+
 class Graph:
     def __init__(self,directed=False, weighted=False):
         self.n = 0
@@ -59,27 +59,27 @@ class Graph:
         self.max_degree = 0
         self.directed = directed
         self.weighted = weighted
-        self.edge_list = [] 
+        self.edge_list = []
         self.edge_time = []
         self.deg = []
         self.neigh =  [[]]
-        return 
+        return
 
     def add_node(self):
         self.deg.append(0)
         self.neigh.append([])
         self.n+=1
-    
+
     def weight(self, u, v):
         for i,w in self.neigh[u]:
             if i == v: return w
         return 0
-    
+
     def is_neigh(self, u, v):
         for i,_ in self.neigh[u]:
             if i == v: return True
         return False
-    
+
     def add_edge(self, u, v, w=1):
         if u==v: return
         if not self.weighted : w =1
@@ -89,15 +89,15 @@ class Graph:
         self.neigh[u].append((v,w))
         self.deg[v]+=w
         if  self.deg[v]>self.max_degree: self.max_degree = self.deg[v]
-        
+
         if not self.directed: #if directed deg is indegree, outdegree = len(negh)
             self.neigh[v].append((u,w))
             self.deg[u]+=w
             if  self.deg[u]>self.max_degree: self.max_degree = self.deg[u]
 
-        return 
-    
-     
+        return
+
+
     def to_nx(self):
         import networkx as nx
         G=nx.Graph()
@@ -105,7 +105,7 @@ class Graph:
             G.add_edge(u, v)
             # G.add_edges_from(self.edge_list)
         return G
-    
+
     def to_nx(self, C):
         import networkx as nx
         G=nx.Graph()
@@ -121,19 +121,19 @@ class Graph:
             G.add_edge(u, v, weight=w, capacity=self.edge_time[i])
             # G.add_edges_from(self.edge_list)
         return G
-    
+
     def to_ig(self):
         G=ig.Graph()
         G.add_edges(self.edge_list)
-        return G 
- 
- 
+        return G
+
+
     def write_edgelist(self, path):
          with open(path, 'w') as f:
              for i,j,w in self.edge_list:
                  f.write(str(i) + '\t'+str(j) + '\n')
 
- 
+
 def Q(G, C):
     q = 0.0
     m = 2 * len(G.edge_list)
@@ -148,7 +148,7 @@ def common_neighbour(i, G, normalize=True):
     p = {}
     for k,wik in G.neigh[i]:
         for j,wjk in G.neigh[k]:
-            if j in p: p[j]+=(wik * wjk) 
+            if j in p: p[j]+=(wik * wjk)
             else: p[j]= (wik * wjk)
     if len(p)<=0 or not normalize: return p
     maxp = p[max(p, key = lambda i: p[i])]
@@ -159,7 +159,7 @@ def choose_community(i, G, C, alpha, beta, gamma, epsilon):
     mids =[k for  k,uik in C.memberships[i]]
     if random.random()< beta: #inside
         cids = mids
-    else:     
+    else:
         cids = [j for j in range(len(C.groups)) if j not in mids] #:  cids.append(j)
 
     return cids[ int(random.random()*len(cids))] if len(cids)>0 else None
@@ -180,14 +180,14 @@ def combine (a,b,alpha,gamma):
 def choose_node(i,c, G, C, alpha, beta, gamma, epsilon):
     ids = [j for j,_ in C.groups[c] if j !=i ]
     #   also remove nodes that are already connected from the candidate list
-    for k,_ in G.neigh[i]: 
-        if k in ids: ids.remove(k) 
+    for k,_ in G.neigh[i]:
+        if k in ids: ids.remove(k)
 
     norma = False
     cn = common_neighbour(i, G, normalize=norma)
     trim_ids = [id for id in ids if id in cn]
     dd = degree_similarity(i, trim_ids, G, gamma, normalize=norma)
-    
+
     if random.random()<epsilon or len(trim_ids)<=0:
         tmp = int(random.random() * len(ids))
         if tmp==0: return  None
@@ -196,22 +196,22 @@ def choose_node(i,c, G, C, alpha, beta, gamma, epsilon):
         p = [0 for j in range(len(trim_ids))]
         for ind in range(len(trim_ids)):
             j = trim_ids[ind]
-            p[ind] = (cn[j]**alpha )/ ((dd[ind]+1)** gamma) 
-            
-        if(sum(p)==0): return  None
+            p[ind] = (cn[j]**alpha )/ ((dd[ind]+1)** gamma)
+
+        if sum(p) == 0: return  None
         tmp = random_choice(range(len(p)), p ) #, size=1, replace = False)
         # TODO add weights /direction/attributes
         if tmp is None: return  None
         return trim_ids[tmp], p[tmp]
 
- 
+
 def connect_neighbor(i, j, pj, c, b,  G, C, beta):
-    if b<=0: return 
+    if b<=0: return
     ids = [id for id,_ in C.groups[c]]
     for k,wjk in G.neigh[j]:
         if (random.random() <b and k!=i and (k in ids or random.random()>beta)):
             G.add_edge(i,k,wjk*pj)
-                    
+
 def connect(i, b,  G, C, alpha, beta, gamma, epsilon):
     #Choose community
     c = choose_community(i, G, C, alpha, beta, gamma, epsilon)
@@ -219,12 +219,12 @@ def connect(i, b,  G, C, alpha, beta, gamma, epsilon):
     #Choose node within community
     tmp = choose_node(i, c, G, C, alpha, beta, gamma, epsilon)
     if tmp is None: return
-    j, pj = tmp 
+    j, pj = tmp
     G.add_edge(i,j,pj)
     connect_neighbor(i, j, pj , c, b,  G, C, beta)
-            
+
 def select_node(G, method = 'uniform'):
-    if method=='uniform':   
+    if method=='uniform':
         return int(random.random() * G.n) # uniform
     else:
         if method == 'older_less_active': p = [(i+1) for i in range(G.n)] # older less active
@@ -237,19 +237,19 @@ def assign(i, C, e=1, r=1, q = 0.5):
     id = random_choice(range(C.k),p )
     C.add(id, i)
     for j in range(1,r): #todo add strength for fuzzy
-        if (random.random()<q): 
+        if random.random() < q:
               id = random_choice(range(C.k),p )
               C.add(id, i)
     return
- 
+
 def print_setting(n,m,k,alpha,beta,gamma, phi,r,q,epsilon,weighted,directed):
     print('n:',n,'m:', m ,'k:', k,'alpha:', alpha,'beta:', beta,'gamma:', gamma,)
     if phi!=default_FARZ_setting['phi']: print('phi:', phi, )
     if r!=default_FARZ_setting['r']: print('r:', r,)
     if q!=default_FARZ_setting['q']: print('pr:', q, )
-    if epsilon!=default_FARZ_setting['epsilon']:'epsilon:', epsilon, 
+    if epsilon!=default_FARZ_setting['epsilon']:'epsilon:', epsilon,
     print('weighted' if weighted else '', 'directed' if directed else '')
-    
+
 def realize(n, m,  k, b=0.0,  alpha=0.4, beta=0.5, gamma=0.1, phi=1, r=1, q = 0.5, epsilon = 0.0000001, weighted =False, directed=False):
     # print_setting(n,m,k,alpha,beta,gamma, phi,r,q,epsilon,weighted,directed)
     G =  Graph()
@@ -260,8 +260,8 @@ def realize(n, m,  k, b=0.0,  alpha=0.4, beta=0.5, gamma=0.1, phi=1, r=1, q = 0.
         assign(i, C, phi, r, q)
         connect(i,b, G, C, alpha, beta, gamma, epsilon)
         for e in range(1,m):
-            j = select_node(G) 
-            connect(j, b, G, C, alpha, beta, gamma, epsilon)        
+            j = select_node(G)
+            connect(j, b, G, C, alpha, beta, gamma, epsilon)
     return G,C
 
 
@@ -286,7 +286,7 @@ def props():
         name = '$\\alpha ='+str(params[ "alpha"]) +',\; \\gamma='+str(params[ "gamma"])+"$"
         names.append(name)
         nx.write_gml(graphs[-1], "farz-"+str(params[ "alpha"])+str(params[ "gamma"])+'.gml')
-    
+
     pltn.plot_dists(graphs,names)
 
 def write_to_file(G,C,path, name,format,params):
@@ -298,11 +298,11 @@ def write_to_file(G,C,path, name,format,params):
         if not params['directed']: G = G.to_undirected()
         nx.write_gml(G, path+'/'+name+'.gml')
         return G
-    if format == 'list': 
+    if format == 'list':
         G.write_edgelist(path+'/'+name+'.dat')
         C.write_groups( path+'/'+name+'.lgt')
         return G
- 
+
 
 default_ranges = {'beta':(0.5,1,0.05), 'k':(2,50,5), 'm':(2,11,1) , 'phi':(1,100,10), 'r':(1,10,1), 'q':(0.0,1,0.1)}
 default_FARZ_setting = {"n":1000, "k":4, "m":5, "alpha":0.5,"gamma":0.5, "beta":.8, "phi":1, "o":1, 'q':0.5,  "b":0.0, "epsilon":0.0000001, 'directed':False, 'weighted':False}
@@ -315,7 +315,7 @@ def generate( vari =None, arange =None, repeat = 1, path ='.', net_name = 'netwo
             res.append(s)
             s +=i
         return res
-    
+
     if vari is None:
         for r in range(repeat):
             G, C =realize(**farz_params)
@@ -325,9 +325,9 @@ def generate( vari =None, arange =None, repeat = 1, path ='.', net_name = 'netwo
             if not farz_params['directed']: G = G.to_undirected()
 
 
-            name = net_name+( str(r+1) if repeat>1 else '') 
+            name = net_name+( str(r+1) if repeat>1 else '')
             # G = write_to_file(G,C,path,name,format,farz_params)
-           
+
             # print(len([memtup[0][0] for memtup in C.memberships.values()]))
             # import numpy
             # (unique, counts) = numpy.unique( [memtup[0][0] for memtup in C.memberships.values()], return_counts=True )
@@ -335,20 +335,20 @@ def generate( vari =None, arange =None, repeat = 1, path ='.', net_name = 'netwo
             # exit()
 
             node_communities = {node: [c[0] for c in comm_tup] for node, comm_tup in C.memberships.items()}
-            
+
         return G, node_communities
 
     if arange ==None:
         arange = default_ranges[vari]
-    for i,var in enumerate(get_range(arange[0],arange[1],arange[2])): 
+    for i,var in enumerate(get_range(arange[0],arange[1],arange[2])):
         for r in range(repeat):
             farz_params[vari] = var
             print('s',i+1, r+1, str(farz_params))
             G, C =realize(**farz_params)
-            name = 'S'+str(i+1)+'-'+net_name+ (str(r+1) if repeat>1 else '') 
+            name = 'S'+str(i+1)+'-'+net_name+ (str(r+1) if repeat>1 else '')
             write_to_file(G,C,path,name,format,farz_params)
 
-    
+
 
 
 import sys
@@ -356,7 +356,7 @@ def main(argv):
     import getopt
     FARZsetting = default_FARZ_setting.copy()
     batch_setting= default_batch_setting.copy()
-    try:    
+    try:
         opts, args = getopt.getopt(argv,"ho:s:v:c:f:n:k:m:a:b:g:p:r:q:t:e:dw",\
                                    ["output=","path=","repeat=","vary=",'range=','format=',"alpha=","beta=","gamma=",'phi=','overlap=','oProb=','epsilon=','cneigh=','directed','weighted'])
     except getopt.GetoptError:
@@ -375,7 +375,7 @@ def main(argv):
             print('> python FARZ.py --path ./data -s 10 -v beta -c [0.5,1,0.05] -n 1000 -m 5 -k 4 \n')
             print('+ example 5: generate overlapping communities, where each node belongs to at most 3 communities and the portion of overlapping nodes varies')
             print('python FARZ.py -r 3 -v q --path ./datavrq -s 5 --format list\n')
-            
+
             print('*** parameters:')
             print('-n: number of nodes, default (1000)')
             print('-m: half the average degree of nodes, default (5)')
@@ -398,26 +398,26 @@ def main(argv):
             print('-c: the range to change the given parameter, should be in format of [s,e,inc]')
             #print('default FARZ parameters are :\n', default_FARZ_setting)
             #print('default batch generator parameters are :\n', default_batch_setting)
-            
+
             sys.exit()
-            
+
         elif opt in ("-o", "--output"):
             batch_setting['net_name'] = arg
-        elif opt in ("--path"):
+        elif opt in ("--path",):
             batch_setting['path'] = arg
         elif opt in ("-f", "--format"):
             if arg in supported_formats:
                 batch_setting['format'] = arg
             else:
                 print('Format not supported , choose from ',supported_formats,' or try -h to see the usage and options')
-                sys.exit(2)                
+                sys.exit(2)
         elif opt in ("-s","--repeat"):
-            try: batch_setting['repeat'] = int(arg) 
+            try: batch_setting['repeat'] = int(arg)
             except ValueError:
                 print('Invalid Number , try -h to see the usage and options')
-                sys.exit(2)            
+                sys.exit(2)
         elif opt in ("-v", "--vary"):
-            if (arg in list(default_ranges.keys())):
+            if arg in list(default_ranges.keys()):
                 batch_setting['vari'] = arg
             else:
                 print('Invalid variable, choose form :', list(default_ranges.keys()), ', try -h to see the usage and options')
@@ -428,47 +428,47 @@ def main(argv):
                 batch_setting['arange'] = arange
             except Error:
                 print('Invalid range, should have the following form : [start,end,incrementBy], try -h to see the usage and options ')
-                sys.exit(2)               
-        elif opt in ("-n"):
-            try: FARZsetting['n'] = int(arg) 
+                sys.exit(2)
+        elif opt in ("-n",):
+            try: FARZsetting['n'] = int(arg)
             except ValueError:
                 print('Invalid Number , try -h to see the usage and options')
                 sys.exit(2)
-        elif opt in ("-k"):
+        elif opt in ("-k",):
             try: FARZsetting['k'] = int(arg)
             except ValueError:
                 print('Invalid Number , try -h to see the usage and options')
                 sys.exit(2)
-        elif opt in ("-m"):
+        elif opt in ("-m",):
             try: FARZsetting['m'] = int(arg)
             except ValueError:
                 print('Invalid Number , try -h to see the usage and options')
                 sys.exit(2)
         elif opt in ("-a","--alpha"):
-            try: FARZsetting['alpha'] = float(arg)  
+            try: FARZsetting['alpha'] = float(arg)
             except ValueError:
                 print('Invalid Number , try -h to see the usage and options')
-                sys.exit(2)         
+                sys.exit(2)
         elif opt in ("-b","--beta"):
             try: FARZsetting['beta'] = float(arg)
             except ValueError:
                 print('Invalid Number , try -h to see the usage and options')
-                sys.exit(2)                        
+                sys.exit(2)
         elif opt in ("-g","--gamma"):
             try: FARZsetting['gamma'] = float(arg)
             except ValueError:
                 print('Invalid Number , try -h to see the usage and options')
-                sys.exit(2)  
+                sys.exit(2)
         elif opt in ("-p","--phi"):
             try: FARZsetting['phi'] = int(arg)
             except ValueError:
                 print('Invalid Number , try -h to see the usage and options')
-                sys.exit(2)         
+                sys.exit(2)
         elif opt in ("-r","--overlap"):
             try: FARZsetting['r'] = int(arg)
             except ValueError:
                 print('Invalid Number , try -h to see the usage and options')
-                sys.exit(2)      
+                sys.exit(2)
         elif opt in ("-q","--oProb"):
             try: FARZsetting['q'] = float(arg)
             except ValueError:
@@ -477,42 +477,42 @@ def main(argv):
         elif opt in ("-d","--directed"):
             FARZsetting['directed'] = True
         elif opt in ("-w","--wighted"):
-            FARZsetting['weighted'] = True                           
+            FARZsetting['weighted'] = True
         elif opt in ("-t","--cneigh"):
             try: FARZsetting['b'] = float(arg)
             except ValueError:
                 print('Invalid Number , try -h to see the usage and options')
-                sys.exit(2)         
+                sys.exit(2)
         elif opt in ("-e","--epsilon"):
-            try: FARZsetting['epsilon'] = float(arg)         
+            try: FARZsetting['epsilon'] = float(arg)
             except ValueError:
                 print('Invalid Number , try -h to see the usage and options')
                 sys.exit(2)
-                
+
     batch_setting['farz_params'] = FARZsetting
     print('generating FARZ benchmark(s) ... ')
     generate( **batch_setting)
-          
+
 
 if __name__ == "__main__":
    main(sys.argv[1:])
 
 
-# generate(farz_params={"n":25000, 
-#                         "k":4, 
-#                         "m":5, 
+# generate(farz_params={"n":25000,
+#                         "k":4,
+#                         "m":5,
 #                         "alpha":0.5,
-#                         "gamma":0.5, 
-#                         "beta":.8, 
-#                         "phi":1, 
-#                         "o":1, 
-#                         'q':0.5,  
-#                         "b":0.0, 
-#                         "epsilon":0.0000001, 
-#                         'directed':False, 
+#                         "gamma":0.5,
+#                         "beta":.8,
+#                         "phi":1,
+#                         "o":1,
+#                         'q':0.5,
+#                         "b":0.0,
+#                         "epsilon":0.0000001,
+#                         'directed':False,
 #                         'weighted':False})
-   
-   
+
+
 # python FARZ.py --path ./dataVb55 -s 10 -v beta
 # python FARZ.py --path ./dataVb82 -s 10 -v beta --alpha 0.8 --gamma 0.2
 # python FARZ.py --path ./dataVb5-5 -s 10 -v beta --alpha 0.5 --gamma -0.5
