@@ -722,7 +722,7 @@ class SEIRSNetworkModel():
         if type(self.G)==numpy.ndarray:
             self.A = scipy.sparse.csr_matrix(self.G)
         elif type(self.G)==networkx.classes.graph.Graph:
-            self.A = networkx.adj_matrix(self.G) # adj_matrix gives scipy.sparse csr_matrix
+            self.A = networkx.to_scipy_sparse_array(self.G)  # adj_matrix outdated, use to_scipy_sparse_array instead
         else:
             raise BaseException("Input an adjacency matrix or networkx object only.")
         self.numNodes   = int(self.A.shape[1])
@@ -736,7 +736,7 @@ class SEIRSNetworkModel():
         if type(self.G_Q)==numpy.ndarray:
             self.A_Q = scipy.sparse.csr_matrix(self.G_Q)
         elif type(self.G_Q)==networkx.classes.graph.Graph:
-            self.A_Q = networkx.adj_matrix(self.G_Q) # adj_matrix gives scipy.sparse csr_matrix
+            self.A_Q = networkx.to_scipy_sparse_array(self.G_Q) # adj_matrix outdated, use to_scipy_sparse_array instead
         else:
             raise BaseException("Input an adjacency matrix or networkx object only.")
         self.numNodes_Q   = int(self.A_Q.shape[1])
@@ -1948,7 +1948,7 @@ class ExtSEIRSNetworkModel():
         if type(self.G)==numpy.ndarray:
             self.A = scipy.sparse.csr_matrix(self.G)
         elif type(self.G)==networkx.classes.graph.Graph:
-            self.A = networkx.adj_matrix(self.G) # adj_matrix gives scipy.sparse csr_matrix
+            self.A = networkx.to_scipy_sparse_array(self.G)  # adj_matrix outdated, use to_scipy_sparse_array instead
         else:
             raise BaseException("Input an adjacency matrix or networkx object only.")
         self.numNodes   = int(self.A.shape[1])
@@ -1962,7 +1962,7 @@ class ExtSEIRSNetworkModel():
         if type(self.G_Q)==numpy.ndarray:
             self.A_Q = scipy.sparse.csr_matrix(self.G_Q)
         elif type(self.G_Q)==networkx.classes.graph.Graph:
-            self.A_Q = networkx.adj_matrix(self.G_Q) # adj_matrix gives scipy.sparse csr_matrix
+            self.A_Q = networkx.to_scipy_sparse_array(self.G_Q)  # adj_matrix outdated, use to_scipy_sparse_array instead
         else:
             raise BaseException("Input an adjacency matrix or networkx object only.")
         self.numNodes_Q   = int(self.A_Q.shape[1])
